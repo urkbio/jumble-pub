@@ -1,8 +1,25 @@
-import { contextBridge } from 'electron'
+import { TRelayGroup, TThemeSetting } from '@common/types'
 import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer } from 'electron'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  theme: {
+    onChange: (cb: (theme: 'dark' | 'light') => void) => {
+      ipcRenderer.on('theme:change', (_, theme) => {
+        cb(theme)
+      })
+    },
+    current: () => ipcRenderer.invoke('theme:current'),
+    themeSetting: () => ipcRenderer.invoke('theme:themeSetting'),
+    set: (themeSetting: TThemeSetting) => ipcRenderer.invoke('theme:set', themeSetting)
+  },
+  storage: {
+    getRelayGroups: () => ipcRenderer.invoke('storage:getRelayGroups'),
+    setRelayGroups: (relayGroups: TRelayGroup[]) =>
+      ipcRenderer.invoke('storage:setRelayGroups', relayGroups)
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
