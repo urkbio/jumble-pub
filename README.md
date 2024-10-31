@@ -2,6 +2,8 @@
 
 Yet another Nostr desktop client
 
+> NOTE: Currently, only browsing is supported. Posting, liking, and reposting will be available soon.
+
 ## Features
 
 - **Relay-Based Browsing:** Explore content directly through relays without following specific users. Discover diverse topics across different relays
