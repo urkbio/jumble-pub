@@ -6,9 +6,9 @@ Yet another Nostr desktop client
 
 ## Features
 
-- **Relay-Based Browsing:** Explore content directly through relays without following specific users. Discover diverse topics across different relays
+- **Relay-Based Browsing:** Explore content directly through relays without following specific users
 - **Relay-Friendly Design:** Minimized and simplified requests ensure efficient communication with relays
-- **Relay Groups:** Organize similar relays into custom groups for seamless switching between different content streams
+- **Relay Groups:** Easily manage and switch between relay groups
 - **Clean Interface:** Enjoy a minimalist design and intuitive interactions
 
 ## Download
