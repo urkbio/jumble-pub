@@ -1,4 +1,4 @@
-import { useTheme } from '@renderer/components/theme-provider'
+import { useTheme } from '@renderer/providers/ThemeProvider'
 import { TitlebarButton } from '@renderer/components/Titlebar'
 import { Moon, Sun, SunMoon } from 'lucide-react'
 

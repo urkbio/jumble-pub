@@ -19,14 +19,12 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
 
   const loadMore = async () => {
     setLoading(true)
-    const events = await client.fetchEvents([
-      {
-        '#e': [event.id],
-        kinds: [1],
-        limit: 200,
-        until
-      }
-    ])
+    const events = await client.fetchEvents({
+      '#e': [event.id],
+      kinds: [1],
+      limit: 100,
+      until
+    })
     const sortedEvents = events.sort((a, b) => a.created_at - b.created_at)
     if (sortedEvents.length > 0) {
       const eventMap: Record<string, Event> = {}
@@ -38,7 +36,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
       setEventMap((pre) => ({ ...pre, ...eventMap }))
       setUntil(sortedEvents[0].created_at - 1)
     }
-    setHasMore(sortedEvents.length >= 200)
+    setHasMore(sortedEvents.length >= 100)
     setLoading(false)
   }
 

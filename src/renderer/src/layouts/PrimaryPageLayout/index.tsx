@@ -3,8 +3,8 @@ import { Titlebar } from '@renderer/components/Titlebar'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { isMacOS } from '@renderer/lib/platform'
 import { forwardRef, useImperativeHandle, useRef } from 'react'
-import ReloadTimelineButton from './ReloadTimelineButton'
 import RelaySettingsPopover from './RelaySettingsPopover'
+import RefreshButton from './RefreshButton'
 
 const PrimaryPageLayout = forwardRef(
   (
@@ -48,7 +48,7 @@ export function PrimaryPageTitlebar({ content }: { content?: React.ReactNode }) 
     <Titlebar className={`justify-between ${isMacOS() ? 'pl-20' : ''}`}>
       <div>{content}</div>
       <div className="flex gap-1">
-        <ReloadTimelineButton />
+        <RefreshButton />
         <RelaySettingsPopover />
       </div>
     </Titlebar>

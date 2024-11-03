@@ -17,6 +17,10 @@ type TPushParams = {
   props: any
 }
 
+type TPrimaryPageContext = {
+  refresh: () => void
+}
+
 type TSecondaryPageContext = {
   push: (params: TPushParams) => void
   pop: () => void
@@ -28,13 +32,24 @@ type TStackItem = {
   component: React.ReactNode
 }
 
-const SecondaryPageContext = createContext<TSecondaryPageContext>({
-  push: () => {},
-  pop: () => {}
-})
+const PrimaryPageContext = createContext<TPrimaryPageContext | undefined>(undefined)
+
+const SecondaryPageContext = createContext<TSecondaryPageContext | undefined>(undefined)
+
+export function usePrimaryPage() {
+  const context = useContext(PrimaryPageContext)
+  if (!context) {
+    throw new Error('usePrimaryPage must be used within a PrimaryPageContext.Provider')
+  }
+  return context
+}
 
 export function useSecondaryPage() {
-  return useContext(SecondaryPageContext)
+  const context = useContext(SecondaryPageContext)
+  if (!context) {
+    throw new Error('usePrimaryPage must be used within a SecondaryPageContext.Provider')
+  }
+  return context
 }
 
 export function PageManager({
@@ -46,6 +61,7 @@ export function PageManager({
   children: React.ReactNode
   maxStackSize?: number
 }) {
+  const [primaryPageKey, setPrimaryPageKey] = useState<number>(0)
   const [secondaryStack, setSecondaryStack] = useState<TStackItem[]>([])
 
   const routeMap = routes.reduce((acc, route) => {
@@ -62,6 +78,8 @@ export function PageManager({
       JSON.stringify(currentPage.props) === JSON.stringify(props) // TODO: deep compare
     )
   }
+
+  const refreshPrimary = () => setPrimaryPageKey((prevKey) => prevKey + 1)
 
   const pushSecondary = ({ pageName, props }: TPushParams) => {
     if (isCurrentPage(secondaryStack, { pageName, props })) return
@@ -81,29 +99,33 @@ export function PageManager({
   const popSecondary = () => setSecondaryStack((prevStack) => prevStack.slice(0, -1))
 
   return (
-    <SecondaryPageContext.Provider value={{ push: pushSecondary, pop: popSecondary }}>
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={60} minSize={30}>
-          {children}
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel defaultSize={40} minSize={30} className="relative">
-          {secondaryStack.length ? (
-            secondaryStack.map((item, index) => (
-              <div
-                key={index}
-                className="absolute top-0 left-0 w-full h-full bg-background"
-                style={{ zIndex: index }}
-              >
-                {item.component}
-              </div>
-            ))
-          ) : (
-            <BlankPage />
-          )}
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </SecondaryPageContext.Provider>
+    <PrimaryPageContext.Provider value={{ refresh: refreshPrimary }}>
+      <SecondaryPageContext.Provider value={{ push: pushSecondary, pop: popSecondary }}>
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel defaultSize={60} minSize={30}>
+            <div key={primaryPageKey} className="h-full">
+              {children}
+            </div>
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel defaultSize={40} minSize={30} className="relative">
+            {secondaryStack.length ? (
+              secondaryStack.map((item, index) => (
+                <div
+                  key={index}
+                  className="absolute top-0 left-0 w-full h-full bg-background"
+                  style={{ zIndex: index }}
+                >
+                  {item.component}
+                </div>
+              ))
+            ) : (
+              <BlankPage />
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </SecondaryPageContext.Provider>
+    </PrimaryPageContext.Provider>
   )
 }
 

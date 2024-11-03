@@ -30,7 +30,7 @@ export default function ImageGallery({
           {images.map((src, index) => {
             return (
               <img
-                className={`rounded-lg max-w-full ${size === 'small' ? 'max-h-[10vh]' : 'max-h-[30vh]'}`}
+                className={`rounded-lg max-w-full cursor-pointer ${size === 'small' ? 'max-h-[10vh]' : 'max-h-[30vh]'}`}
                 key={index}
                 src={src}
                 onClick={(e) => handlePhotoClick(e, index)}

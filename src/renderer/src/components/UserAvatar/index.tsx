@@ -7,6 +7,7 @@ import { toProfile } from '@renderer/lib/url'
 import { cn } from '@renderer/lib/utils'
 import { SecondaryPageLink } from '@renderer/PageManager'
 import ProfileCard from '../ProfileCard'
+import { useMemo } from 'react'
 
 const UserAvatarSizeCnMap = {
   large: 'w-24 h-24',
@@ -25,10 +26,11 @@ export default function UserAvatar({
   size?: 'large' | 'normal' | 'small' | 'tiny'
 }) {
   const { avatar, pubkey } = useFetchProfile(userId)
-  if (!pubkey)
-    return <Skeleton className={cn(UserAvatarSizeCnMap[size], 'rounded-full', className)} />
+  const defaultAvatar = useMemo(() => (pubkey ? generateImageByPubkey(pubkey) : ''), [pubkey])
 
-  const defaultAvatar = generateImageByPubkey(pubkey)
+  if (!pubkey) {
+    return <Skeleton className={cn(UserAvatarSizeCnMap[size], 'rounded-full', className)} />
+  }
 
   return (
     <HoverCard>

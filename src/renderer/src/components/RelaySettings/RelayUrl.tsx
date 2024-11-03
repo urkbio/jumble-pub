@@ -1,18 +1,15 @@
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
+import { useRelaySettings } from '@renderer/providers/RelaySettingsProvider'
 import client from '@renderer/services/client.service'
 import { CircleX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-export default function RelayUrls({
-  isActive,
-  relayUrls: rawRelayUrls,
-  update
-}: {
-  isActive: boolean
-  relayUrls: string[]
-  update: (urls: string[]) => void
-}) {
+export default function RelayUrls({ groupName }: { groupName: string }) {
+  const { relayGroups, updateRelayGroupRelayUrls } = useRelaySettings()
+  const rawRelayUrls = relayGroups.find((group) => group.groupName === groupName)?.relayUrls ?? []
+  const isActive = relayGroups.find((group) => group.groupName === groupName)?.isActive ?? false
+
   const [newRelayUrl, setNewRelayUrl] = useState('')
   const [newRelayUrlError, setNewRelayUrlError] = useState<string | null>(null)
   const [relays, setRelays] = useState<
@@ -38,7 +35,10 @@ export default function RelayUrls({
 
   const removeRelayUrl = (url: string) => {
     setRelays((relays) => relays.filter((relay) => relay.url !== url))
-    update(relays.map(({ url }) => url).filter((u) => u !== url))
+    updateRelayGroupRelayUrls(
+      groupName,
+      relays.map(({ url }) => url).filter((u) => u !== url)
+    )
   }
 
   const saveNewRelayUrl = () => {
@@ -51,7 +51,7 @@ export default function RelayUrls({
     }
     setRelays((pre) => [...pre, { url: normalizedUrl, isConnected: false }])
     const newRelayUrls = [...relays.map(({ url }) => url), normalizedUrl]
-    update(newRelayUrls)
+    updateRelayGroupRelayUrls(groupName, newRelayUrls)
     setNewRelayUrl('')
   }
 
@@ -113,11 +113,11 @@ function RelayUrl({
     <div className="flex items-center justify-between">
       <div className="flex gap-2 items-center">
         {!isActive ? (
-          <div className="text-muted-foreground">●</div>
+          <div className="text-muted-foreground text-xs">●</div>
         ) : isConnected ? (
-          <div className="text-green-500">●</div>
+          <div className="text-green-500 text-xs">●</div>
         ) : (
-          <div className="text-red-500">●</div>
+          <div className="text-red-500 text-xs">●</div>
         )}
         <div className="text-muted-foreground text-sm">{url}</div>
       </div>

@@ -34,7 +34,7 @@ export function useFetchEventById(id?: string) {
       if (filter.ids) {
         event = await client.fetchEventById(filter.ids[0])
       } else {
-        event = await client.fetchEventWithCache(filter)
+        event = await client.fetchEventByFilter(filter)
       }
       if (event) {
         setEvent(event)

@@ -1,12 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
-import { generateImageByPubkey } from '@renderer/lib/pubkey'
 import { useFetchProfile } from '@renderer/hooks'
+import { generateImageByPubkey } from '@renderer/lib/pubkey'
+import { useMemo } from 'react'
 import Nip05 from '../Nip05'
 import ProfileAbout from '../ProfileAbout'
 
 export default function ProfileCard({ pubkey }: { pubkey: string }) {
   const { avatar = '', username, nip05, about } = useFetchProfile(pubkey)
-  const defaultAvatar = generateImageByPubkey(pubkey)
+  const defaultAvatar = useMemo(() => generateImageByPubkey(pubkey), [pubkey])
 
   return (
     <div className="w-full flex flex-col gap-2">
