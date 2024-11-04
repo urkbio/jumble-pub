@@ -84,7 +84,7 @@ export default function NoteList({
         observer.current.unobserve(bottomRef.current)
       }
     }
-  }, [initialized])
+  }, [until, initialized])
 
   const loadMore = async () => {
     const events = await client.fetchEvents({ ...noteFilter, until })
