@@ -74,6 +74,11 @@ class ClientService {
     return this.pool.listConnectionStatus()
   }
 
+  async publishEvent(event: NEvent) {
+    // TODO: outbox
+    return await Promise.any(this.pool.publish(this.relayUrls, event))
+  }
+
   subscribeEvents(
     urls: string[],
     filter: Filter,
@@ -82,7 +87,6 @@ class ClientService {
       onNew: (evt: NEvent) => void
     }
   ) {
-    console.log('subscribeEvents', urls, filter)
     const events: NEvent[] = []
     let eose = false
     return this.pool.subscribeMany(urls, [filter], {
