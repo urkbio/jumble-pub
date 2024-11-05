@@ -81,7 +81,7 @@ function LoginButton() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button variant="titlebar" size="titlebar">
           <LogIn />
         </Button>
