@@ -1,5 +1,3 @@
-export type TEventStats = { reactionCount: number; repostCount: number }
-
 export type TProfile = {
   username: string
   pubkey?: string
