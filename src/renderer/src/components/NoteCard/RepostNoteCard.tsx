@@ -1,13 +1,11 @@
-import { Event } from 'nostr-tools'
-import { useFetchEventById } from '@renderer/hooks'
 import { Repeat2 } from 'lucide-react'
+import { Event, verifyEvent } from 'nostr-tools'
 import Username from '../Username'
 import ShortTextNoteCard from './ShortTextNoteCard'
 
 export default function RepostNoteCard({ event, className }: { event: Event; className?: string }) {
-  const targetEventId = event.tags.find(([tagName]) => tagName === 'e')?.[1]
-  const targetEvent = useFetchEventById(targetEventId)
-  if (!targetEvent) return null
+  const targetEvent = event.content ? (JSON.parse(event.content) as Event) : null
+  if (!targetEvent || !verifyEvent(targetEvent)) return null
 
   return (
     <div className={className}>
