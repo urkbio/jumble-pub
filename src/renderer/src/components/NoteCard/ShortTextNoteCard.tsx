@@ -9,7 +9,7 @@ import { getParentEventId, getRootEventId } from '@renderer/lib/event'
 export default function ShortTextNoteCard({
   event,
   className,
-  size,
+  size = 'normal',
   hideStats = false
 }: {
   event: Event
@@ -29,7 +29,9 @@ export default function ShortTextNoteCard({
         push(toNote(rootEvent ?? event))
       }}
     >
-      <Card className="p-4 hover:bg-muted/50 text-left cursor-pointer">
+      <Card
+        className={`hover:bg-muted/50 text-left cursor-pointer ${size === 'normal' ? 'p-4' : 'p-2'}`}
+      >
         <Note
           size={size}
           event={event}

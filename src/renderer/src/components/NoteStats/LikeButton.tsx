@@ -3,7 +3,7 @@ import { cn } from '@renderer/lib/utils'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { useNoteStats } from '@renderer/providers/NoteStatsProvider'
 import client from '@renderer/services/client.service'
-import { Heart } from 'lucide-react'
+import { Heart, Loader } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useEffect, useMemo, useState } from 'react'
 import { formatCount } from './utils'
@@ -74,7 +74,11 @@ export default function LikeButton({
       disabled={!canLike}
       title="like"
     >
-      <Heart size={16} className={hasLiked ? 'fill-red-400' : ''} />
+      {liking ? (
+        <Loader className="animate-spin" size={16} />
+      ) : (
+        <Heart size={16} className={hasLiked ? 'fill-red-400' : ''} />
+      )}
       <div className="text-xs">{formatCount(likeCount)}</div>
     </button>
   )

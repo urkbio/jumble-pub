@@ -14,7 +14,7 @@ import { cn } from '@renderer/lib/utils'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { useNoteStats } from '@renderer/providers/NoteStatsProvider'
 import client from '@renderer/services/client.service'
-import { Repeat } from 'lucide-react'
+import { Loader, Repeat } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useEffect, useMemo, useState } from 'react'
 import { formatCount } from './utils'
@@ -85,7 +85,7 @@ export default function RepostButton({
           disabled={!canRepost}
           title="repost"
         >
-          <Repeat size={16} />
+          {reposting ? <Loader className="animate-spin" size={16} /> : <Repeat size={16} />}
           <div className="text-xs">{formatCount(repostCount)}</div>
         </button>
       </AlertDialogTrigger>

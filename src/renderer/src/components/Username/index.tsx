@@ -20,7 +20,7 @@ export default function Username({
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <div className={cn('inline-block', className)}>
+        <div className={className}>
           <SecondaryPageLink
             to={toProfile(pubkey)}
             className={cn('truncate hover:underline')}

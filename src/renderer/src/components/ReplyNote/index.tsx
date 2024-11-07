@@ -22,12 +22,12 @@ export default function ReplyNote({
     >
       <UserAvatar userId={event.pubkey} size="small" className="shrink-0" />
       <div className="w-full overflow-hidden">
-        <div className="flex gap-1 items-end">
+        <div className="flex items-end gap-2">
           <Username
             userId={event.pubkey}
-            className="text-xs font-semibold text-muted-foreground hover:text-foreground truncate"
+            className="text-sm font-semibold text-muted-foreground hover:text-foreground truncate"
           />
-          <div className="text-xs text-muted-foreground shrink-0">
+          <div className="text-xs text-muted-foreground shrink-0 -top-[1px] relative">
             {formatTimestamp(event.created_at)}
           </div>
         </div>
