@@ -1,5 +1,5 @@
 import { Separator } from '@renderer/components/ui/separator'
-import { getParentEventId } from '@renderer/lib/event'
+import { getParentEventId, isReplyNoteEvent } from '@renderer/lib/event'
 import { cn } from '@renderer/lib/utils'
 import { useNoteStats } from '@renderer/providers/NoteStatsProvider'
 import client from '@renderer/services/client.service'
@@ -28,14 +28,17 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
       until
     })
     const sortedEvents = events.sort((a, b) => a.created_at - b.created_at)
-    if (sortedEvents.length > 0) {
+    const processedEvents = events.filter((e) => isReplyNoteEvent(e))
+    if (processedEvents.length > 0) {
       const eventMap: Record<string, Event> = {}
-      const eventsWithParentIds = sortedEvents.map((event) => {
+      const eventsWithParentIds = processedEvents.map((event) => {
         eventMap[event.id] = event
         return [event, getParentEventId(event)] as [Event, string | undefined]
       })
       setEventsWithParentId((pre) => [...eventsWithParentIds, ...pre])
       setEventMap((pre) => ({ ...pre, ...eventMap }))
+    }
+    if (sortedEvents.length > 0) {
       setUntil(sortedEvents[0].created_at - 1)
     }
     setHasMore(sortedEvents.length >= 100)

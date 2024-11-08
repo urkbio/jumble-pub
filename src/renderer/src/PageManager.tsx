@@ -27,6 +27,7 @@ type TSecondaryPageContext = {
 }
 
 type TStackItem = {
+  index: number
   pageName: string
   props: any
   component: React.ReactNode
@@ -89,8 +90,10 @@ export function PageManager({
     if (!isValidElement(element)) return
 
     setSecondaryStack((prevStack) => {
+      const currentStack = prevStack[prevStack.length - 1]
+      const index = currentStack ? currentStack.index + 1 : 0
       const component = cloneElement(element, props)
-      const newStack = [...prevStack, { pageName, props, component }]
+      const newStack = [...prevStack, { index, pageName, props, component }]
       if (newStack.length > maxStackSize) newStack.shift()
       return newStack
     })
@@ -112,7 +115,7 @@ export function PageManager({
             {secondaryStack.length ? (
               secondaryStack.map((item, index) => (
                 <div
-                  key={index}
+                  key={item.index}
                   className="absolute top-0 left-0 w-full h-full bg-background"
                   style={{ zIndex: index }}
                 >

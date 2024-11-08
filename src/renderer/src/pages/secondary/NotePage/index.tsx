@@ -1,5 +1,5 @@
-import ReplyNoteList from '@renderer/components/ReplyNoteList'
 import Note from '@renderer/components/Note'
+import ReplyNoteList from '@renderer/components/ReplyNoteList'
 import { Separator } from '@renderer/components/ui/separator'
 import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
 import { Event } from 'nostr-tools'

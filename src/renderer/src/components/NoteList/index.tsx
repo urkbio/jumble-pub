@@ -42,7 +42,9 @@ export default function NoteList({
     const sub = client.subscribeEvents(relayUrls, noteFilter, {
       onEose: (events) => {
         const processedEvents = events.filter((e) => !isReplyNoteEvent(e))
-        setEvents((pre) => [...pre, ...processedEvents])
+        if (processedEvents.length > 0) {
+          setEvents((pre) => [...pre, ...processedEvents])
+        }
         if (events.length > 0) {
           setUntil(events[events.length - 1].created_at - 1)
         }

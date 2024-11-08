@@ -9,7 +9,7 @@ export function isNsfwEvent(event: Event) {
 }
 
 export function isReplyNoteEvent(event: Event) {
-  return event.kind === kinds.ShortTextNote && event.tags.some(tagNameEquals('e'))
+  return event.kind === kinds.ShortTextNote && event.tags.some(rootETag)
 }
 
 export function getParentEventId(event: Event) {
