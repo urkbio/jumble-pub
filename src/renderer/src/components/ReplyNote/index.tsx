@@ -48,7 +48,7 @@ export default function ReplyNote({
 
 function ParentReplyNote({ event }: { event: Event }) {
   return (
-    <div className="flex space-x-1 items-center text-xs border rounded-lg w-fit px-1 bg-muted max-w-full">
+    <div className="flex space-x-1 items-center text-xs rounded-lg w-fit px-2 bg-muted max-w-full">
       <div>reply to</div>
       <UserAvatar userId={event.pubkey} size="tiny" />
       <div className="truncate">{event.content}</div>

@@ -56,7 +56,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
   const onClickParent = (eventId: string) => {
     const ref = replyRefs.current[eventId]
     if (ref) {
-      ref.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
+      ref.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
     setHighlightReplyId(eventId)
     setTimeout(() => {

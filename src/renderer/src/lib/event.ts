@@ -9,15 +9,17 @@ export function isNsfwEvent(event: Event) {
 }
 
 export function isReplyNoteEvent(event: Event) {
-  return event.kind === kinds.ShortTextNote && event.tags.some(rootETag)
+  return (
+    event.kind === kinds.ShortTextNote && event.tags.some((tag) => replyETag(tag) || rootETag(tag))
+  )
 }
 
-export function getParentEventId(event: Event) {
-  return event.tags.find(replyETag)?.[1]
+export function getParentEventId(event?: Event) {
+  return event?.tags.find(replyETag)?.[1]
 }
 
-export function getRootEventId(event: Event) {
-  return event.tags.find(rootETag)?.[1]
+export function getRootEventId(event?: Event) {
+  return event?.tags.find(rootETag)?.[1]
 }
 
 export function isReplaceable(kind: number) {

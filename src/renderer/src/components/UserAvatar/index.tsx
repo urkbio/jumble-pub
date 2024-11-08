@@ -13,7 +13,7 @@ const UserAvatarSizeCnMap = {
   large: 'w-24 h-24',
   normal: 'w-10 h-10',
   small: 'w-7 h-7',
-  tiny: 'w-3 h-3'
+  tiny: 'w-4 h-4'
 }
 
 export default function UserAvatar({

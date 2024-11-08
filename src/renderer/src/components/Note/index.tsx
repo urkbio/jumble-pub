@@ -1,9 +1,11 @@
+import { useSecondaryPage } from '@renderer/PageManager'
+import { toNote } from '@renderer/lib/link'
 import { formatTimestamp } from '@renderer/lib/timestamp'
 import { Event } from 'nostr-tools'
 import Content from '../Content'
+import NoteStats from '../NoteStats'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
-import NoteStats from '../NoteStats'
 
 export default function Note({
   event,
@@ -33,7 +35,7 @@ export default function Note({
         </div>
       </div>
       {parentEvent && (
-        <div className="text-xs text-muted-foreground truncate mt-2">
+        <div className="text-muted-foreground truncate mt-2">
           <ParentNote event={parentEvent} />
         </div>
       )}
@@ -46,8 +48,16 @@ export default function Note({
 }
 
 function ParentNote({ event }: { event: Event }) {
+  const { push } = useSecondaryPage()
+
   return (
-    <div className="flex space-x-1 items-center text-xs rounded-lg border px-1 bg-muted w-fit max-w-full">
+    <div
+      className="flex space-x-1 items-center text-xs rounded-lg px-2 bg-muted w-fit max-w-full hover:text-foreground cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation()
+        push(toNote(event))
+      }}
+    >
       <div>reply to</div>
       <UserAvatar userId={event.pubkey} size="tiny" />
       <div className="truncate">{event.content}</div>
