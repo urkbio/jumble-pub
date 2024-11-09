@@ -107,7 +107,7 @@ export async function extractMentions(content: string, parentEvent?: Event) {
 
 export function extractHashtags(content: string) {
   const hashtags: string[] = []
-  const matches = content.match(/#([^\s#]+)/g)
+  const matches = content.match(/#[\p{L}\p{N}\p{M}]+/gu)
   matches?.forEach((m) => {
     const hashtag = m.slice(1).toLowerCase()
     if (hashtag) {
