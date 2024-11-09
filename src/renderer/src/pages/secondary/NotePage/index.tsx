@@ -18,7 +18,7 @@ export default function NotePage({ event }: { event?: Event }) {
   if (!event) return null
 
   return (
-    <SecondaryPageLayout titlebarContent="Note">
+    <SecondaryPageLayout titlebarContent="note">
       {rootEvent && <ParentNote key={`root-note-${event.id}`} event={rootEvent} />}
       {parentEvent && <ParentNote key={`parent-note-${event.id}`} event={parentEvent} />}
       <Note key={`note-${event.id}`} event={event} fetchNoteStats />

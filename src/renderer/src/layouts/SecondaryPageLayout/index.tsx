@@ -38,7 +38,7 @@ export function SecondaryPageTitlebar({
 }): JSX.Element {
   return (
     <Titlebar className="justify-between">
-      <div className="flex items-center gap-2 flex-1 w-0">
+      <div className="flex items-center gap-1 flex-1 w-0">
         <BackButton hide={hideBackButton} />
         <div className="truncate text-lg">{content}</div>
       </div>
