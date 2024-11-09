@@ -26,7 +26,7 @@ export default function Note({
     <div className={className}>
       <div className="flex items-center space-x-2">
         <UserAvatar userId={event.pubkey} size={size === 'small' ? 'small' : 'normal'} />
-        <div className="flex-1 w-0">
+        <div className={`flex-1 w-0 ${size === 'small' ? 'flex space-x-2 items-center' : ''}`}>
           <Username
             userId={event.pubkey}
             className={`font-semibold max-w-fit flex ${size === 'small' ? 'text-xs' : 'text-sm'}`}
