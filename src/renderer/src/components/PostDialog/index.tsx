@@ -2,7 +2,6 @@ import { Button } from '@renderer/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger
@@ -19,6 +18,7 @@ import { useState } from 'react'
 import UserAvatar from '../UserAvatar'
 import Mentions from './Metions'
 import Preview from './Preview'
+import Uploader from './Uploader'
 
 export default function PostDialog({
   children,
@@ -107,22 +107,25 @@ export default function PostDialog({
               placeholder="Write something..."
             />
             {content && <Preview content={content} />}
-            <DialogFooter className="items-center">
-              <Mentions content={content} parentEvent={parentEvent} />
-              <Button
-                variant="secondary"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setOpen(false)
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!pubkey || posting} onClick={post}>
-                {posting && <LoaderCircle className="animate-spin" />}
-                Post
-              </Button>
-            </DialogFooter>
+            <div className="flex items-center justify-between">
+              <Uploader setContent={setContent} />
+              <div className="flex gap-2">
+                <Mentions content={content} parentEvent={parentEvent} />
+                <Button
+                  variant="secondary"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setOpen(false)
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={!pubkey || posting} onClick={post}>
+                  {posting && <LoaderCircle className="animate-spin" />}
+                  Post
+                </Button>
+              </div>
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>

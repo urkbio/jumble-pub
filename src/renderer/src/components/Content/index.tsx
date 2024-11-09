@@ -104,7 +104,7 @@ function preprocess(content: string) {
 
 function isImage(url: string) {
   try {
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', 'webp', 'heic', 'svg']
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.svg']
     return imageExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
   } catch {
     return false
@@ -113,7 +113,7 @@ function isImage(url: string) {
 
 function isVideo(url: string) {
   try {
-    const videoExtensions = ['.mp4', '.webm', '.ogg']
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov']
     return videoExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
   } catch {
     return false
