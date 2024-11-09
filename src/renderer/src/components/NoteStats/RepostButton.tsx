@@ -86,7 +86,7 @@ export default function RepostButton({
           title="repost"
         >
           {reposting ? <Loader className="animate-spin" size={16} /> : <Repeat size={16} />}
-          <div className="text-xs">{formatCount(repostCount)}</div>
+          <div className="text-sm">{formatCount(repostCount)}</div>
         </button>
       </AlertDialogTrigger>
       <AlertDialogContent>

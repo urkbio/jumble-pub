@@ -5,6 +5,7 @@ import UserAvatar from '../UserAvatar'
 import Username from '../Username'
 import LikeButton from '../NoteStats/LikeButton'
 import PostDialog from '../PostDialog'
+import ParentNotePreview from '../ParentNotePreview'
 
 export default function ReplyNote({
   event,
@@ -22,18 +23,13 @@ export default function ReplyNote({
       className={`flex space-x-2 items-start rounded-lg p-2 transition-colors duration-500 ${highlight ? 'bg-highlight/50' : ''}`}
     >
       <UserAvatar userId={event.pubkey} size="small" className="shrink-0" />
-      <div className="w-full overflow-hidden">
+      <div className="w-full overflow-hidden space-y-1">
         <Username
           userId={event.pubkey}
           className="text-sm font-semibold text-muted-foreground hover:text-foreground truncate"
         />
         {parentEvent && (
-          <div
-            className="text-xs text-muted-foreground truncate hover:text-foreground cursor-pointer"
-            onClick={() => onClickParent(parentEvent.id)}
-          >
-            <ParentReplyNote event={parentEvent} />
-          </div>
+          <ParentNotePreview event={parentEvent} onClick={() => onClickParent(parentEvent.id)} />
         )}
         <Content event={event} size="small" />
         <div className="flex gap-2 text-xs">
@@ -44,16 +40,6 @@ export default function ReplyNote({
         </div>
       </div>
       <LikeButton event={event} variant="reply" />
-    </div>
-  )
-}
-
-function ParentReplyNote({ event }: { event: Event }) {
-  return (
-    <div className="flex space-x-1 items-center text-xs rounded-lg w-fit px-2 bg-muted max-w-full">
-      <div className="shrink-0">reply to</div>
-      <UserAvatar userId={event.pubkey} size="tiny" />
-      <div className="truncate">{event.content}</div>
     </div>
   )
 }

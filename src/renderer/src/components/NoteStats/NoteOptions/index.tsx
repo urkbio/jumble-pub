@@ -18,7 +18,7 @@ export default function NoteOptions({ event }: { event: Event }) {
       <DropdownMenu>
         <DropdownMenuTrigger>
           <Ellipsis
-            size={14}
+            size={16}
             className="text-muted-foreground hover:text-foreground cursor-pointer"
           />
         </DropdownMenuTrigger>

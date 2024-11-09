@@ -19,7 +19,7 @@ export default function ReplyButton({ event }: { event: Event }) {
         onClick={(e) => e.stopPropagation()}
       >
         <MessageCircle size={16} />
-        <div className="text-xs">{formatCount(replyCount)}</div>
+        <div className="text-sm">{formatCount(replyCount)}</div>
       </button>
     </PostDialog>
   )

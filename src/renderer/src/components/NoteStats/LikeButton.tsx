@@ -79,7 +79,7 @@ export default function LikeButton({
       ) : (
         <Heart size={16} className={hasLiked ? 'fill-red-400' : ''} />
       )}
-      <div className="text-xs">{formatCount(likeCount)}</div>
+      <div className="text-sm">{formatCount(likeCount)}</div>
     </button>
   )
 }

@@ -67,7 +67,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
   return (
     <>
       <div
-        className={`text-xs text-center my-2 text-muted-foreground ${!loading ? 'hover:text-foreground cursor-pointer' : ''}`}
+        className={`text-sm text-center my-2 text-muted-foreground ${!loading ? 'hover:text-foreground cursor-pointer' : ''}`}
         onClick={loadMore}
       >
         {loading ? 'loading...' : hasMore ? 'load more older replies' : null}
@@ -86,7 +86,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
         ))}
       </div>
       {eventsWithParentIds.length === 0 && !loading && !hasMore && (
-        <div className="text-xs text-center text-muted-foreground">no replies</div>
+        <div className="text-sm text-center text-muted-foreground">no replies</div>
       )}
     </>
   )

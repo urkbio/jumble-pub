@@ -123,7 +123,7 @@ export default function NoteList({
           <NoteCard key={`${i}-${event.id}`} className="w-full" event={event} />
         ))}
       </div>
-      <div className="text-center text-xs text-muted-foreground mt-2">
+      <div className="text-center text-sm text-muted-foreground mt-2">
         {hasMore ? <div ref={bottomRef}>loading...</div> : 'no more notes'}
       </div>
     </>

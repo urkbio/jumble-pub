@@ -6,6 +6,7 @@ import Content from '../Content'
 import NoteStats from '../NoteStats'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
+import ParentNotePreview from '../ParentNotePreview'
 
 export default function Note({
   event,
@@ -22,45 +23,34 @@ export default function Note({
   hideStats?: boolean
   fetchNoteStats?: boolean
 }) {
+  const { push } = useSecondaryPage()
+
   return (
     <div className={className}>
       <div className="flex items-center space-x-2">
         <UserAvatar userId={event.pubkey} size={size === 'small' ? 'small' : 'normal'} />
-        <div className={`flex-1 w-0 ${size === 'small' ? 'flex space-x-2 items-center' : ''}`}>
+        <div className={`flex-1 w-0 ${size === 'small' ? 'flex space-x-2 items-end' : ''}`}>
           <Username
             userId={event.pubkey}
-            className={`font-semibold max-w-fit flex ${size === 'small' ? 'text-xs' : 'text-sm'}`}
+            className={`font-semibold max-w-fit flex ${size === 'small' ? 'text-sm' : ''}`}
           />
           <div className="text-xs text-muted-foreground">{formatTimestamp(event.created_at)}</div>
         </div>
       </div>
       {parentEvent && (
-        <div className="text-muted-foreground truncate mt-2">
-          <ParentNote event={parentEvent} />
-        </div>
+        <ParentNotePreview
+          event={parentEvent}
+          className="mt-2"
+          onClick={(e) => {
+            e.stopPropagation()
+            push(toNote(parentEvent))
+          }}
+        />
       )}
       <Content className="mt-2" event={event} />
       {!hideStats && (
-        <NoteStats className="mt-2" event={event} fetchIfNotExisting={fetchNoteStats} />
+        <NoteStats className="mt-4" event={event} fetchIfNotExisting={fetchNoteStats} />
       )}
-    </div>
-  )
-}
-
-function ParentNote({ event }: { event: Event }) {
-  const { push } = useSecondaryPage()
-
-  return (
-    <div
-      className="flex space-x-1 items-center text-xs rounded-lg px-2 bg-muted w-fit max-w-full hover:text-foreground cursor-pointer"
-      onClick={(e) => {
-        e.stopPropagation()
-        push(toNote(event))
-      }}
-    >
-      <div>reply to</div>
-      <UserAvatar userId={event.pubkey} size="tiny" />
-      <div className="truncate">{event.content}</div>
     </div>
   )
 }

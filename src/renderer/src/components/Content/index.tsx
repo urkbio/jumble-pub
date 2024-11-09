@@ -36,7 +36,7 @@ const Content = memo(
     if (images.length) {
       nodes.push(
         <ImageGallery
-          className="mt-2 w-fit"
+          className={`w-fit ${size === 'small' ? 'mt-1' : 'mt-2'}`}
           key={`image-gallery-${event.id}`}
           images={images}
           isNsfw={isNsfw}
@@ -50,7 +50,7 @@ const Content = memo(
       videos.forEach((src, index) => {
         nodes.push(
           <VideoPlayer
-            className="mt-2"
+            className={size === 'small' ? 'mt-1' : 'mt-2'}
             key={`video-${index}-${src}`}
             src={src}
             isNsfw={isNsfw}
@@ -68,11 +68,7 @@ const Content = memo(
       })
     }
 
-    return (
-      <div className={cn('text-sm text-wrap break-words whitespace-pre-wrap', className)}>
-        {nodes}
-      </div>
-    )
+    return <div className={cn('text-wrap break-words whitespace-pre-wrap', className)}>{nodes}</div>
   }
 )
 Content.displayName = 'Content'

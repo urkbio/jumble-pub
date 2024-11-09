@@ -9,7 +9,7 @@ export default function PostButton() {
 
   return (
     <PostDialog>
-      <Button variant="titlebar" size="titlebar">
+      <Button variant="titlebar" size="titlebar" title="new post">
         <PencilLine />
       </Button>
     </PostDialog>

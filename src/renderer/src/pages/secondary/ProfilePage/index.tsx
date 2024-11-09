@@ -58,7 +58,7 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
             </>
           )}
         </div>
-        <div className="text-sm text-wrap break-words whitespace-pre-wrap">
+        <div className="text-wrap break-words whitespace-pre-wrap">
           <ProfileAbout about={about} />
         </div>
       </div>
