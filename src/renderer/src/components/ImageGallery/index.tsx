@@ -1,9 +1,9 @@
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area'
+import { cn } from '@renderer/lib/utils'
 import { useState } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import NsfwOverlay from '../NsfwOverlay'
-import { cn } from '@renderer/lib/utils'
 
 export default function ImageGallery({
   className,
@@ -17,6 +17,7 @@ export default function ImageGallery({
   size?: 'normal' | 'small'
 }) {
   const [index, setIndex] = useState(-1)
+  const [thumbs, setThumbs] = useState<string[]>(images.map(getThumbUrl))
 
   const handlePhotoClick = (event: React.MouseEvent, current: number) => {
     event.preventDefault()
@@ -27,12 +28,12 @@ export default function ImageGallery({
     <div className={cn('relative', className)} onClick={(e) => e.stopPropagation()}>
       <ScrollArea className="w-fit">
         <div className="flex w-fit space-x-2">
-          {images.map((src, index) => {
+          {thumbs.map((src, index) => {
             return (
               <img
                 className={`rounded-lg max-w-full cursor-pointer ${size === 'small' ? 'max-h-[15vh]' : 'max-h-[30vh]'}`}
                 key={index}
-                src={getThumbUrl(src)}
+                src={src}
                 onClick={(e) => handlePhotoClick(e, index)}
               />
             )
@@ -48,6 +49,12 @@ export default function ImageGallery({
         close={() => setIndex(-1)}
         controller={{ closeOnBackdropClick: true, closeOnPullUp: true, closeOnPullDown: true }}
         styles={{ toolbar: { paddingTop: '2.25rem' } }}
+        on={{
+          view: ({ index }) => {
+            setThumbs((pre) => pre.map((src, i) => (i === index ? images[i] : src)))
+            setIndex(index)
+          }
+        }}
       />
       {isNsfw && <NsfwOverlay className="rounded-lg" />}
     </div>
