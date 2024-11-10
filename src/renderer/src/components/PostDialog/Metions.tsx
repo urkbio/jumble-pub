@@ -1,10 +1,11 @@
 import { Button } from '@renderer/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/components/ui/popover'
 import { extractMentions } from '@renderer/lib/event'
+import { useNostr } from '@renderer/providers/NostrProvider'
+import { Event } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
-import { Event } from 'nostr-tools'
 
 export default function Mentions({
   content,
@@ -13,10 +14,13 @@ export default function Mentions({
   content: string
   parentEvent?: Event
 }) {
+  const { pubkey } = useNostr()
   const [pubkeys, setPubkeys] = useState<string[]>([])
 
   useEffect(() => {
-    extractMentions(content, parentEvent).then(({ pubkeys }) => setPubkeys(pubkeys))
+    extractMentions(content, parentEvent).then(({ pubkeys }) =>
+      setPubkeys(pubkeys.filter((p) => p !== pubkey))
+    )
   }, [content])
 
   return (
