@@ -1,11 +1,13 @@
 import { Repeat2 } from 'lucide-react'
-import { Event, verifyEvent } from 'nostr-tools'
+import { Event, kinds, verifyEvent } from 'nostr-tools'
 import Username from '../Username'
 import ShortTextNoteCard from './ShortTextNoteCard'
 
 export default function RepostNoteCard({ event, className }: { event: Event; className?: string }) {
   const targetEvent = event.content ? (JSON.parse(event.content) as Event) : null
-  if (!targetEvent || !verifyEvent(targetEvent)) return null
+  if (!targetEvent || !verifyEvent(targetEvent) || targetEvent.kind !== kinds.ShortTextNote) {
+    return null
+  }
 
   return (
     <div className={className}>
