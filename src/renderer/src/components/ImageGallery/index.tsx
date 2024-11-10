@@ -32,7 +32,7 @@ export default function ImageGallery({
               <img
                 className={`rounded-lg max-w-full cursor-pointer ${size === 'small' ? 'max-h-[15vh]' : 'max-h-[30vh]'}`}
                 key={index}
-                src={src}
+                src={getThumbUrl(src)}
                 onClick={(e) => handlePhotoClick(e, index)}
               />
             )
@@ -52,4 +52,14 @@ export default function ImageGallery({
       {isNsfw && <NsfwOverlay className="rounded-lg" />}
     </div>
   )
+}
+
+function getThumbUrl(url: string) {
+  if (url.startsWith('https://image.nostr.build/')) {
+    return url.replace('https://image.nostr.build/', 'https://image.nostr.build/thumb/')
+  }
+  if (url.startsWith('https://i.nostr.build/')) {
+    return url.replace('https://i.nostr.build/', 'https://i.nostr.build/thumb/')
+  }
+  return url
 }
