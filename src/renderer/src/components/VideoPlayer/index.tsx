@@ -16,6 +16,7 @@ export default function VideoPlayer({
     <div className="relative">
       <video
         controls
+        preload="none"
         className={cn('rounded-lg', size === 'small' ? 'max-h-[20vh]' : 'max-h-[50vh]', className)}
         src={src}
       />
