@@ -1,8 +1,9 @@
 import { useFetchNip05 } from '@renderer/hooks/useFetchNip05'
 import { BadgeAlert, BadgeCheck } from 'lucide-react'
 
-export default function Nip05({ nip05, pubkey }: { nip05: string; pubkey: string }) {
+export default function Nip05({ nip05, pubkey }: { nip05?: string; pubkey: string }) {
   const { nip05IsVerified, nip05Name, nip05Domain } = useFetchNip05(nip05, pubkey)
+
   return (
     nip05Name &&
     nip05Domain && (

@@ -29,12 +29,16 @@ export default function Note({
     <div className={className}>
       <div className="flex items-center space-x-2">
         <UserAvatar userId={event.pubkey} size={size === 'small' ? 'small' : 'normal'} />
-        <div className={`flex-1 w-0 ${size === 'small' ? 'flex space-x-2 items-end' : ''}`}>
+        <div
+          className={`flex-1 w-0 ${size === 'small' ? 'flex space-x-2 items-end overflow-hidden' : ''}`}
+        >
           <Username
             userId={event.pubkey}
-            className={`font-semibold max-w-fit flex ${size === 'small' ? 'text-sm' : ''}`}
+            className={`font-semibold flex ${size === 'small' ? 'text-sm' : ''}`}
           />
-          <div className="text-xs text-muted-foreground">{formatTimestamp(event.created_at)}</div>
+          <div className="text-xs text-muted-foreground line-clamp-1">
+            {formatTimestamp(event.created_at)}
+          </div>
         </div>
       </div>
       {parentEvent && (

@@ -3,10 +3,12 @@ import NoteList from '@renderer/components/NoteList'
 import ProfileAbout from '@renderer/components/ProfileAbout'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { Separator } from '@renderer/components/ui/separator'
-import { useFetchProfile } from '@renderer/hooks'
+import { useFetchFollowings, useFetchProfile } from '@renderer/hooks'
 import { useFetchRelayList } from '@renderer/hooks/useFetchRelayList'
 import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
+import { toFollowingList } from '@renderer/lib/link'
 import { formatNpub, generateImageByPubkey } from '@renderer/lib/pubkey'
+import { SecondaryPageLink } from '@renderer/PageManager'
 import { Copy } from 'lucide-react'
 import { nip19 } from 'nostr-tools'
 import { useEffect, useMemo, useState } from 'react'
@@ -15,6 +17,7 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
   const { banner, username, nip05, about, avatar } = useFetchProfile(pubkey)
   const relayList = useFetchRelayList(pubkey)
   const [copied, setCopied] = useState(false)
+  const followings = useFetchFollowings(pubkey)
   const npub = useMemo(() => (pubkey ? nip19.npubEncode(pubkey) : undefined), [pubkey])
   const defaultImage = useMemo(() => (pubkey ? generateImageByPubkey(pubkey) : ''), [pubkey])
 
@@ -42,11 +45,11 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
           </AvatarFallback>
         </Avatar>
       </div>
-      <div className="px-4 space-y-1">
+      <div className="px-4">
         <div className="text-xl font-semibold">{username}</div>
         {nip05 && <Nip05 nip05={nip05} pubkey={pubkey} />}
         <div
-          className="flex gap-2 text-sm text-muted-foreground items-center bg-muted w-fit px-2 rounded-full hover:text-foreground cursor-pointer"
+          className="mt-1 flex gap-2 text-sm text-muted-foreground items-center bg-muted w-fit px-2 rounded-full hover:text-foreground cursor-pointer"
           onClick={() => copyNpub()}
         >
           {copied ? (
@@ -58,9 +61,16 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
             </>
           )}
         </div>
-        <div className="text-wrap break-words whitespace-pre-wrap">
+        <div className="text-wrap break-words whitespace-pre-wrap mt-2">
           <ProfileAbout about={about} />
         </div>
+        <SecondaryPageLink
+          to={toFollowingList(pubkey)}
+          className="mt-2 flex gap-1 hover:underline text-sm"
+        >
+          {followings.length}
+          <div className="text-muted-foreground">Following</div>
+        </SecondaryPageLink>
       </div>
       <Separator className="my-4" />
       <NoteList

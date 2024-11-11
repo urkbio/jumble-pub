@@ -4,6 +4,8 @@ import { useRelaySettings } from '@renderer/providers/RelaySettingsProvider'
 
 export default function NoteListPage() {
   const { relayUrls } = useRelaySettings()
+  if (!relayUrls.length) return null
+
   return (
     <PrimaryPageLayout>
       <NoteList relayUrls={relayUrls} />

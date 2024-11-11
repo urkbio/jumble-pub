@@ -32,8 +32,6 @@ export default function NoteList({
   }, [JSON.stringify(filter)])
 
   useEffect(() => {
-    if (relayUrls.length === 0) return
-
     setInitialized(false)
     setEvents([])
     setNewEvents([])
@@ -86,7 +84,7 @@ export default function NoteList({
         observer.current.unobserve(bottomRef.current)
       }
     }
-  }, [until, initialized])
+  }, [until, initialized, hasMore])
 
   const loadMore = async () => {
     const events = await client.fetchEvents(relayUrls, { ...noteFilter, until })

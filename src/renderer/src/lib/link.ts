@@ -5,3 +5,7 @@ export const toNoStrudelProfile = (id: string) => `https://nostrudel.ninja/#/u/$
 export const toNote = (event: Event) => ({ pageName: 'note', props: { event } })
 export const toNoStrudelNote = (id: string) => `https://nostrudel.ninja/#/n/${id}`
 export const toHashtag = (hashtag: string) => ({ pageName: 'hashtag', props: { hashtag } })
+export const toFollowingList = (pubkey: string) => ({
+  pageName: 'followingList',
+  props: { pubkey }
+})

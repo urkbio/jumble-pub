@@ -26,11 +26,11 @@ class ClientService {
   private eventCache = new LRUCache<string, Promise<NEvent | undefined>>({
     max: 10000,
     fetchMethod: async (filterStr) => {
-      const [event] = await this.fetchEvents(
+      const events = await this.fetchEvents(
         BIG_RELAY_URLS.concat(this.relayUrls),
         JSON.parse(filterStr)
       )
-      return event
+      return events.sort((a, b) => b.created_at - a.created_at)[0]
     }
   })
   private eventDataloader = new DataLoader<string, NEvent | undefined>(
@@ -91,24 +91,28 @@ class ClientService {
   ) {
     const events: NEvent[] = []
     let eose = false
-    return this.pool.subscribeMany(urls, [filter], {
-      onevent: (evt) => {
-        if (eose) {
-          opts.onNew(evt)
-        } else {
-          events.push(evt)
-        }
-      },
-      oneose: () => {
-        eose = true
-        opts.onEose(events.sort((a, b) => b.created_at - a.created_at))
-      },
-      onclose: () => {
-        if (!eose) {
+    return this.pool.subscribeMany(
+      urls.length > 0 ? urls : this.relayUrls.concat(BIG_RELAY_URLS),
+      [filter],
+      {
+        onevent: (evt) => {
+          if (eose) {
+            opts.onNew(evt)
+          } else {
+            events.push(evt)
+          }
+        },
+        oneose: () => {
+          eose = true
           opts.onEose(events.sort((a, b) => b.created_at - a.created_at))
+        },
+        onclose: () => {
+          if (!eose) {
+            opts.onEose(events.sort((a, b) => b.created_at - a.created_at))
+          }
         }
       }
-    })
+    )
   }
 
   async fetchEvents(relayUrls: string[], filter: Filter) {

@@ -2,6 +2,7 @@ import { Button } from '@renderer/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger
@@ -100,6 +101,7 @@ export default function PostDialog({
                   'New post'
                 )}
               </DialogTitle>
+              <DialogDescription />
             </DialogHeader>
             <Textarea
               onChange={handleTextareaChange}

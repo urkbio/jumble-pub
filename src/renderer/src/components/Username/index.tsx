@@ -20,10 +20,10 @@ export default function Username({
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <div className={className}>
+        <div className={cn('max-w-fit', className)}>
           <SecondaryPageLink
             to={toProfile(pubkey)}
-            className={cn('truncate hover:underline')}
+            className="truncate hover:underline"
             onClick={(e) => e.stopPropagation()}
           >
             {showAt && '@'}
