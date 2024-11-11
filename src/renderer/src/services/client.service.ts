@@ -125,6 +125,10 @@ class ClientService {
     return this.eventCache.fetch(JSON.stringify({ ...filter, limit: 1 }))
   }
 
+  deleteEventCacheByFilter(filter: Filter) {
+    this.eventCache.delete(JSON.stringify({ ...filter, limit: 1 }))
+  }
+
   async fetchEventById(id: string): Promise<NEvent | undefined> {
     return this.eventDataloader.load(id)
   }

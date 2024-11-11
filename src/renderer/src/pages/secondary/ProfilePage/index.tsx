@@ -1,6 +1,8 @@
+import FollowButton from '@renderer/components/FollowButton'
 import Nip05 from '@renderer/components/Nip05'
 import NoteList from '@renderer/components/NoteList'
 import ProfileAbout from '@renderer/components/ProfileAbout'
+import ProfileBanner from '@renderer/components/ProfileBanner'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { Separator } from '@renderer/components/ui/separator'
 import { useFetchFollowings, useFetchProfile } from '@renderer/hooks'
@@ -9,15 +11,21 @@ import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
 import { toFollowingList } from '@renderer/lib/link'
 import { formatNpub, generateImageByPubkey } from '@renderer/lib/pubkey'
 import { SecondaryPageLink } from '@renderer/PageManager'
+import { useNostr } from '@renderer/providers/NostrProvider'
 import { Copy } from 'lucide-react'
 import { nip19 } from 'nostr-tools'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 export default function ProfilePage({ pubkey }: { pubkey?: string }) {
   const { banner, username, nip05, about, avatar } = useFetchProfile(pubkey)
   const relayList = useFetchRelayList(pubkey)
   const [copied, setCopied] = useState(false)
-  const followings = useFetchFollowings(pubkey)
+  const { pubkey: accountPubkey } = useNostr()
+  const { followings } = useFetchFollowings(pubkey)
+  const isFollowingYou = useMemo(
+    () => !!accountPubkey && accountPubkey !== pubkey && followings.includes(accountPubkey),
+    [followings, pubkey]
+  )
   const npub = useMemo(() => (pubkey ? nip19.npubEncode(pubkey) : undefined), [pubkey])
   const defaultImage = useMemo(() => (pubkey ? generateImageByPubkey(pubkey) : ''), [pubkey])
 
@@ -31,10 +39,9 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
 
   return (
     <SecondaryPageLayout titlebarContent={username}>
-      <div className="relative bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-12">
+      <div className="relative bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-2">
         <ProfileBanner
           banner={banner}
-          defaultBanner={defaultImage}
           pubkey={pubkey}
           className="w-full h-full object-cover rounded-lg"
         />
@@ -45,7 +52,15 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
           </AvatarFallback>
         </Avatar>
       </div>
-      <div className="px-4">
+      <div className="flex justify-end h-8 gap-2 items-center">
+        {isFollowingYou && (
+          <div className="text-muted-foreground rounded-full bg-muted text-xs h-fit px-2">
+            Follows you
+          </div>
+        )}
+        <FollowButton pubkey={pubkey} />
+      </div>
+      <div className="pt-2">
         <div className="text-xl font-semibold">{username}</div>
         {nip05 && <Nip05 nip05={nip05} pubkey={pubkey} />}
         <div
@@ -79,36 +94,5 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
         relayUrls={relayList.write.slice(0, 5)}
       />
     </SecondaryPageLayout>
-  )
-}
-
-function ProfileBanner({
-  defaultBanner,
-  pubkey,
-  banner,
-  className
-}: {
-  defaultBanner: string
-  pubkey: string
-  banner?: string
-  className?: string
-}) {
-  const [bannerUrl, setBannerUrl] = useState(banner || defaultBanner)
-
-  useEffect(() => {
-    if (banner) {
-      setBannerUrl(banner)
-    } else {
-      setBannerUrl(defaultBanner)
-    }
-  }, [defaultBanner, banner])
-
-  return (
-    <img
-      src={bannerUrl}
-      alt={`${pubkey} banner`}
-      className={className}
-      onError={() => setBannerUrl(defaultBanner)}
-    />
   )
 }

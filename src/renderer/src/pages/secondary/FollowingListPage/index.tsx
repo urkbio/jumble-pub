@@ -1,3 +1,4 @@
+import FollowButton from '@renderer/components/FollowButton'
 import Nip05 from '@renderer/components/Nip05'
 import UserAvatar from '@renderer/components/UserAvatar'
 import Username from '@renderer/components/Username'
@@ -7,7 +8,7 @@ import { useEffect, useRef, useState } from 'react'
 
 export default function ProfilePage({ pubkey }: { pubkey?: string }) {
   const { username } = useFetchProfile(pubkey)
-  const followings = useFetchFollowings(pubkey)
+  const { followings } = useFetchFollowings(pubkey)
   const [visibleFollowings, setVisibleFollowings] = useState<string[]>([])
   const observer = useRef<IntersectionObserver | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -47,7 +48,7 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
     <SecondaryPageLayout titlebarContent={username ? `${username}'s following` : 'following'}>
       <div className="space-y-2">
         {visibleFollowings.map((pubkey, index) => (
-          <FollowingItem key={index} pubkey={pubkey} />
+          <FollowingItem key={`${index}-${pubkey}`} pubkey={pubkey} />
         ))}
         {followings.length > visibleFollowings.length && <div ref={bottomRef} />}
       </div>
@@ -64,8 +65,9 @@ function FollowingItem({ pubkey }: { pubkey: string }) {
       <div className="w-full overflow-hidden">
         <Username userId={pubkey} className="font-semibold truncate" />
         <Nip05 nip05={nip05} pubkey={pubkey} />
-        <div className="truncate text-muted-foreground">{about}</div>
+        <div className="truncate text-muted-foreground text-sm">{about}</div>
       </div>
+      <FollowButton pubkey={pubkey} />
     </div>
   )
 }
