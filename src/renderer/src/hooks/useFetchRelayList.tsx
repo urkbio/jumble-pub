@@ -17,7 +17,7 @@ export function useFetchRelayList(pubkey?: string | null) {
     }
 
     fetchRelayList()
-  }, [])
+  }, [pubkey])
 
   return relayList
 }
