@@ -9,33 +9,25 @@ import { useFetchFollowings, useFetchProfile } from '@renderer/hooks'
 import { useFetchRelayList } from '@renderer/hooks/useFetchRelayList'
 import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
 import { toFollowingList } from '@renderer/lib/link'
-import { formatNpub, generateImageByPubkey } from '@renderer/lib/pubkey'
+import { generateImageByPubkey } from '@renderer/lib/pubkey'
 import { SecondaryPageLink } from '@renderer/PageManager'
 import { useNostr } from '@renderer/providers/NostrProvider'
-import { Copy } from 'lucide-react'
-import { nip19 } from 'nostr-tools'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import PubkeyCopy from './PubkeyCopy'
+import QrCodePopover from './QrCodePopover'
 
 export default function ProfilePage({ pubkey }: { pubkey?: string }) {
   const { banner, username, nip05, about, avatar } = useFetchProfile(pubkey)
   const relayList = useFetchRelayList(pubkey)
-  const [copied, setCopied] = useState(false)
   const { pubkey: accountPubkey } = useNostr()
   const { followings } = useFetchFollowings(pubkey)
   const isFollowingYou = useMemo(
     () => !!accountPubkey && accountPubkey !== pubkey && followings.includes(accountPubkey),
     [followings, pubkey]
   )
-  const npub = useMemo(() => (pubkey ? nip19.npubEncode(pubkey) : undefined), [pubkey])
   const defaultImage = useMemo(() => (pubkey ? generateImageByPubkey(pubkey) : ''), [pubkey])
 
-  if (!pubkey || !npub) return null
-
-  const copyNpub = () => {
-    navigator.clipboard.writeText(npub)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  if (!pubkey) return null
 
   return (
     <SecondaryPageLayout titlebarContent={username}>
@@ -63,22 +55,11 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
       <div className="pt-2">
         <div className="text-xl font-semibold">{username}</div>
         {nip05 && <Nip05 nip05={nip05} pubkey={pubkey} />}
-        <div
-          className="mt-1 flex gap-2 text-sm text-muted-foreground items-center bg-muted w-fit px-2 rounded-full hover:text-foreground cursor-pointer"
-          onClick={() => copyNpub()}
-        >
-          {copied ? (
-            <div>copied!</div>
-          ) : (
-            <>
-              <div>{formatNpub(npub, 24)}</div>
-              <Copy size={14} />
-            </>
-          )}
+        <div className="flex gap-1 mt-1">
+          <PubkeyCopy pubkey={pubkey} />
+          <QrCodePopover pubkey={pubkey} />
         </div>
-        <div className="text-wrap break-words whitespace-pre-wrap mt-2">
-          <ProfileAbout about={about} />
-        </div>
+        <ProfileAbout about={about} className="text-wrap break-words whitespace-pre-wrap mt-2" />
         <SecondaryPageLink
           to={toFollowingList(pubkey)}
           className="mt-2 flex gap-1 hover:underline text-sm"

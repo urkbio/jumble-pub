@@ -7,7 +7,7 @@ import {
 import { embeddedNpubRenderer } from '@renderer/embedded/EmbeddedNpub'
 import { useMemo } from 'react'
 
-export default function ProfileAbout({ about }: { about?: string }) {
+export default function ProfileAbout({ about, className }: { about?: string; className?: string }) {
   const nodes = useMemo(() => {
     return about
       ? embedded(about, [
@@ -19,5 +19,5 @@ export default function ProfileAbout({ about }: { about?: string }) {
       : null
   }, [about])
 
-  return <>{nodes}</>
+  return <div className={className}>{nodes}</div>
 }

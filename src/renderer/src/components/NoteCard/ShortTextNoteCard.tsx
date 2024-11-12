@@ -30,7 +30,7 @@ export default function ShortTextNoteCard({
       }}
     >
       <Card
-        className={`hover:bg-muted/50 text-left cursor-pointer ${size === 'normal' ? 'p-4' : 'p-2'}`}
+        className={`hover:bg-muted/50 text-left cursor-pointer ${size === 'normal' ? 'p-4' : 'p-3'}`}
       >
         <Note
           size={size}
