@@ -65,7 +65,10 @@ export function NoteStatsProvider({ children }: { children: React.ReactNode }) {
       const newMap = new Map(prev)
       for (const [eventId, count] of countMap) {
         const old = prev.get(eventId)
-        newMap.set(eventId, old ? { ...old, likeCount: count } : { likeCount: count })
+        newMap.set(
+          eventId,
+          old ? { ...old, likeCount: Math.max(count, old.likeCount ?? 0) } : { likeCount: count }
+        )
       }
       return newMap
     })
@@ -84,7 +87,9 @@ export function NoteStatsProvider({ children }: { children: React.ReactNode }) {
       const old = prev.get(event.id)
       newMap.set(
         event.id,
-        old ? { ...old, repostCount: events.length } : { repostCount: events.length }
+        old
+          ? { ...old, repostCount: Math.max(events.length, old.repostCount ?? 0) }
+          : { repostCount: events.length }
       )
       return newMap
     })
@@ -95,7 +100,7 @@ export function NoteStatsProvider({ children }: { children: React.ReactNode }) {
     if (!pubkey) return false
 
     const relayList = await client.fetchRelayList(pubkey)
-    const events = await client.fetchEvents(relayList.write.slice(0, 3), {
+    const events = await client.fetchEvents(relayList.write, {
       '#e': [event.id],
       authors: [pubkey],
       kinds: [kinds.Reaction]
@@ -123,7 +128,7 @@ export function NoteStatsProvider({ children }: { children: React.ReactNode }) {
     if (!pubkey) return false
 
     const relayList = await client.fetchRelayList(pubkey)
-    const events = await client.fetchEvents(relayList.write.slice(0, 3), {
+    const events = await client.fetchEvents(relayList.write, {
       '#e': [event.id],
       authors: [pubkey],
       kinds: [kinds.Repost]
