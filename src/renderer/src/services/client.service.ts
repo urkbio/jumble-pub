@@ -51,6 +51,10 @@ class ClientService {
       cacheMap: new LRUCache<string, Promise<TRelayList>>({ max: 10000 })
     }
   )
+  private followListCache = new LRUCache<string, Promise<NEvent | undefined>>({
+    max: 10000,
+    fetchMethod: this._fetchFollowListEvent.bind(this)
+  })
 
   constructor() {
     if (!ClientService.instance) {
@@ -125,14 +129,6 @@ class ClientService {
     return this.eventCache.fetch(JSON.stringify({ ...filter, limit: 1 }))
   }
 
-  deleteEventCacheByFilter(filter: Filter) {
-    try {
-      this.eventCache.delete(JSON.stringify({ ...filter, limit: 1 }))
-    } catch {
-      // ignore
-    }
-  }
-
   async fetchEventById(id: string): Promise<NEvent | undefined> {
     return this.eventDataloader.load(id)
   }
@@ -143,6 +139,14 @@ class ClientService {
 
   async fetchRelayList(pubkey: string): Promise<TRelayList> {
     return this.relayListDataLoader.load(pubkey)
+  }
+
+  async fetchFollowListEvent(pubkey: string) {
+    return this.followListCache.fetch(pubkey)
+  }
+
+  updateFollowListCache(pubkey: string, event: NEvent) {
+    this.followListCache.set(pubkey, Promise.resolve(event))
   }
 
   private async eventBatchLoadFn(ids: readonly string[]) {
@@ -253,6 +257,16 @@ class ClientService {
         read: relayList.read.slice(0, 10)
       }
     })
+  }
+
+  private async _fetchFollowListEvent(pubkey: string) {
+    const relayList = await this.fetchRelayList(pubkey)
+    const followListEvents = await this.fetchEvents(relayList.write.concat(BIG_RELAY_URLS), {
+      authors: [pubkey],
+      kinds: [kinds.Contacts]
+    })
+
+    return followListEvents.sort((a, b) => b.created_at - a.created_at)[0]
   }
 
   private parseProfileFromEvent(event: NEvent): TProfile {

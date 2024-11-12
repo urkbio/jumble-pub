@@ -1,6 +1,6 @@
 import { tagNameEquals } from '@renderer/lib/tag'
 import client from '@renderer/services/client.service'
-import { Event, kinds } from 'nostr-tools'
+import { Event } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 
 export function useFetchFollowings(pubkey?: string | null) {
@@ -11,10 +11,7 @@ export function useFetchFollowings(pubkey?: string | null) {
     const init = async () => {
       if (!pubkey) return
 
-      const event = await client.fetchEventByFilter({
-        authors: [pubkey],
-        kinds: [kinds.Contacts]
-      })
+      const event = await client.fetchFollowListEvent(pubkey)
       if (!event) return
 
       setFollowListEvent(event)
@@ -30,27 +27,5 @@ export function useFetchFollowings(pubkey?: string | null) {
     init()
   }, [pubkey])
 
-  const refresh = async () => {
-    if (!pubkey) return
-
-    const filter = {
-      authors: [pubkey],
-      kinds: [kinds.Contacts]
-    }
-
-    client.deleteEventCacheByFilter(filter)
-    const event = await client.fetchEventByFilter(filter)
-    if (!event) return
-
-    setFollowListEvent(event)
-    setFollowings(
-      event.tags
-        .filter(tagNameEquals('p'))
-        .map(([, pubkey]) => pubkey)
-        .filter(Boolean)
-        .reverse()
-    )
-  }
-
-  return { followings, followListEvent, refresh }
+  return { followings, followListEvent }
 }

@@ -9,6 +9,7 @@ import FollowingListPage from './pages/secondary/FollowingListPage'
 import HashtagPage from './pages/secondary/HashtagPage'
 import NotePage from './pages/secondary/NotePage'
 import ProfilePage from './pages/secondary/ProfilePage'
+import { FollowListProvider } from './providers/FollowListProvider'
 import { NostrProvider } from './providers/NostrProvider'
 import { NoteStatsProvider } from './providers/NoteStatsProvider'
 import { RelaySettingsProvider } from './providers/RelaySettingsProvider'
@@ -25,14 +26,16 @@ export default function App(): JSX.Element {
     <div className="h-screen">
       <ThemeProvider>
         <NostrProvider>
-          <RelaySettingsProvider>
-            <NoteStatsProvider>
-              <PageManager routes={routes}>
-                <NoteListPage />
-              </PageManager>
-              <Toaster />
-            </NoteStatsProvider>
-          </RelaySettingsProvider>
+          <FollowListProvider>
+            <RelaySettingsProvider>
+              <NoteStatsProvider>
+                <PageManager routes={routes}>
+                  <NoteListPage />
+                </PageManager>
+                <Toaster />
+              </NoteStatsProvider>
+            </RelaySettingsProvider>
+          </FollowListProvider>
         </NostrProvider>
       </ThemeProvider>
     </div>

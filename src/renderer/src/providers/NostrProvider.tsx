@@ -2,7 +2,7 @@ import { TDraftEvent } from '@common/types'
 import { useFetchRelayList } from '@renderer/hooks/useFetchRelayList'
 import client from '@renderer/services/client.service'
 import dayjs from 'dayjs'
-import { kinds } from 'nostr-tools'
+import { Event, kinds } from 'nostr-tools'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 type TNostrContext = {
@@ -13,7 +13,7 @@ type TNostrContext = {
   /**
    * Default publish the event to current relays, user's write relays and additional relays
    */
-  publish: (draftEvent: TDraftEvent, additionalRelayUrls?: string[]) => Promise<void>
+  publish: (draftEvent: TDraftEvent, additionalRelayUrls?: string[]) => Promise<Event>
   signHttpAuth: (url: string, method: string) => Promise<string>
 }
 
@@ -66,6 +66,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       throw new Error('sign event failed')
     }
     await client.publishEvent(relayList.write.concat(additionalRelayUrls), event)
+    return event
   }
 
   const signHttpAuth = async (url: string, method: string) => {

@@ -11,6 +11,7 @@ import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
 import { toFollowingList } from '@renderer/lib/link'
 import { generateImageByPubkey } from '@renderer/lib/pubkey'
 import { SecondaryPageLink } from '@renderer/PageManager'
+import { useFollowList } from '@renderer/providers/FollowListProvider'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { useMemo } from 'react'
 import PubkeyCopy from './PubkeyCopy'
@@ -20,12 +21,14 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
   const { banner, username, nip05, about, avatar } = useFetchProfile(pubkey)
   const relayList = useFetchRelayList(pubkey)
   const { pubkey: accountPubkey } = useNostr()
+  const { followings: selfFollowings } = useFollowList()
   const { followings } = useFetchFollowings(pubkey)
   const isFollowingYou = useMemo(
     () => !!accountPubkey && accountPubkey !== pubkey && followings.includes(accountPubkey),
     [followings, pubkey]
   )
   const defaultImage = useMemo(() => (pubkey ? generateImageByPubkey(pubkey) : ''), [pubkey])
+  const isSelf = accountPubkey === pubkey
 
   if (!pubkey) return null
 
@@ -64,7 +67,7 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
           to={toFollowingList(pubkey)}
           className="mt-2 flex gap-1 hover:underline text-sm"
         >
-          {followings.length}
+          {isSelf ? selfFollowings.length : followings.length}
           <div className="text-muted-foreground">Following</div>
         </SecondaryPageLink>
       </div>
