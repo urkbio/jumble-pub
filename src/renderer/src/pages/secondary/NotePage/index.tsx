@@ -9,18 +9,22 @@ import { useFetchEventById } from '@renderer/hooks'
 import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
 import { getParentEventId, getRootEventId } from '@renderer/lib/event'
 import { toNote } from '@renderer/lib/link'
-import { Event } from 'nostr-tools'
+import { useMemo } from 'react'
+import LoadingPage from '../LoadingPage'
+import NotFoundPage from '../NotFoundPage'
 
-export default function NotePage({ event }: { event?: Event }) {
-  const parentEvent = useFetchEventById(getParentEventId(event))
-  const rootEvent = useFetchEventById(getRootEventId(event))
+export default function NotePage({ id }: { id?: string }) {
+  const { event, isFetching } = useFetchEventById(id)
+  const parentEventId = useMemo(() => getParentEventId(event), [event])
+  const rootEventId = useMemo(() => getRootEventId(event), [event])
 
-  if (!event) return null
+  if (!event && isFetching) return <LoadingPage title="note" />
+  if (!event) return <NotFoundPage />
 
   return (
     <SecondaryPageLayout titlebarContent="note">
-      {rootEvent && <ParentNote key={`root-note-${event.id}`} event={rootEvent} />}
-      {parentEvent && <ParentNote key={`parent-note-${event.id}`} event={parentEvent} />}
+      <ParentNote key={`root-note-${event.id}`} eventId={rootEventId} />
+      <ParentNote key={`parent-note-${event.id}`} eventId={parentEventId} />
       <Note key={`note-${event.id}`} event={event} fetchNoteStats />
       <Separator className="my-4" />
       <ReplyNoteList key={`reply-note-list-${event.id}`} event={event} />
@@ -28,14 +32,16 @@ export default function NotePage({ event }: { event?: Event }) {
   )
 }
 
-function ParentNote({ event }: { event: Event }) {
+function ParentNote({ eventId }: { eventId?: string }) {
   const { push } = useSecondaryPage()
+  const { event } = useFetchEventById(eventId)
+  if (!event) return null
 
   return (
     <div>
       <Card
         className="flex space-x-1 p-1 items-center hover:bg-muted/50 cursor-pointer text-sm text-muted-foreground hover:text-foreground"
-        onClick={() => push(toNote(event))}
+        onClick={() => push(toNote(event.id))}
       >
         <UserAvatar userId={event.pubkey} size="tiny" />
         <Username userId={event.pubkey} className="font-semibold" />

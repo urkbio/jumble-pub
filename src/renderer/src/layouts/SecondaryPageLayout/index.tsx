@@ -1,27 +1,22 @@
+import BackButton from '@renderer/components/BackButton'
 import ScrollToTopButton from '@renderer/components/ScrollToTopButton'
+import ThemeToggle from '@renderer/components/ThemeToggle'
+import { Titlebar } from '@renderer/components/Titlebar'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
-import { isMacOS } from '@renderer/lib/platform'
 import { useRef } from 'react'
-import { Titlebar } from '../../components/Titlebar'
-import BackButton from './BackButton'
-import ThemeToggle from './ThemeToggle'
 
 export default function SecondaryPageLayout({
   children,
   titlebarContent,
   hideBackButton = false
 }: {
-  children: React.ReactNode
+  children?: React.ReactNode
   titlebarContent?: React.ReactNode
   hideBackButton?: boolean
 }): JSX.Element {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   return (
-    <ScrollArea
-      ref={scrollAreaRef}
-      className="h-full"
-      scrollBarClassName={isMacOS() ? 'pt-9' : 'pt-4'}
-    >
+    <ScrollArea ref={scrollAreaRef} className="h-full" scrollBarClassName="pt-9">
       <SecondaryPageTitlebar content={titlebarContent} hideBackButton={hideBackButton} />
       <div className="px-4 pb-4 pt-11 w-full h-full">{children}</div>
       <ScrollToTopButton scrollAreaRef={scrollAreaRef} />

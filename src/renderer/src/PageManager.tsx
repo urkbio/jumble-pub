@@ -1,36 +1,28 @@
+import Sidebar from '@renderer/components/Sidebar'
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup
 } from '@renderer/components/ui/resizable'
-import { cloneElement, createContext, isValidElement, useContext, useState } from 'react'
-import BlankPage from './pages/secondary/BlankPage'
 import { cn } from '@renderer/lib/utils'
-
-type TRoute = {
-  pageName: string
-  element: React.ReactNode
-}
-
-type TPushParams = {
-  pageName: string
-  props: any
-}
+import HomePage from '@renderer/pages/secondary/HomePage'
+import NotFoundPage from '@renderer/pages/secondary/NotFoundPage'
+import { cloneElement, createContext, useContext, useEffect, useState } from 'react'
+import { routes } from './routes'
 
 type TPrimaryPageContext = {
   refresh: () => void
 }
 
 type TSecondaryPageContext = {
-  push: (params: TPushParams) => void
+  push: (url: string) => void
   pop: () => void
 }
 
 type TStackItem = {
   index: number
-  pageName: string
-  props: any
-  component: React.ReactNode
+  url: string
+  component: React.ReactNode | null
 }
 
 const PrimaryPageContext = createContext<TPrimaryPageContext | undefined>(undefined)
@@ -54,79 +46,96 @@ export function useSecondaryPage() {
 }
 
 export function PageManager({
-  routes,
   children,
   maxStackSize = 5
 }: {
-  routes: TRoute[]
   children: React.ReactNode
   maxStackSize?: number
 }) {
   const [primaryPageKey, setPrimaryPageKey] = useState<number>(0)
   const [secondaryStack, setSecondaryStack] = useState<TStackItem[]>([])
 
-  const routeMap = routes.reduce((acc, route) => {
-    acc[route.pageName] = route.element
-    return acc
-  }, {}) as Record<string, React.ReactNode>
+  useEffect(() => {
+    const url = window.location.pathname
+    if (url !== '/') {
+      pushSecondary(url)
+    }
 
-  const isCurrentPage = (stack: TStackItem[], { pageName, props }: TPushParams) => {
-    const currentPage = stack[stack.length - 1]
-    if (!currentPage) return false
+    const onPopState = (e: PopStateEvent) => {
+      const state = e.state ?? { index: -1, url: '/' }
+      setSecondaryStack((pre) => {
+        const currentItem = pre[pre.length - 1]
+        const currentIndex = currentItem ? currentItem.index : -1
+        if (state.index === currentIndex) {
+          return pre
+        }
+        if (state.index < currentIndex) {
+          const newStack = pre.filter((item) => item.index <= state.index)
+          const topItem = newStack[newStack.length - 1]
+          if (topItem && !topItem.component) {
+            topItem.component = findAndCreateComponent(topItem.url)
+          }
+          return newStack
+        }
 
-    return (
-      currentPage.pageName === pageName &&
-      JSON.stringify(currentPage.props) === JSON.stringify(props) // TODO: deep compare
-    )
-  }
+        const { newStack } = pushNewPageToStack(pre, state.url, maxStackSize)
+        return newStack
+      })
+    }
+
+    window.addEventListener('popstate', onPopState)
+    return () => {
+      window.removeEventListener('popstate', onPopState)
+    }
+  }, [])
 
   const refreshPrimary = () => setPrimaryPageKey((prevKey) => prevKey + 1)
 
-  const pushSecondary = ({ pageName, props }: TPushParams) => {
-    if (isCurrentPage(secondaryStack, { pageName, props })) return
-
-    const element = routeMap[pageName]
-    if (!element) return
-    if (!isValidElement(element)) return
-
+  const pushSecondary = (url: string) => {
     setSecondaryStack((prevStack) => {
-      const currentStack = prevStack[prevStack.length - 1]
-      const index = currentStack ? currentStack.index + 1 : 0
-      const component = cloneElement(element, props)
-      const newStack = [...prevStack, { index, pageName, props, component }]
-      if (newStack.length > maxStackSize) newStack.shift()
+      if (isCurrentPage(prevStack, url)) return prevStack
+
+      const { newStack, newItem } = pushNewPageToStack(prevStack, url, maxStackSize)
+      if (newItem) {
+        window.history.pushState({ index: newItem.index, url }, '', url)
+      }
       return newStack
     })
   }
 
-  const popSecondary = () => setSecondaryStack((prevStack) => prevStack.slice(0, -1))
+  const popSecondary = () => {
+    window.history.back()
+  }
 
   return (
     <PrimaryPageContext.Provider value={{ refresh: refreshPrimary }}>
       <SecondaryPageContext.Provider value={{ push: pushSecondary, pop: popSecondary }}>
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={55} minSize={30}>
-            <div key={primaryPageKey} className="h-full">
-              {children}
-            </div>
-          </ResizablePanel>
-          <ResizableHandle />
-          <ResizablePanel defaultSize={45} minSize={30} className="relative">
-            {secondaryStack.length ? (
-              secondaryStack.map((item, index) => (
-                <div
-                  key={item.index}
-                  className="absolute top-0 left-0 w-full h-full bg-background"
-                  style={{ zIndex: index }}
-                >
-                  {item.component}
-                </div>
-              ))
-            ) : (
-              <BlankPage />
-            )}
-          </ResizablePanel>
-        </ResizablePanelGroup>
+        <div className="flex h-full">
+          <Sidebar />
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel defaultSize={55} minSize={30}>
+              <div key={primaryPageKey} className="h-full">
+                {children}
+              </div>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel defaultSize={45} minSize={30} className="relative">
+              {secondaryStack.length ? (
+                secondaryStack.map((item, index) => (
+                  <div
+                    key={item.index}
+                    className="absolute top-0 left-0 w-full h-full bg-background"
+                    style={{ zIndex: index }}
+                  >
+                    {item.component}
+                  </div>
+                ))
+              ) : (
+                <HomePage />
+              )}
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
       </SecondaryPageContext.Provider>
     </PrimaryPageContext.Provider>
   )
@@ -138,7 +147,7 @@ export function SecondaryPageLink({
   className,
   onClick
 }: {
-  to: TPushParams
+  to: string
   children: React.ReactNode
   className?: string
   onClick?: (e: React.MouseEvent) => void
@@ -156,4 +165,34 @@ export function SecondaryPageLink({
       {children}
     </span>
   )
+}
+
+function isCurrentPage(stack: TStackItem[], url: string) {
+  const currentPage = stack[stack.length - 1]
+  if (!currentPage) return false
+
+  return currentPage.url === url
+}
+
+function findAndCreateComponent(url: string) {
+  for (const { matcher, element } of routes) {
+    const match = matcher(url)
+    if (!match) continue
+
+    if (!element) return <NotFoundPage />
+    return cloneElement(element, match.params)
+  }
+  return <NotFoundPage />
+}
+
+function pushNewPageToStack(stack: TStackItem[], url: string, maxStackSize = 5) {
+  const component = findAndCreateComponent(url)
+  const currentStack = stack[stack.length - 1]
+  const newItem = { component, url, index: currentStack ? currentStack.index + 1 : 0 }
+  const newStack = [...stack, newItem]
+  const lastCachedIndex = newStack.findIndex((stack) => stack.component)
+  if (newStack.length - lastCachedIndex > maxStackSize) {
+    newStack[lastCachedIndex].component = null
+  }
+  return { newStack, newItem }
 }

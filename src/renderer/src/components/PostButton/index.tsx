@@ -1,16 +1,13 @@
 import PostDialog from '@renderer/components/PostDialog'
 import { Button } from '@renderer/components/ui/button'
-import { useNostr } from '@renderer/providers/NostrProvider'
 import { PencilLine } from 'lucide-react'
 
-export default function PostButton() {
-  const { pubkey } = useNostr()
-  if (!pubkey) return null
-
+export default function PostButton({ variant = 'titlebar' }: { variant?: 'titlebar' | 'sidebar' }) {
   return (
     <PostDialog>
-      <Button variant="titlebar" size="titlebar" title="new post">
+      <Button variant={variant} size={variant} title="new post">
         <PencilLine />
+        {variant === 'sidebar' && <div>Post</div>}
       </Button>
     </PostDialog>
   )

@@ -18,15 +18,15 @@ export default function ShortTextNoteCard({
   hideStats?: boolean
 }) {
   const { push } = useSecondaryPage()
-  const rootEvent = useFetchEventById(getRootEventId(event))
-  const parentEvent = useFetchEventById(getParentEventId(event))
+  const { event: rootEvent } = useFetchEventById(getRootEventId(event))
+  const { event: parentEvent } = useFetchEventById(getParentEventId(event))
 
   return (
     <div
       className={className}
       onClick={(e) => {
         e.stopPropagation()
-        push(toNote(event))
+        push(toNote(event.id))
       }}
     >
       <Card

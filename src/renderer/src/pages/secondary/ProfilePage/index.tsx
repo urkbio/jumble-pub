@@ -16,9 +16,14 @@ import { useNostr } from '@renderer/providers/NostrProvider'
 import { useMemo } from 'react'
 import PubkeyCopy from './PubkeyCopy'
 import QrCodePopover from './QrCodePopover'
+import LoadingPage from '../LoadingPage'
+import NotFoundPage from '../NotFoundPage'
 
-export default function ProfilePage({ pubkey }: { pubkey?: string }) {
-  const { banner, username, nip05, about, avatar } = useFetchProfile(pubkey)
+export default function ProfilePage({ id }: { id?: string }) {
+  const {
+    profile: { banner, username, nip05, about, avatar, pubkey },
+    isFetching
+  } = useFetchProfile(id)
   const relayList = useFetchRelayList(pubkey)
   const { pubkey: accountPubkey } = useNostr()
   const { followings: selfFollowings } = useFollowList()
@@ -30,7 +35,8 @@ export default function ProfilePage({ pubkey }: { pubkey?: string }) {
   const defaultImage = useMemo(() => (pubkey ? generateImageByPubkey(pubkey) : ''), [pubkey])
   const isSelf = accountPubkey === pubkey
 
-  if (!pubkey) return null
+  if (!pubkey && isFetching) return <LoadingPage title={username} />
+  if (!pubkey) return <NotFoundPage />
 
   return (
     <SecondaryPageLayout titlebarContent={username}>
