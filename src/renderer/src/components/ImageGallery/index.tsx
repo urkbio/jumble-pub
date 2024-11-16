@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import NsfwOverlay from '../NsfwOverlay'
+import { cn } from '@renderer/lib/utils'
 
 export default function ImageGallery({
   className,
@@ -23,7 +24,7 @@ export default function ImageGallery({
   }
 
   return (
-    <div className={className} onClick={(e) => e.stopPropagation()}>
+    <div className={cn('relative', className)} onClick={(e) => e.stopPropagation()}>
       <ScrollArea className="w-full">
         <div className="flex space-x-2">
           {images.map((src, index) => {
