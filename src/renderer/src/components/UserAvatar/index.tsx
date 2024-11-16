@@ -25,14 +25,16 @@ export default function UserAvatar({
   className?: string
   size?: 'large' | 'normal' | 'small' | 'tiny'
 }) {
-  const {
-    profile: { avatar, pubkey }
-  } = useFetchProfile(userId)
-  const defaultAvatar = useMemo(() => (pubkey ? generateImageByPubkey(pubkey) : ''), [pubkey])
+  const { profile } = useFetchProfile(userId)
+  const defaultAvatar = useMemo(
+    () => (profile?.pubkey ? generateImageByPubkey(profile.pubkey) : ''),
+    [profile]
+  )
 
-  if (!pubkey) {
+  if (!profile) {
     return <Skeleton className={cn(UserAvatarSizeCnMap[size], 'rounded-full', className)} />
   }
+  const { avatar, pubkey } = profile
 
   return (
     <HoverCard>

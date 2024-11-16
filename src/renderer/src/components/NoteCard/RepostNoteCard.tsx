@@ -16,7 +16,11 @@ export default function RepostNoteCard({ event, className }: { event: Event; cla
     <div className={className}>
       <div className="flex gap-1 mb-1 pl-4 text-sm items-center text-muted-foreground">
         <Repeat2 size={16} className="shrink-0" />
-        <Username userId={event.pubkey} className="font-semibold truncate" />
+        <Username
+          userId={event.pubkey}
+          className="font-semibold truncate"
+          skeletonClassName="h-3"
+        />
         <div>reposted</div>
       </div>
       <ShortTextNoteCard event={targetEvent} />

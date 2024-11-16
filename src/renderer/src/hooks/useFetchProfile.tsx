@@ -7,20 +7,17 @@ import { useEffect, useState } from 'react'
 export function useFetchProfile(id?: string) {
   const [isFetching, setIsFetching] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  const [profile, setProfile] = useState<TProfile>({
-    username: id ? (id.length > 9 ? id.slice(0, 4) + '...' + id.slice(-4) : id) : 'username'
-  })
+  const [profile, setProfile] = useState<TProfile | null>(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
+      let pubkey: string | undefined
       try {
         if (!id) {
           setIsFetching(false)
           setError(new Error('No id provided'))
           return
         }
-
-        let pubkey: string | undefined
 
         if (/^[0-9a-f]{64}$/.test(id)) {
           pubkey = id
@@ -41,7 +38,6 @@ export function useFetchProfile(id?: string) {
           setError(new Error('Invalid id'))
           return
         }
-        setProfile({ pubkey, username: formatPubkey(pubkey) })
 
         const profile = await client.fetchProfile(pubkey)
         if (profile) {
@@ -50,6 +46,12 @@ export function useFetchProfile(id?: string) {
       } catch (err) {
         setError(err as Error)
       } finally {
+        if (pubkey) {
+          setProfile((pre) => {
+            if (pre) return pre
+            return { pubkey, username: formatPubkey(pubkey!) } as TProfile
+          })
+        }
         setIsFetching(false)
       }
     }

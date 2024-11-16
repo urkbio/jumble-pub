@@ -7,10 +7,8 @@ import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
 import { useEffect, useRef, useState } from 'react'
 
 export default function FollowingListPage({ id }: { id?: string }) {
-  const {
-    profile: { username, pubkey }
-  } = useFetchProfile(id)
-  const { followings } = useFetchFollowings(pubkey)
+  const { profile } = useFetchProfile(id)
+  const { followings } = useFetchFollowings(profile?.pubkey)
   const [visibleFollowings, setVisibleFollowings] = useState<string[]>([])
   const observer = useRef<IntersectionObserver | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -47,7 +45,9 @@ export default function FollowingListPage({ id }: { id?: string }) {
   }, [visibleFollowings])
 
   return (
-    <SecondaryPageLayout titlebarContent={username ? `${username}'s following` : 'following'}>
+    <SecondaryPageLayout
+      titlebarContent={profile?.username ? `${profile.username}'s following` : 'following'}
+    >
       <div className="space-y-2">
         {visibleFollowings.map((pubkey, index) => (
           <FollowingItem key={`${index}-${pubkey}`} pubkey={pubkey} />
@@ -59,15 +59,14 @@ export default function FollowingListPage({ id }: { id?: string }) {
 }
 
 function FollowingItem({ pubkey }: { pubkey: string }) {
-  const {
-    profile: { about, nip05 }
-  } = useFetchProfile(pubkey)
+  const { profile } = useFetchProfile(pubkey)
+  const { nip05, about } = profile || {}
 
   return (
     <div className="flex gap-2 items-start">
-      <UserAvatar userId={pubkey} />
+      <UserAvatar userId={pubkey} className="shrink-0" />
       <div className="w-full overflow-hidden">
-        <Username userId={pubkey} className="font-semibold truncate" />
+        <Username userId={pubkey} className="font-semibold truncate" skeletonClassName="h-4" />
         <Nip05 nip05={nip05} pubkey={pubkey} />
         <div className="truncate text-muted-foreground text-sm">{about}</div>
       </div>

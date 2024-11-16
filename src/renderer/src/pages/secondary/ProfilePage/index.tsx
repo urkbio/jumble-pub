@@ -18,26 +18,40 @@ import PubkeyCopy from './PubkeyCopy'
 import QrCodePopover from './QrCodePopover'
 import LoadingPage from '../LoadingPage'
 import NotFoundPage from '../NotFoundPage'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 
 export default function ProfilePage({ id }: { id?: string }) {
-  const {
-    profile: { banner, username, nip05, about, avatar, pubkey },
-    isFetching
-  } = useFetchProfile(id)
-  const relayList = useFetchRelayList(pubkey)
+  const { profile, isFetching } = useFetchProfile(id)
+  const relayList = useFetchRelayList(profile?.pubkey)
   const { pubkey: accountPubkey } = useNostr()
   const { followings: selfFollowings } = useFollowList()
-  const { followings } = useFetchFollowings(pubkey)
+  const { followings } = useFetchFollowings(profile?.pubkey)
   const isFollowingYou = useMemo(
-    () => !!accountPubkey && accountPubkey !== pubkey && followings.includes(accountPubkey),
-    [followings, pubkey]
+    () =>
+      !!accountPubkey && accountPubkey !== profile?.pubkey && followings.includes(accountPubkey),
+    [followings, profile]
   )
-  const defaultImage = useMemo(() => (pubkey ? generateImageByPubkey(pubkey) : ''), [pubkey])
-  const isSelf = accountPubkey === pubkey
+  const defaultImage = useMemo(
+    () => (profile?.pubkey ? generateImageByPubkey(profile?.pubkey) : ''),
+    [profile]
+  )
+  const isSelf = accountPubkey === profile?.pubkey
 
-  if (!pubkey && isFetching) return <LoadingPage title={username} />
-  if (!pubkey) return <NotFoundPage />
+  if (!profile && isFetching) {
+    return (
+      <SecondaryPageLayout>
+        <div className="relative bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-2">
+          <Skeleton className="w-full h-full object-cover rounded-lg" />
+          <Skeleton className="w-24 h-24 absolute bottom-0 left-4 translate-y-1/2 border-4 border-background rounded-full" />
+        </div>
+        <Skeleton className="h-5 w-28 mt-14 mb-1" />
+        <Skeleton className="h-5 w-56 mt-2 my-1 rounded-full" />
+      </SecondaryPageLayout>
+    )
+  }
+  if (!profile) return <NotFoundPage />
 
+  const { banner, username, nip05, about, avatar, pubkey } = profile
   return (
     <SecondaryPageLayout titlebarContent={username}>
       <div className="relative bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-2">

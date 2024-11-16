@@ -67,13 +67,13 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
   return (
     <>
       <div
-        className={`text-sm text-center my-2 text-muted-foreground ${!loading ? 'hover:text-foreground cursor-pointer' : ''}`}
+        className={`text-sm text-center text-muted-foreground ${!loading ? 'hover:text-foreground cursor-pointer' : ''}`}
         onClick={loadMore}
       >
         {loading ? 'loading...' : hasMore ? 'load more older replies' : null}
       </div>
-      {eventsWithParentIds.length > 0 && (loading || hasMore) && <Separator />}
-      <div className={cn('mt-2', className)}>
+      {eventsWithParentIds.length > 0 && (loading || hasMore) && <Separator className="my-4" />}
+      <div className={cn('mb-4', className)}>
         {eventsWithParentIds.map(([event, parentEventId], index) => (
           <div ref={(el) => (replyRefs.current[event.id] = el)} key={index}>
             <ReplyNote

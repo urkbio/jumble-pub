@@ -41,7 +41,11 @@ export default function Mentions({
           {pubkeys.map((pubkey, index) => (
             <div key={`${pubkey}-${index}`} className="flex gap-1 items-center">
               <UserAvatar userId={pubkey} size="small" />
-              <Username userId={pubkey} className="font-semibold text-sm truncate" />
+              <Username
+                userId={pubkey}
+                className="font-semibold text-sm truncate"
+                skeletonClassName="h-3"
+              />
             </div>
           ))}
         </div>

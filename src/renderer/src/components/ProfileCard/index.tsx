@@ -7,10 +7,11 @@ import Nip05 from '../Nip05'
 import ProfileAbout from '../ProfileAbout'
 
 export default function ProfileCard({ pubkey }: { pubkey: string }) {
-  const {
-    profile: { avatar = '', username, nip05, about }
-  } = useFetchProfile(pubkey)
+  const { profile } = useFetchProfile(pubkey)
   const defaultImage = useMemo(() => generateImageByPubkey(pubkey), [pubkey])
+
+  if (!profile) return null
+  const { avatar = '', username, nip05, about } = profile
 
   return (
     <div className="w-full flex flex-col gap-2">

@@ -35,6 +35,7 @@ export default function Note({
           <Username
             userId={event.pubkey}
             className={`font-semibold flex ${size === 'small' ? 'text-sm' : ''}`}
+            skeletonClassName={size === 'small' ? 'h-3' : 'h-4'}
           />
           <div className="text-xs text-muted-foreground line-clamp-1">
             {formatTimestamp(event.created_at)}

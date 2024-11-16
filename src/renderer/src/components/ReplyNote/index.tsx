@@ -27,6 +27,7 @@ export default function ReplyNote({
         <Username
           userId={event.pubkey}
           className="text-sm font-semibold text-muted-foreground hover:text-foreground truncate"
+          skeletonClassName="h-3"
         />
         {parentEvent && (
           <ParentNotePreview event={parentEvent} onClick={() => onClickParent(parentEvent.id)} />
