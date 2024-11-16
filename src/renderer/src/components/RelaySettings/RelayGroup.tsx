@@ -15,7 +15,9 @@ import { TRelayGroup } from './types'
 
 export default function RelayGroup({ group }: { group: TRelayGroup }) {
   const { expandedRelayGroup } = useRelaySettingsComponent()
-  const { groupName, isActive, relayUrls } = group
+  const { temporaryRelayUrls } = useRelaySettings()
+  const { groupName, relayUrls } = group
+  const isActive = temporaryRelayUrls.length === 0 && group.isActive
 
   return (
     <div
@@ -23,14 +25,18 @@ export default function RelayGroup({ group }: { group: TRelayGroup }) {
     >
       <div className="flex justify-between items-center">
         <div className="flex space-x-2 items-center">
-          <RelayGroupActiveToggle groupName={groupName} />
+          <RelayGroupActiveToggle
+            groupName={groupName}
+            isActive={isActive}
+            canActive={relayUrls.length > 0}
+          />
           <RelayGroupName groupName={groupName} />
         </div>
         <div className="flex gap-1">
           <RelayUrlsExpandToggle groupName={groupName}>
             {relayUrls.length} relays
           </RelayUrlsExpandToggle>
-          <RelayGroupOptions groupName={groupName} />
+          <RelayGroupOptions group={group} />
         </div>
       </div>
       {expandedRelayGroup === groupName && <RelayUrls groupName={groupName} />}
@@ -38,20 +44,25 @@ export default function RelayGroup({ group }: { group: TRelayGroup }) {
   )
 }
 
-function RelayGroupActiveToggle({ groupName }: { groupName: string }) {
-  const { relayGroups, switchRelayGroup } = useRelaySettings()
-
-  const isActive = relayGroups.find((group) => group.groupName === groupName)?.isActive
-  const hasRelayUrls = relayGroups.find((group) => group.groupName === groupName)?.relayUrls.length
+function RelayGroupActiveToggle({
+  groupName,
+  isActive,
+  canActive
+}: {
+  groupName: string
+  isActive: boolean
+  canActive: boolean
+}) {
+  const { switchRelayGroup } = useRelaySettings()
 
   return isActive ? (
     <CircleCheck size={18} className="text-highlight shrink-0" />
   ) : (
     <Circle
       size={18}
-      className={`text-muted-foreground shrink-0 ${hasRelayUrls ? 'cursor-pointer hover:text-foreground ' : ''}`}
+      className={`text-muted-foreground shrink-0 ${canActive ? 'cursor-pointer hover:text-foreground ' : ''}`}
       onClick={() => {
-        if (hasRelayUrls) {
+        if (canActive) {
           switchRelayGroup(groupName)
         }
       }}
@@ -68,6 +79,9 @@ function RelayGroupName({ groupName }: { groupName: string }) {
   const hasRelayUrls = relayGroups.find((group) => group.groupName === groupName)?.relayUrls.length
 
   const saveNewGroupName = () => {
+    if (relayGroups.find((group) => group.groupName === newGroupName)) {
+      return setNewNameError('already exists')
+    }
     const errMsg = renameRelayGroup(groupName, newGroupName)
     if (errMsg) {
       setNewNameError(errMsg)
@@ -138,10 +152,9 @@ function RelayUrlsExpandToggle({
   )
 }
 
-function RelayGroupOptions({ groupName }: { groupName: string }) {
-  const { relayGroups, deleteRelayGroup } = useRelaySettings()
+function RelayGroupOptions({ group }: { group: TRelayGroup }) {
+  const { deleteRelayGroup } = useRelaySettings()
   const { setRenamingGroup } = useRelaySettingsComponent()
-  const isActive = relayGroups.find((group) => group.groupName === groupName)?.isActive
 
   return (
     <DropdownMenu>
@@ -151,11 +164,21 @@ function RelayGroupOptions({ groupName }: { groupName: string }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => setRenamingGroup(groupName)}>Rename</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setRenamingGroup(group.groupName)}>
+          Rename
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            navigator.clipboard.writeText(
+              `https://jumble.social/?${group.relayUrls.map((url) => 'r=' + url).join('&')}`
+            )
+          }}
+        >
+          Copy share link
+        </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
-          disabled={isActive}
-          onClick={() => deleteRelayGroup(groupName)}
+          onClick={() => deleteRelayGroup(group.groupName)}
         >
           Delete
         </DropdownMenuItem>

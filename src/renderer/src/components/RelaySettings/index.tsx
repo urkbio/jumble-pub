@@ -5,6 +5,7 @@ import { useRelaySettings } from '@renderer/providers/RelaySettingsProvider'
 import { useEffect, useRef, useState } from 'react'
 import { RelaySettingsComponentProvider } from './provider'
 import RelayGroup from './RelayGroup'
+import TemporaryRelayGroup from './TemporaryRelayGroup'
 
 export default function RelaySettings() {
   const { relayGroups, addRelayGroup } = useRelaySettings()
@@ -19,6 +20,9 @@ export default function RelaySettings() {
   }, [])
 
   const saveRelayGroup = () => {
+    if (relayGroups.find((group) => group.groupName === newGroupName)) {
+      return setNewNameError('already exists')
+    }
     const errMsg = addRelayGroup(newGroupName)
     if (errMsg) {
       return setNewNameError(errMsg)
@@ -43,6 +47,7 @@ export default function RelaySettings() {
       <div ref={dummyRef} tabIndex={-1} style={{ position: 'absolute', opacity: 0 }}></div>
       <div className="text-lg font-semibold mb-4">Relay Settings</div>
       <div className="space-y-2">
+        <TemporaryRelayGroup />
         {relayGroups.map((group, index) => (
           <RelayGroup key={index} group={group} />
         ))}
@@ -63,7 +68,7 @@ export default function RelaySettings() {
                 onKeyDown={handleNewGroupNameKeyDown}
                 onBlur={saveRelayGroup}
               />
-              <Button>Add</Button>
+              <Button onClick={saveRelayGroup}>Add</Button>
             </div>
             {newNameError && <div className="text-xs text-destructive mt-1">{newNameError}</div>}
           </div>
