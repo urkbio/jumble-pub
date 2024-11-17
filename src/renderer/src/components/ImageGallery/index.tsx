@@ -1,4 +1,5 @@
 import { Image } from '@nextui-org/image'
+import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area'
 import { cn } from '@renderer/lib/utils'
 import { useState } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
@@ -23,21 +24,25 @@ export default function ImageGallery({
     setIndex(current)
   }
 
-  const maxHight = size === 'small' ? 'h-[15vh]' : images.length < 3 ? 'h-[30vh]' : 'h-[20vh]'
-
   return (
-    <div className={className} onClick={(e) => e.stopPropagation()}>
-      <div className="flex flex-wrap gap-2">
-        {images.map((src, index) => (
-          <ImageWithNsfwOverlay
-            key={index}
-            src={src}
-            isNsfw={isNsfw}
-            className={maxHight}
-            onClick={(e) => handlePhotoClick(e, index)}
-          />
-        ))}
-      </div>
+    <div className={cn('relative', className)} onClick={(e) => e.stopPropagation()}>
+      <ScrollArea className="w-full">
+        <div className="flex space-x-2">
+          {images.map((src, index) => (
+            <Image
+              key={index}
+              className={cn(
+                'rounded-lg cursor-pointer z-0',
+                size === 'small' ? 'h-[15vh]' : 'h-[30vh]'
+              )}
+              src={src}
+              onClick={(e) => handlePhotoClick(e, index)}
+              removeWrapper
+            />
+          ))}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
       <Lightbox
         index={index}
         slides={images.map((src) => ({ src }))}
@@ -50,28 +55,6 @@ export default function ImageGallery({
           closeOnPullDown: true
         }}
         styles={{ toolbar: { paddingTop: '2.25rem' } }}
-      />
-    </div>
-  )
-}
-
-function ImageWithNsfwOverlay({
-  src,
-  isNsfw = false,
-  className,
-  onClick
-}: {
-  src: string
-  isNsfw: boolean
-  className?: string
-  onClick?: (e: React.MouseEvent) => void
-}) {
-  return (
-    <div className="relative" onClick={onClick}>
-      <Image
-        className={cn('rounded-lg object-cover aspect-square', className)}
-        src={src}
-        removeWrapper
       />
       {isNsfw && <NsfwOverlay className="rounded-lg" />}
     </div>

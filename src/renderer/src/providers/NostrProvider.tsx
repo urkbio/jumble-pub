@@ -9,6 +9,7 @@ import { Event, kinds } from 'nostr-tools'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 type TNostrContext = {
+  isReady: boolean
   pubkey: string | null
   canLogin: boolean
   login: (nsec: string) => Promise<string>
@@ -19,6 +20,7 @@ type TNostrContext = {
    */
   publish: (draftEvent: TDraftEvent, additionalRelayUrls?: string[]) => Promise<Event>
   signHttpAuth: (url: string, method: string) => Promise<string>
+  singEvent: (draftEvent: TDraftEvent) => Promise<Event>
   checkLogin: (cb?: () => void | Promise<void>) => void
 }
 
@@ -34,17 +36,23 @@ export const useNostr = () => {
 
 export function NostrProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast()
+  const [isReady, setIsReady] = useState(false)
   const [pubkey, setPubkey] = useState<string | null>(null)
   const [canLogin, setCanLogin] = useState(false)
   const [openLoginDialog, setOpenLoginDialog] = useState(false)
   const relayList = useFetchRelayList(pubkey)
 
   useEffect(() => {
-    window.nostr?.getPublicKey().then((pubkey) => {
-      if (pubkey) {
-        setPubkey(pubkey)
-      }
-    })
+    if (window.nostr) {
+      window.nostr.getPublicKey().then((pubkey) => {
+        if (pubkey) {
+          setPubkey(pubkey)
+        }
+        setIsReady(true)
+      })
+    } else {
+      setIsReady(true)
+    }
     if (isElectron(window)) {
       window.api?.system.isEncryptionAvailable().then((isEncryptionAvailable) => {
         setCanLogin(isEncryptionAvailable)
@@ -104,6 +112,14 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     return event
   }
 
+  const singEvent = async (draftEvent: TDraftEvent) => {
+    const event = await window.nostr?.signEvent(draftEvent)
+    if (!event) {
+      throw new Error('sign event failed')
+    }
+    return event
+  }
+
   const signHttpAuth = async (url: string, method: string) => {
     const event = await window.nostr?.signEvent({
       content: '',
@@ -142,7 +158,18 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <NostrContext.Provider
-      value={{ pubkey, canLogin, login, nip07Login, logout, publish, signHttpAuth, checkLogin }}
+      value={{
+        isReady,
+        pubkey,
+        canLogin,
+        login,
+        nip07Login,
+        logout,
+        publish,
+        signHttpAuth,
+        checkLogin,
+        singEvent
+      }}
     >
       {children}
       <LoginDialog open={openLoginDialog} setOpen={setOpenLoginDialog} />

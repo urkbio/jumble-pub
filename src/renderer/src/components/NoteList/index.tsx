@@ -1,6 +1,7 @@
 import { Button } from '@renderer/components/ui/button'
 import { isReplyNoteEvent } from '@renderer/lib/event'
 import { cn } from '@renderer/lib/utils'
+import { useNostr } from '@renderer/providers/NostrProvider'
 import client from '@renderer/services/client.service'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
@@ -16,6 +17,7 @@ export default function NoteList({
   filter?: Filter
   className?: string
 }) {
+  const { isReady, singEvent } = useNostr()
   const [events, setEvents] = useState<Event[]>([])
   const [newEvents, setNewEvents] = useState<Event[]>([])
   const [until, setUntil] = useState<number>(() => dayjs().unix())
@@ -26,42 +28,49 @@ export default function NoteList({
   const noteFilter = useMemo(() => {
     return {
       kinds: [kinds.ShortTextNote, kinds.Repost],
-      limit: 100,
+      limit: 200,
       ...filter
     }
   }, [JSON.stringify(filter)])
 
   useEffect(() => {
+    if (!isReady) return
+
     setInitialized(false)
     setEvents([])
     setNewEvents([])
     setHasMore(true)
 
-    const sub = client.subscribeEvents(relayUrls, noteFilter, {
-      onEose: (events) => {
-        const processedEvents = events.filter((e) => !isReplyNoteEvent(e))
-        if (processedEvents.length > 0) {
-          setEvents((pre) => [...pre, ...processedEvents])
+    const subCloser = client.subscribeEventsWithAuth(
+      relayUrls,
+      noteFilter,
+      {
+        onEose: (events) => {
+          const processedEvents = events.filter((e) => !isReplyNoteEvent(e))
+          if (processedEvents.length > 0) {
+            setEvents((pre) => [...pre, ...processedEvents])
+          }
+          if (events.length > 0) {
+            setUntil(events[events.length - 1].created_at - 1)
+          }
+          setInitialized(true)
+          processedEvents.forEach((e) => {
+            client.addEventToCache(e)
+          })
+        },
+        onNew: (event) => {
+          if (!isReplyNoteEvent(event)) {
+            setNewEvents((oldEvents) => [event, ...oldEvents])
+          }
         }
-        if (events.length > 0) {
-          setUntil(events[events.length - 1].created_at - 1)
-        }
-        setInitialized(true)
-        processedEvents.forEach((e) => {
-          client.addEventToCache(e)
-        })
       },
-      onNew: (event) => {
-        if (!isReplyNoteEvent(event)) {
-          setNewEvents((oldEvents) => [event, ...oldEvents])
-        }
-      }
-    })
+      singEvent
+    )
 
     return () => {
-      sub.close()
+      subCloser()
     }
-  }, [JSON.stringify(relayUrls), JSON.stringify(noteFilter)])
+  }, [JSON.stringify(relayUrls), JSON.stringify(noteFilter), isReady])
 
   useEffect(() => {
     if (!initialized) return
