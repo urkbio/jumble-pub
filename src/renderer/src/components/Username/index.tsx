@@ -36,7 +36,7 @@ export default function Username({
           </SecondaryPageLink>
         </div>
       </HoverCardTrigger>
-      <HoverCardContent className="w-72">
+      <HoverCardContent className="w-80">
         <ProfileCard pubkey={pubkey} />
       </HoverCardContent>
     </HoverCard>

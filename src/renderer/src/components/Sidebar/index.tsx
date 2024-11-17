@@ -1,5 +1,9 @@
+import { Button } from '@renderer/components/ui/button'
+import { IS_ELECTRON } from '@renderer/lib/env'
 import { toHome } from '@renderer/lib/link'
 import { SecondaryPageLink } from '@renderer/PageManager'
+import { Info } from 'lucide-react'
+import AboutInfoDialog from '../AboutInfoDialog'
 import AccountButton from '../AccountButton'
 import PostButton from '../PostButton'
 import RefreshButton from '../RefreshButton'
@@ -15,6 +19,14 @@ export default function PrimaryPageSidebar() {
         <PostButton variant="sidebar" />
         <RelaySettingsPopover variant="sidebar" />
         <RefreshButton variant="sidebar" />
+        {!IS_ELECTRON && (
+          <AboutInfoDialog>
+            <Button variant="sidebar" size="sidebar">
+              <Info />
+              About
+            </Button>
+          </AboutInfoDialog>
+        )}
       </div>
       <AccountButton variant="sidebar" />
     </div>
