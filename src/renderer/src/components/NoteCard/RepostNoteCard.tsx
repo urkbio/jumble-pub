@@ -6,7 +6,11 @@ import ShortTextNoteCard from './ShortTextNoteCard'
 
 export default function RepostNoteCard({ event, className }: { event: Event; className?: string }) {
   const targetEvent = event.content ? (JSON.parse(event.content) as Event) : null
-  if (!targetEvent || !verifyEvent(targetEvent) || targetEvent.kind !== kinds.ShortTextNote) {
+  try {
+    if (!targetEvent || !verifyEvent(targetEvent) || targetEvent.kind !== kinds.ShortTextNote) {
+      return null
+    }
+  } catch {
     return null
   }
 

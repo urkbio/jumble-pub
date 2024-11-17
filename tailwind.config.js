@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./src/renderer/**/*.{ts,tsx}'],
+  content: [
+    './src/renderer/**/*.{ts,tsx}',
+    './node_modules/@nextui-org/theme/dist/components/image.js'
+  ],
   prefix: '',
   theme: {
     container: {
@@ -49,5 +52,5 @@ module.exports = {
       }
     }
   },
-  plugins: [require('tailwindcss-animate')]
+  plugins: [require('tailwindcss-animate'), require('@nextui-org/theme')]
 }
