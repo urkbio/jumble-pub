@@ -1,22 +1,19 @@
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from '@renderer/components/ui/alert-dialog'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@renderer/components/ui/dropdown-menu'
 import { createRepostDraftEvent } from '@renderer/lib/draft-event'
+import { getSharableEventId } from '@renderer/lib/event'
 import { cn } from '@renderer/lib/utils'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { useNoteStats } from '@renderer/providers/NoteStatsProvider'
 import client from '@renderer/services/client.service'
-import { Loader, Repeat } from 'lucide-react'
+import { Loader, PencilLine, Repeat } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useEffect, useMemo, useState } from 'react'
+import PostDialog from '../PostDialog'
 import { formatCount } from './utils'
 
 export default function RepostButton({
@@ -30,6 +27,7 @@ export default function RepostButton({
   const { noteStatsMap, fetchNoteRepostCount, fetchNoteRepostedStatus, markNoteAsReposted } =
     useNoteStats()
   const [reposting, setReposting] = useState(false)
+  const [isPostDialogOpen, setIsPostDialogOpen] = useState(false)
   const { repostCount, hasReposted } = useMemo(
     () => noteStatsMap.get(event.id) ?? {},
     [noteStatsMap, event.id]
@@ -64,7 +62,7 @@ export default function RepostButton({
 
         const targetRelayList = await client.fetchRelayList(event.pubkey)
         const repost = createRepostDraftEvent(event)
-        await publish(repost, targetRelayList.read.slice(0, 3))
+        await publish(repost, targetRelayList.read.slice(0, 5))
         markNoteAsReposted(event.id)
       } catch (error) {
         console.error('repost failed', error)
@@ -76,33 +74,46 @@ export default function RepostButton({
   }
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <button
-          className={cn(
-            'flex gap-1 items-center enabled:hover:text-lime-500',
-            hasReposted ? 'text-lime-500' : 'text-muted-foreground'
-          )}
-          onClick={(e) => e.stopPropagation()}
-          disabled={!canRepost}
-          title="repost"
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className={cn(
+              'flex gap-1 items-center enabled:hover:text-lime-500',
+              hasReposted ? 'text-lime-500' : 'text-muted-foreground'
+            )}
+            onClick={(e) => e.stopPropagation()}
+            disabled={!canRepost}
+            title="repost"
+          >
+            {reposting ? <Loader className="animate-spin" size={16} /> : <Repeat size={16} />}
+            <div className="text-sm">{formatCount(repostCount)}</div>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          onClick={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+          }}
         >
-          {reposting ? <Loader className="animate-spin" size={16} /> : <Repeat size={16} />}
-          <div className="text-sm">{formatCount(repostCount)}</div>
-        </button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Repost Note</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to repost this note?
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={repost}>Repost</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          <DropdownMenuItem onClick={repost}>
+            <Repeat /> Repost
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsPostDialogOpen(true)
+            }}
+          >
+            <PencilLine /> Quote
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <PostDialog
+        open={isPostDialogOpen}
+        setOpen={setIsPostDialogOpen}
+        defaultContent={'\nnostr:' + getSharableEventId(event)}
+      />
+    </>
   )
 }

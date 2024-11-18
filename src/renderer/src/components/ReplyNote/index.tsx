@@ -1,11 +1,12 @@
-import { Event } from 'nostr-tools'
 import { formatTimestamp } from '@renderer/lib/timestamp'
+import { Event } from 'nostr-tools'
+import { useState } from 'react'
 import Content from '../Content'
+import LikeButton from '../NoteStats/LikeButton'
+import ParentNotePreview from '../ParentNotePreview'
+import PostDialog from '../PostDialog'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
-import LikeButton from '../NoteStats/LikeButton'
-import PostDialog from '../PostDialog'
-import ParentNotePreview from '../ParentNotePreview'
 
 export default function ReplyNote({
   event,
@@ -18,6 +19,8 @@ export default function ReplyNote({
   onClickParent?: (eventId: string) => void
   highlight?: boolean
 }) {
+  const [isPostDialogOpen, setIsPostDialogOpen] = useState(false)
+
   return (
     <div
       className={`flex space-x-2 items-start rounded-lg p-2 transition-colors duration-500 ${highlight ? 'bg-highlight/50' : ''}`}
@@ -35,12 +38,11 @@ export default function ReplyNote({
         <Content event={event} size="small" />
         <div className="flex gap-2 text-xs">
           <div className="text-muted-foreground/60">{formatTimestamp(event.created_at)}</div>
-          <PostDialog parentEvent={event}>
-            <div className="text-muted-foreground hover:text-primary cursor-pointer">reply</div>
-          </PostDialog>
+          <div className="text-muted-foreground hover:text-primary cursor-pointer">reply</div>
         </div>
       </div>
       <LikeButton event={event} variant="reply" />
+      <PostDialog parentEvent={event} open={isPostDialogOpen} setOpen={setIsPostDialogOpen} />
     </div>
   )
 }

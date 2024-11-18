@@ -40,8 +40,8 @@ class ClientService {
     this.eventBatchLoadFn.bind(this),
     { cache: false }
   )
-  private profileCache = new LRUCache<string, Promise<TProfile | undefined>>({ max: 10000 })
-  private profileDataloader = new DataLoader<string, TProfile | undefined>(
+  private profileCache = new LRUCache<string, Promise<TProfile>>({ max: 10000 })
+  private profileDataloader = new DataLoader<string, TProfile>(
     (ids) => Promise.all(ids.map((id) => this._fetchProfileByBench32Id(id))),
     { cacheMap: this.profileCache }
   )
@@ -237,7 +237,15 @@ class ClientService {
 
     let event: NEvent | undefined
     if (filter.ids) {
-      event = await this.fetchEventById(relays, filter.ids[0])
+      const eventId = filter.ids[0]
+      if (eventId !== id) {
+        const cache = this.eventCache.get(eventId)
+        if (cache) {
+          this.eventDataLoader.prime(id, cache)
+          return cache
+        }
+      }
+      event = await this.fetchEventById(relays, eventId)
     } else {
       event = await this.tryHarderToFetchEvent(relays, filter)
     }
@@ -269,6 +277,14 @@ class ClientService {
 
     if (!pubkey) {
       throw new Error('Invalid id')
+    }
+
+    if (pubkey !== id) {
+      const cache = this.profileCache.get(pubkey)
+      if (cache) {
+        this.profileDataloader.prime(id, cache)
+        return cache
+      }
     }
 
     const profileFromBigRelays = this.fetchProfileFromBigRelaysDataloader.load(pubkey)

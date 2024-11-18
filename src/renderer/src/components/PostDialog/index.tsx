@@ -4,8 +4,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger
+  DialogTitle
 } from '@renderer/components/ui/dialog'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { Textarea } from '@renderer/components/ui/textarea'
@@ -15,23 +14,26 @@ import { useNostr } from '@renderer/providers/NostrProvider'
 import client from '@renderer/services/client.service'
 import { LoaderCircle } from 'lucide-react'
 import { Event } from 'nostr-tools'
-import { useState } from 'react'
+import { Dispatch, useState } from 'react'
 import UserAvatar from '../UserAvatar'
 import Mentions from './Metions'
 import Preview from './Preview'
 import Uploader from './Uploader'
 
 export default function PostDialog({
-  children,
-  parentEvent
+  defaultContent = '',
+  parentEvent,
+  open,
+  setOpen
 }: {
-  children: React.ReactNode
+  defaultContent?: string
   parentEvent?: Event
+  open: boolean
+  setOpen: Dispatch<boolean>
 }) {
   const { toast } = useToast()
   const { publish, checkLogin } = useNostr()
-  const [open, setOpen] = useState(false)
-  const [content, setContent] = useState('')
+  const [content, setContent] = useState(defaultContent)
   const [posting, setPosting] = useState(false)
   const canPost = !!content && !posting
 
@@ -88,7 +90,6 @@ export default function PostDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="p-0" withoutClose>
         <ScrollArea className="px-4 h-full max-h-screen">
           <div className="space-y-4 px-2 py-6">
@@ -107,6 +108,7 @@ export default function PostDialog({
               <DialogDescription />
             </DialogHeader>
             <Textarea
+              className="h-32"
               onChange={handleTextareaChange}
               value={content}
               placeholder="Write something..."
