@@ -55,18 +55,8 @@ export async function extractMentions(content: string, parentEvent?: Event) {
         pubkeySet.add(data.pubkey)
       } else if (type === 'npub') {
         pubkeySet.add(data)
-      } else if (type === 'nevent') {
-        eventIdSet.add(data.id)
-        if (data.author) {
-          pubkeySet.add(data.author)
-        } else {
-          const event = await client.fetchEventById(data.id)
-          if (event) {
-            pubkeySet.add(event.pubkey)
-          }
-        }
-      } else if (type === 'note') {
-        const event = await client.fetchEventById(data)
+      } else if (['nevent', 'note', 'naddr'].includes(type)) {
+        const event = await client.fetchEventByBench32Id(id)
         if (event) {
           pubkeySet.add(event.pubkey)
         }

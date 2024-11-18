@@ -32,7 +32,7 @@ export default function ImageGallery({
             <Image
               key={index}
               className={cn(
-                'rounded-lg cursor-pointer z-0',
+                'rounded-lg cursor-pointer z-0 object-cover',
                 size === 'small' ? 'h-[15vh]' : 'h-[30vh]'
               )}
               src={src}

@@ -10,6 +10,7 @@ import {
   Filter,
   kinds,
   Event as NEvent,
+  nip19,
   SimplePool,
   VerifiedEvent
 } from 'nostr-tools'
@@ -30,24 +31,23 @@ class ClientService {
   private relayUrls: string[] = BIG_RELAY_URLS
   private initPromise!: Promise<void>
 
-  private eventByFilterCache = new LRUCache<string, Promise<NEvent | undefined>>({
-    max: 10000,
-    fetchMethod: async (filterStr) => {
-      const events = await this.fetchEvents(BIG_RELAY_URLS, JSON.parse(filterStr))
-      events.forEach((event) => this.addEventToCache(event))
-      return events.sort((a, b) => b.created_at - a.created_at)[0]
-    }
-  })
-  private eventByIdCache = new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 })
-  private eventDataloader = new DataLoader<string, NEvent | undefined>(
-    this.eventBatchLoadFn.bind(this),
-    { cacheMap: this.eventByIdCache }
+  private eventCache = new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 })
+  private eventDataLoader = new DataLoader<string, NEvent | undefined>(
+    (ids) => Promise.all(ids.map((id) => this._fetchEventByBench32Id(id))),
+    { cacheMap: this.eventCache }
   )
+  private fetchEventFromBigRelaysDataloader = new DataLoader<string, NEvent | undefined>(
+    this.eventBatchLoadFn.bind(this),
+    { cache: false }
+  )
+  private profileCache = new LRUCache<string, Promise<TProfile | undefined>>({ max: 10000 })
   private profileDataloader = new DataLoader<string, TProfile | undefined>(
+    (ids) => Promise.all(ids.map((id) => this._fetchProfileByBench32Id(id))),
+    { cacheMap: this.profileCache }
+  )
+  private fetchProfileFromBigRelaysDataloader = new DataLoader<string, TProfile>(
     this.profileBatchLoadFn.bind(this),
-    {
-      cacheMap: new LRUCache<string, Promise<TProfile | undefined>>({ max: 10000 })
-    }
+    { cache: false }
   )
   private relayListDataLoader = new DataLoader<string, TRelayList>(
     this.relayListBatchLoadFn.bind(this),
@@ -127,7 +127,7 @@ class ClientService {
             } else {
               events.push(evt)
             }
-            that.eventByIdCache.set(evt.id, Promise.resolve(evt))
+            that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
           },
           onclose(reason: string) {
             if (reason.startsWith('auth-required:')) {
@@ -171,20 +171,16 @@ class ClientService {
     return await this.pool.querySync(relayUrls.length > 0 ? relayUrls : BIG_RELAY_URLS, filter)
   }
 
-  async fetchEventByFilter(filter: Filter) {
-    return this.eventByFilterCache.fetch(JSON.stringify({ ...filter, limit: 1 }))
-  }
-
-  async fetchEventById(id: string): Promise<NEvent | undefined> {
-    return this.eventDataloader.load(id)
+  async fetchEventByBench32Id(id: string): Promise<NEvent | undefined> {
+    return this.eventDataLoader.load(id)
   }
 
   addEventToCache(event: NEvent) {
-    this.eventByIdCache.set(event.id, Promise.resolve(event))
+    this.eventDataLoader.prime(event.id, Promise.resolve(event))
   }
 
-  async fetchProfile(pubkey: string): Promise<TProfile | undefined> {
-    return this.profileDataloader.load(pubkey)
+  async fetchProfileByBench32Id(id: string): Promise<TProfile | undefined> {
+    return this.profileDataloader.load(id)
   }
 
   async fetchRelayList(pubkey: string): Promise<TRelayList> {
@@ -199,9 +195,129 @@ class ClientService {
     this.followListCache.set(pubkey, Promise.resolve(event))
   }
 
+  private async fetchEventById(relayUrls: string[], id: string): Promise<NEvent | undefined> {
+    const event = await this.fetchEventFromBigRelaysDataloader.load(id)
+    if (event) {
+      return event
+    }
+
+    return this.tryHarderToFetchEvent(relayUrls, { ids: [id], limit: 1 }, true)
+  }
+
+  private async _fetchEventByBench32Id(id: string): Promise<NEvent | undefined> {
+    let filter: Filter | undefined
+    let relays: string[] = []
+    if (/^[0-9a-f]{64}$/.test(id)) {
+      filter = { ids: [id] }
+    } else {
+      const { type, data } = nip19.decode(id)
+      switch (type) {
+        case 'note':
+          filter = { ids: [data] }
+          break
+        case 'nevent':
+          filter = { ids: [data.id] }
+          if (data.relays) relays = data.relays
+          break
+        case 'naddr':
+          filter = {
+            authors: [data.pubkey],
+            kinds: [data.kind],
+            limit: 1
+          }
+          if (data.identifier) {
+            filter['#d'] = [data.identifier]
+          }
+          if (data.relays) relays = data.relays
+      }
+    }
+    if (!filter) {
+      throw new Error('Invalid id')
+    }
+
+    let event: NEvent | undefined
+    if (filter.ids) {
+      event = await this.fetchEventById(relays, filter.ids[0])
+    } else {
+      event = await this.tryHarderToFetchEvent(relays, filter)
+    }
+
+    if (event && event.id !== id) {
+      this.eventDataLoader.prime(event.id, Promise.resolve(event))
+    }
+
+    return event
+  }
+
+  private async _fetchProfileByBench32Id(id: string): Promise<TProfile> {
+    let pubkey: string | undefined
+    let relays: string[] = []
+    if (/^[0-9a-f]{64}$/.test(id)) {
+      pubkey = id
+    } else {
+      const { data, type } = nip19.decode(id)
+      switch (type) {
+        case 'npub':
+          pubkey = data
+          break
+        case 'nprofile':
+          pubkey = data.pubkey
+          if (data.relays) relays = data.relays
+          break
+      }
+    }
+
+    if (!pubkey) {
+      throw new Error('Invalid id')
+    }
+
+    const profileFromBigRelays = this.fetchProfileFromBigRelaysDataloader.load(pubkey)
+    if (profileFromBigRelays) {
+      return profileFromBigRelays
+    }
+
+    const profileEvent = await this.tryHarderToFetchEvent(
+      relays,
+      {
+        authors: [pubkey],
+        kinds: [kinds.Metadata],
+        limit: 1
+      },
+      true
+    )
+    const profile = profileEvent
+      ? this.parseProfileFromEvent(profileEvent)
+      : { pubkey, username: formatPubkey(pubkey) }
+
+    if (profile.pubkey !== id) {
+      this.profileCache.set(profile.pubkey, Promise.resolve(profile))
+    }
+
+    return profile
+  }
+
+  private async tryHarderToFetchEvent(
+    relayUrls: string[],
+    filter: Filter,
+    alreadyFetchedFromBigRelays = false
+  ) {
+    if (!relayUrls.length && filter.authors?.length) {
+      const relayList = await this.fetchRelayList(filter.authors[0])
+      relayUrls = alreadyFetchedFromBigRelays
+        ? relayList.write.filter((url) => !BIG_RELAY_URLS.includes(url)).slice(0, 4)
+        : relayList.write.slice(0, 4)
+    } else if (!relayUrls.length && !alreadyFetchedFromBigRelays) {
+      relayUrls = BIG_RELAY_URLS
+    }
+    if (!relayUrls.length) return
+
+    const events = await this.fetchEvents(relayUrls, filter)
+    return events.sort((a, b) => b.created_at - a.created_at)[0]
+  }
+
   private async eventBatchLoadFn(ids: readonly string[]) {
     const events = await this.fetchEvents(BIG_RELAY_URLS, {
-      ids: ids as string[],
+      ids: Array.from(new Set(ids)),
       limit: ids.length
     })
     const eventsMap = new Map<string, NEvent>()
@@ -214,7 +330,7 @@ class ClientService {
 
   private async profileBatchLoadFn(pubkeys: readonly string[]) {
     const events = await this.fetchEvents(BIG_RELAY_URLS, {
-      authors: pubkeys as string[],
+      authors: Array.from(new Set(pubkeys)),
       kinds: [kinds.Metadata],
       limit: pubkeys.length
     })
@@ -229,7 +345,7 @@ class ClientService {
 
     return pubkeys.map((pubkey) => {
       const event = eventsMap.get(pubkey)
-      return event ? this.parseProfileFromEvent(event) : undefined
+      return event ? this.parseProfileFromEvent(event) : { pubkey, username: formatPubkey(pubkey) }
     })
   }
 
