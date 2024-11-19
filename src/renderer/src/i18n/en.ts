@@ -44,6 +44,24 @@ export default {
     note: 'note',
     "username's following": "{{username}}'s following",
     following: 'following',
-    Login: 'Login'
+    Login: 'Login',
+    'Follows you': 'Follows you',
+    'relay collection name already exists': 'relay collection name already exists',
+    'Relay Settings': 'Relay Settings',
+    'Relay collection name': 'Relay collection name',
+    'Add a new relay collection': 'Add a new relay collection',
+    Add: 'Add',
+    'n relays': '{{n}} relays',
+    Rename: 'Rename',
+    'Copy share link': 'Copy share link',
+    Delete: 'Delete',
+    'Relay already exists': 'Relay already exists',
+    'invalid relay URL': 'invalid relay URL',
+    'Add a new relay': 'Add a new relay',
+    back: 'back',
+    'Lost in the void': 'Lost in the void',
+    'Carry me home': 'Carry me home',
+    'no replies': 'no replies',
+    'Reply to': 'Reply to'
   }
 }

@@ -99,7 +99,7 @@ export default function PostDialog({
               <DialogTitle>
                 {parentEvent ? (
                   <div className="flex gap-2 items-center max-w-full">
-                    <div className="shrink-0">Reply to</div>
+                    <div className="shrink-0">{t('Reply to')}</div>
                     <UserAvatar userId={parentEvent.pubkey} size="tiny" />
                     <div className="truncate">{parentEvent.content}</div>
                   </div>
@@ -131,7 +131,7 @@ export default function PostDialog({
                 </Button>
                 <Button type="submit" disabled={!canPost} onClick={post}>
                   {posting && <LoaderCircle className="animate-spin" />}
-                  {t('Post')}
+                  {parentEvent ? t('Reply') : t('Post')}
                 </Button>
               </div>
             </div>

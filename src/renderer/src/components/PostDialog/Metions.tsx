@@ -39,7 +39,7 @@ export default function Mentions({
       </PopoverTrigger>
       <PopoverContent className="w-48">
         <div className="space-y-2">
-          <div className="text-sm font-semibold">Mentions:</div>
+          <div className="text-sm font-semibold">{t('Mentions')}:</div>
           {pubkeys.map((pubkey, index) => (
             <div key={`${pubkey}-${index}`} className="flex gap-1 items-center">
               <UserAvatar userId={pubkey} size="small" />

@@ -119,7 +119,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
         })}
       </div>
       {replies.length === 0 && !loading && !hasMore && (
-        <div className="text-sm text-center text-muted-foreground">no replies</div>
+        <div className="text-sm text-center text-muted-foreground">{t('no replies')}</div>
       )}
     </>
   )

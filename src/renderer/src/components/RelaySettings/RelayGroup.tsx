@@ -12,8 +12,10 @@ import { useState } from 'react'
 import RelayUrls from './RelayUrl'
 import { useRelaySettingsComponent } from './provider'
 import { TRelayGroup } from './types'
+import { useTranslation } from 'react-i18next'
 
 export default function RelayGroup({ group }: { group: TRelayGroup }) {
+  const { t } = useTranslation()
   const { expandedRelayGroup } = useRelaySettingsComponent()
   const { temporaryRelayUrls } = useRelaySettings()
   const { groupName, relayUrls } = group
@@ -34,7 +36,7 @@ export default function RelayGroup({ group }: { group: TRelayGroup }) {
         </div>
         <div className="flex gap-1">
           <RelayUrlsExpandToggle groupName={groupName}>
-            {relayUrls.length} relays
+            {t('n relays', { n: relayUrls.length })}
           </RelayUrlsExpandToggle>
           <RelayGroupOptions group={group} />
         </div>
@@ -71,6 +73,7 @@ function RelayGroupActiveToggle({
 }
 
 function RelayGroupName({ groupName }: { groupName: string }) {
+  const { t } = useTranslation()
   const [newGroupName, setNewGroupName] = useState(groupName)
   const [newNameError, setNewNameError] = useState<string | null>(null)
   const { relayGroups, switchRelayGroup, renameRelayGroup } = useRelaySettings()
@@ -80,7 +83,7 @@ function RelayGroupName({ groupName }: { groupName: string }) {
 
   const saveNewGroupName = () => {
     if (relayGroups.find((group) => group.groupName === newGroupName)) {
-      return setNewNameError('already exists')
+      return setNewNameError(t('relay collection name already exists'))
     }
     const errMsg = renameRelayGroup(groupName, newGroupName)
     if (errMsg) {
@@ -153,6 +156,7 @@ function RelayUrlsExpandToggle({
 }
 
 function RelayGroupOptions({ group }: { group: TRelayGroup }) {
+  const { t } = useTranslation()
   const { deleteRelayGroup } = useRelaySettings()
   const { setRenamingGroup } = useRelaySettingsComponent()
 
@@ -165,7 +169,7 @@ function RelayGroupOptions({ group }: { group: TRelayGroup }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={() => setRenamingGroup(group.groupName)}>
-          Rename
+          {t('Rename')}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
@@ -174,13 +178,13 @@ function RelayGroupOptions({ group }: { group: TRelayGroup }) {
             )
           }}
         >
-          Copy share link
+          {t('Copy share link')}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
           onClick={() => deleteRelayGroup(group.groupName)}
         >
-          Delete
+          {t('Delete')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -5,8 +5,10 @@ import { useRelaySettings } from '@renderer/providers/RelaySettingsProvider'
 import client from '@renderer/services/client.service'
 import { CircleX } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function RelayUrls({ groupName }: { groupName: string }) {
+  const { t } = useTranslation()
   const { relayGroups, updateRelayGroupRelayUrls } = useRelaySettings()
   const rawRelayUrls = relayGroups.find((group) => group.groupName === groupName)?.relayUrls ?? []
   const isActive = relayGroups.find((group) => group.groupName === groupName)?.isActive ?? false
@@ -46,10 +48,10 @@ export default function RelayUrls({ groupName }: { groupName: string }) {
     if (newRelayUrl === '') return
     const normalizedUrl = normalizeUrl(newRelayUrl)
     if (relays.some(({ url }) => url === normalizedUrl)) {
-      return setNewRelayUrlError('already exists')
+      return setNewRelayUrlError(t('Relay already exists'))
     }
     if (!isWebsocketUrl(normalizedUrl)) {
-      return setNewRelayUrlError('invalid URL')
+      return setNewRelayUrlError(t('invalid relay URL'))
     }
     setRelays((pre) => [...pre, { url: normalizedUrl, isConnected: false }])
     const newRelayUrls = [...relays.map(({ url }) => url), normalizedUrl]
@@ -85,13 +87,13 @@ export default function RelayUrls({ groupName }: { groupName: string }) {
       <div className="mt-2 flex gap-2">
         <Input
           className={newRelayUrlError ? 'border-destructive' : ''}
-          placeholder="Add new relay URL"
+          placeholder={t('Add a new relay')}
           value={newRelayUrl}
           onKeyDown={handleRelayUrlInputKeyDown}
           onChange={handleRelayUrlInputChange}
           onBlur={saveNewRelayUrl}
         />
-        <Button onClick={saveNewRelayUrl}>Add</Button>
+        <Button onClick={saveNewRelayUrl}>{t('Add')}</Button>
       </div>
       {newRelayUrlError && <div className="text-xs text-destructive mt-1">{newRelayUrlError}</div>}
     </>

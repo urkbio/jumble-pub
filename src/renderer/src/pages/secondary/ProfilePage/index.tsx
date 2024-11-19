@@ -71,7 +71,7 @@ export default function ProfilePage({ id }: { id?: string }) {
       <div className="flex justify-end h-8 gap-2 items-center">
         {isFollowingYou && (
           <div className="text-muted-foreground rounded-full bg-muted text-xs h-fit px-2">
-            Follows you
+            {t('Follows you')}
           </div>
         )}
         <FollowButton pubkey={pubkey} />

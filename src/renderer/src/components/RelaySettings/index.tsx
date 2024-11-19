@@ -6,8 +6,10 @@ import { useEffect, useRef, useState } from 'react'
 import { RelaySettingsComponentProvider } from './provider'
 import RelayGroup from './RelayGroup'
 import TemporaryRelayGroup from './TemporaryRelayGroup'
+import { useTranslation } from 'react-i18next'
 
 export default function RelaySettings() {
+  const { t } = useTranslation()
   const { relayGroups, addRelayGroup } = useRelaySettings()
   const [newGroupName, setNewGroupName] = useState('')
   const [newNameError, setNewNameError] = useState<string | null>(null)
@@ -21,7 +23,7 @@ export default function RelaySettings() {
 
   const saveRelayGroup = () => {
     if (relayGroups.find((group) => group.groupName === newGroupName)) {
-      return setNewNameError('already exists')
+      return setNewNameError(t('relay collection name already exists'))
     }
     const errMsg = addRelayGroup(newGroupName)
     if (errMsg) {
@@ -45,7 +47,7 @@ export default function RelaySettings() {
   return (
     <RelaySettingsComponentProvider>
       <div ref={dummyRef} tabIndex={-1} style={{ position: 'absolute', opacity: 0 }}></div>
-      <div className="text-lg font-semibold mb-4">Relay Settings</div>
+      <div className="text-lg font-semibold mb-4">{t('Relay Settings')}</div>
       <div className="space-y-2">
         <TemporaryRelayGroup />
         {relayGroups.map((group, index) => (
@@ -57,18 +59,18 @@ export default function RelaySettings() {
           <Separator className="my-4" />
           <div className="w-full border rounded-lg p-4">
             <div className="flex justify-between items-center">
-              <div className="font-semibold">Add a new relay group</div>
+              <div className="font-semibold">{t('Add a new relay collection')}</div>
             </div>
             <div className="mt-2 flex gap-2">
               <Input
                 className={newNameError ? 'border-destructive' : ''}
-                placeholder="Group name"
+                placeholder={t('Relay collection name')}
                 value={newGroupName}
                 onChange={handleNewGroupNameChange}
                 onKeyDown={handleNewGroupNameKeyDown}
                 onBlur={saveRelayGroup}
               />
-              <Button onClick={saveRelayGroup}>Add</Button>
+              <Button onClick={saveRelayGroup}>{t('Add')}</Button>
             </div>
             {newNameError && <div className="text-xs text-destructive mt-1">{newNameError}</div>}
           </div>

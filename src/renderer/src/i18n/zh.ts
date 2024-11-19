@@ -1,11 +1,11 @@
 export default {
   translation: {
-    'Welcome! 🥳': '欢迎！🥳',
+    'Welcome! 🥳': '来都来了',
     About: '关于',
     'New post': '发布新笔记',
     Post: '发布笔记',
-    'Relay settings': '中继设置',
-    SidebarRelays: '中继设置',
+    'Relay settings': '服务器设置',
+    SidebarRelays: '服务器',
     Refresh: '刷新列表',
     Profile: '个人资料',
     Logout: '退出登录',
@@ -44,6 +44,24 @@ export default {
     note: '笔记',
     "username's following": '{{username}} 的关注',
     following: '关注',
-    Login: '登录'
+    Login: '登录',
+    'Follows you': '关注了你',
+    'relay collection name already exists': '服务器组名已存在',
+    'Relay Settings': '服务器设置',
+    'Relay collection name': '服务器组名',
+    'Add a new relay collection': '添加新的服务器组',
+    Add: '添加',
+    'n relays': '{{n}} 个服务器',
+    Rename: '重命名',
+    'Copy share link': '复制分享链接',
+    Delete: '删除',
+    'Relay already exists': '服务器已存在',
+    'invalid relay URL': '无效的服务器地址',
+    'Add a new relay': '添加新的服务器',
+    back: '返回',
+    'Lost in the void': '迷失在虚空中',
+    'Carry me home': '带我回家',
+    'no replies': '暂无回复',
+    'Reply to': '回复'
   }
 }
