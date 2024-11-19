@@ -7,6 +7,7 @@ import ParentNotePreview from '../ParentNotePreview'
 import PostDialog from '../PostDialog'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
+import { useTranslation } from 'react-i18next'
 
 export default function ReplyNote({
   event,
@@ -19,6 +20,7 @@ export default function ReplyNote({
   onClickParent?: (eventId: string) => void
   highlight?: boolean
 }) {
+  const { t } = useTranslation()
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false)
 
   return (
@@ -42,7 +44,7 @@ export default function ReplyNote({
             className="text-muted-foreground hover:text-primary cursor-pointer"
             onClick={() => setIsPostDialogOpen(true)}
           >
-            reply
+            {t('reply')}
           </div>
         </div>
       </div>

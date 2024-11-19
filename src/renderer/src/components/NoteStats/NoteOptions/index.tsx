@@ -9,8 +9,10 @@ import { Code, Copy, Ellipsis } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useState } from 'react'
 import RawEventDialog from './RawEventDialog'
+import { useTranslation } from 'react-i18next'
 
 export default function NoteOptions({ event }: { event: Event }) {
+  const { t } = useTranslation()
   const [isRawEventDialogOpen, setIsRawEventDialogOpen] = useState(false)
 
   return (
@@ -30,7 +32,7 @@ export default function NoteOptions({ event }: { event: Event }) {
             }}
           >
             <Copy />
-            copy embedded code
+            {t('copy embedded code')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={(e) => {
@@ -39,7 +41,7 @@ export default function NoteOptions({ event }: { event: Event }) {
             }}
           >
             <Code />
-            raw event
+            {t('raw event')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

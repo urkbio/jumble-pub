@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import NoteCard from '../NoteCard'
+import { useTranslation } from 'react-i18next'
 
 export default function NoteList({
   relayUrls,
@@ -17,6 +18,7 @@ export default function NoteList({
   filter?: Filter
   className?: string
 }) {
+  const { t } = useTranslation()
   const { isReady, singEvent } = useNostr()
   const [events, setEvents] = useState<Event[]>([])
   const [newEvents, setNewEvents] = useState<Event[]>([])
@@ -127,7 +129,7 @@ export default function NoteList({
       {newEvents.length > 0 && (
         <div className="flex justify-center w-full mb-4">
           <Button size="lg" onClick={showNewEvents}>
-            show new notes
+            {t('show new notes')}
           </Button>
         </div>
       )}
@@ -137,7 +139,7 @@ export default function NoteList({
         ))}
       </div>
       <div className="text-center text-sm text-muted-foreground mt-2">
-        {hasMore ? <div ref={bottomRef}>loading...</div> : 'no more notes'}
+        {hasMore ? <div ref={bottomRef}>{t('loading...')}</div> : t('no more notes')}
       </div>
     </>
   )

@@ -5,8 +5,10 @@ import { Event } from 'nostr-tools'
 import { useMemo, useState } from 'react'
 import PostDialog from '../PostDialog'
 import { formatCount } from './utils'
+import { useTranslation } from 'react-i18next'
 
 export default function ReplyButton({ event }: { event: Event }) {
+  const { t } = useTranslation()
   const { noteStatsMap } = useNoteStats()
   const { pubkey } = useNostr()
   const { replyCount } = useMemo(() => noteStatsMap.get(event.id) ?? {}, [noteStatsMap, event.id])
@@ -21,6 +23,7 @@ export default function ReplyButton({ event }: { event: Event }) {
           e.stopPropagation()
           setOpen(true)
         }}
+        title={t('Reply')}
       >
         <MessageCircle size={16} />
         <div className="text-sm">{formatCount(replyCount)}</div>

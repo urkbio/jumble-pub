@@ -7,6 +7,7 @@ import { Heart, Loader } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useEffect, useMemo, useState } from 'react'
 import { formatCount } from './utils'
+import { useTranslation } from 'react-i18next'
 
 export default function LikeButton({
   event,
@@ -17,6 +18,7 @@ export default function LikeButton({
   variant?: 'normal' | 'reply'
   canFetch?: boolean
 }) {
+  const { t } = useTranslation()
   const { publish, checkLogin } = useNostr()
   const { noteStatsMap, fetchNoteLikedStatus, fetchNoteLikeCount, markNoteAsLiked } = useNoteStats()
   const [liking, setLiking] = useState(false)
@@ -74,7 +76,7 @@ export default function LikeButton({
       )}
       onClick={like}
       disabled={!canLike}
-      title="like"
+      title={t('Like')}
     >
       {liking ? (
         <Loader className="animate-spin" size={16} />

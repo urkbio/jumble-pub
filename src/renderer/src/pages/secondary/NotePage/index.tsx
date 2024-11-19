@@ -12,8 +12,10 @@ import { getParentEventId, getRootEventId } from '@renderer/lib/event'
 import { toNote } from '@renderer/lib/link'
 import { useMemo } from 'react'
 import NotFoundPage from '../NotFoundPage'
+import { useTranslation } from 'react-i18next'
 
 export default function NotePage({ id }: { id?: string }) {
+  const { t } = useTranslation()
   const { event, isFetching } = useFetchEventById(id)
   const parentEventId = useMemo(() => getParentEventId(event), [event])
   const rootEventId = useMemo(() => getRootEventId(event), [event])
@@ -28,7 +30,7 @@ export default function NotePage({ id }: { id?: string }) {
   if (!event) return <NotFoundPage />
 
   return (
-    <SecondaryPageLayout titlebarContent="note">
+    <SecondaryPageLayout titlebarContent={t('note')}>
       <ParentNote key={`root-note-${event.id}`} eventId={rootEventId} />
       <ParentNote key={`parent-note-${event.id}`} eventId={parentEventId} />
       <Note key={`note-${event.id}`} event={event} fetchNoteStats />

@@ -6,6 +6,7 @@ import { Event } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
+import { useTranslation } from 'react-i18next'
 
 export default function Mentions({
   content,
@@ -14,6 +15,7 @@ export default function Mentions({
   content: string
   parentEvent?: Event
 }) {
+  const { t } = useTranslation()
   const { pubkey } = useNostr()
   const [pubkeys, setPubkeys] = useState<string[]>([])
 
@@ -32,7 +34,7 @@ export default function Mentions({
           disabled={pubkeys.length === 0}
           onClick={(e) => e.stopPropagation()}
         >
-          Mentions {pubkeys.length > 0 && `(${pubkeys.length})`}
+          {t('Mentions')} {pubkeys.length > 0 && `(${pubkeys.length})`}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-48">

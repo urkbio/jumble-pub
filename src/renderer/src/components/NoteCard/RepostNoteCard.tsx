@@ -3,18 +3,25 @@ import { Repeat2 } from 'lucide-react'
 import { Event, kinds, verifyEvent } from 'nostr-tools'
 import Username from '../Username'
 import ShortTextNoteCard from './ShortTextNoteCard'
+import { useTranslation } from 'react-i18next'
+import { useMemo } from 'react'
 
 export default function RepostNoteCard({ event, className }: { event: Event; className?: string }) {
-  const targetEvent = event.content ? (JSON.parse(event.content) as Event) : null
-  try {
-    if (!targetEvent || !verifyEvent(targetEvent) || targetEvent.kind !== kinds.ShortTextNote) {
+  const { t } = useTranslation()
+  const targetEvent = useMemo(() => {
+    const targetEvent = event.content ? (JSON.parse(event.content) as Event) : null
+    try {
+      if (!targetEvent || !verifyEvent(targetEvent) || targetEvent.kind !== kinds.ShortTextNote) {
+        return null
+      }
+      client.addEventToCache(targetEvent)
+    } catch {
       return null
     }
-  } catch {
-    return null
-  }
 
-  client.addEventToCache(targetEvent)
+    return targetEvent
+  }, [event])
+  if (!targetEvent) return null
 
   return (
     <div className={className}>
@@ -25,7 +32,7 @@ export default function RepostNoteCard({ event, className }: { event: Event; cla
           className="font-semibold truncate"
           skeletonClassName="h-3"
         />
-        <div>reposted</div>
+        <div>{t('reposted')}</div>
       </div>
       <ShortTextNoteCard event={targetEvent} />
     </div>

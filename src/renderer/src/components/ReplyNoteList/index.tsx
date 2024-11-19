@@ -8,8 +8,10 @@ import dayjs from 'dayjs'
 import { Event } from 'nostr-tools'
 import { useEffect, useRef, useState } from 'react'
 import ReplyNote from '../ReplyNote'
+import { useTranslation } from 'react-i18next'
 
 export default function ReplyNoteList({ event, className }: { event: Event; className?: string }) {
+  const { t } = useTranslation()
   const [replies, setReplies] = useState<Event[]>([])
   const [replyMap, setReplyMap] = useState<
     Record<string, { event: Event; level: number; parent?: Event } | undefined>
@@ -98,7 +100,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
         className={`text-sm text-center text-muted-foreground ${!loading ? 'hover:text-foreground cursor-pointer' : ''}`}
         onClick={loadMore}
       >
-        {loading ? 'loading...' : hasMore ? 'load more older replies' : null}
+        {loading ? t('loading...') : hasMore ? t('load more older replies') : null}
       </div>
       {replies.length > 0 && (loading || hasMore) && <Separator className="my-4" />}
       <div className={cn('mb-4', className)}>

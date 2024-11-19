@@ -15,6 +15,7 @@ import { Event } from 'nostr-tools'
 import { useEffect, useMemo, useState } from 'react'
 import PostDialog from '../PostDialog'
 import { formatCount } from './utils'
+import { useTranslation } from 'react-i18next'
 
 export default function RepostButton({
   event,
@@ -23,6 +24,7 @@ export default function RepostButton({
   event: Event
   canFetch?: boolean
 }) {
+  const { t } = useTranslation()
   const { publish, checkLogin } = useNostr()
   const { noteStatsMap, fetchNoteRepostCount, fetchNoteRepostedStatus, markNoteAsReposted } =
     useNoteStats()
@@ -84,7 +86,7 @@ export default function RepostButton({
             )}
             onClick={(e) => e.stopPropagation()}
             disabled={!canRepost}
-            title="repost"
+            title={t('Repost')}
           >
             {reposting ? <Loader className="animate-spin" size={16} /> : <Repeat size={16} />}
             <div className="text-sm">{formatCount(repostCount)}</div>
@@ -97,7 +99,7 @@ export default function RepostButton({
           }}
         >
           <DropdownMenuItem onClick={repost}>
-            <Repeat /> Repost
+            <Repeat /> {t('Repost')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={(e) => {
@@ -105,7 +107,7 @@ export default function RepostButton({
               setIsPostDialogOpen(true)
             }}
           >
-            <PencilLine /> Quote
+            <PencilLine /> {t('Quote')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

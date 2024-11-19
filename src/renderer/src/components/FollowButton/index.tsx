@@ -4,8 +4,10 @@ import { useFollowList } from '@renderer/providers/FollowListProvider'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { Loader } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function FollowButton({ pubkey }: { pubkey: string }) {
+  const { t } = useTranslation()
   const { toast } = useToast()
   const { pubkey: accountPubkey, checkLogin } = useNostr()
   const { followListEvent, followings, isReady, follow, unfollow } = useFollowList()
@@ -24,7 +26,7 @@ export default function FollowButton({ pubkey }: { pubkey: string }) {
         await follow(pubkey)
       } catch (error) {
         toast({
-          title: 'Follow failed',
+          title: t('Follow failed'),
           description: (error as Error).message,
           variant: 'destructive'
         })
@@ -44,7 +46,7 @@ export default function FollowButton({ pubkey }: { pubkey: string }) {
         await unfollow(pubkey)
       } catch (error) {
         toast({
-          title: 'Unfollow failed',
+          title: t('Unfollow failed'),
           description: (error as Error).message,
           variant: 'destructive'
         })
@@ -61,11 +63,11 @@ export default function FollowButton({ pubkey }: { pubkey: string }) {
       onClick={handleUnfollow}
       disabled={updating}
     >
-      {updating ? <Loader className="animate-spin" /> : 'Unfollow'}
+      {updating ? <Loader className="animate-spin" /> : t('Unfollow')}
     </Button>
   ) : (
     <Button className="w-20 min-w-20 rounded-full" onClick={handleFollow} disabled={updating}>
-      {updating ? <Loader className="animate-spin" /> : 'Follow'}
+      {updating ? <Loader className="animate-spin" /> : t('Follow')}
     </Button>
   )
 }

@@ -8,8 +8,10 @@ import AccountButton from '../AccountButton'
 import PostButton from '../PostButton'
 import RefreshButton from '../RefreshButton'
 import RelaySettingsPopover from '../RelaySettingsPopover'
+import { useTranslation } from 'react-i18next'
 
 export default function PrimaryPageSidebar() {
+  const { t } = useTranslation()
   return (
     <div className="draggable w-52 h-full shrink-0 hidden xl:flex flex-col pb-8 pt-9 pl-4 justify-between">
       <div className="space-y-2">
@@ -23,7 +25,7 @@ export default function PrimaryPageSidebar() {
           <AboutInfoDialog>
             <Button variant="sidebar" size="sidebar">
               <Info />
-              About
+              {t('About')}
             </Button>
           </AboutInfoDialog>
         )}

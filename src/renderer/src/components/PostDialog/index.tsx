@@ -19,6 +19,7 @@ import UserAvatar from '../UserAvatar'
 import Mentions from './Metions'
 import Preview from './Preview'
 import Uploader from './Uploader'
+import { useTranslation } from 'react-i18next'
 
 export default function PostDialog({
   defaultContent = '',
@@ -31,6 +32,7 @@ export default function PostDialog({
   open: boolean
   setOpen: Dispatch<boolean>
 }) {
+  const { t } = useTranslation()
   const { toast } = useToast()
   const { publish, checkLogin } = useNostr()
   const [content, setContent] = useState(defaultContent)
@@ -65,14 +67,14 @@ export default function PostDialog({
           error.errors.forEach((e) =>
             toast({
               variant: 'destructive',
-              title: 'Failed to post',
+              title: t('Failed to post'),
               description: e.message
             })
           )
         } else if (error instanceof Error) {
           toast({
             variant: 'destructive',
-            title: 'Failed to post',
+            title: t('Failed to post'),
             description: error.message
           })
         }
@@ -82,8 +84,8 @@ export default function PostDialog({
         setPosting(false)
       }
       toast({
-        title: 'Post successful',
-        description: 'Your post has been published'
+        title: t('Post successful'),
+        description: t('Your post has been published')
       })
     })
   }
@@ -102,7 +104,7 @@ export default function PostDialog({
                     <div className="truncate">{parentEvent.content}</div>
                   </div>
                 ) : (
-                  'New post'
+                  t('New post')
                 )}
               </DialogTitle>
               <DialogDescription />
@@ -111,7 +113,7 @@ export default function PostDialog({
               className="h-32"
               onChange={handleTextareaChange}
               value={content}
-              placeholder="Write something..."
+              placeholder={t('Write something...')}
             />
             {content && <Preview content={content} />}
             <div className="flex items-center justify-between">
@@ -125,11 +127,11 @@ export default function PostDialog({
                     setOpen(false)
                   }}
                 >
-                  Cancel
+                  {t('Cancel')}
                 </Button>
                 <Button type="submit" disabled={!canPost} onClick={post}>
                   {posting && <LoaderCircle className="animate-spin" />}
-                  Post
+                  {t('Post')}
                 </Button>
               </div>
             </div>

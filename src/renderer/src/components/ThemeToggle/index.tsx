@@ -1,8 +1,10 @@
 import { Button } from '@renderer/components/ui/button'
 import { useTheme } from '@renderer/providers/ThemeProvider'
 import { Moon, Sun, SunMoon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function ThemeToggle() {
+  const { t } = useTranslation()
   const { themeSetting, setThemeSetting } = useTheme()
 
   return (
@@ -12,7 +14,7 @@ export default function ThemeToggle() {
           variant="titlebar"
           size="titlebar"
           onClick={() => setThemeSetting('light')}
-          title="switch to light theme"
+          title={t('switch to light theme')}
         >
           <SunMoon />
         </Button>
@@ -21,7 +23,7 @@ export default function ThemeToggle() {
           variant="titlebar"
           size="titlebar"
           onClick={() => setThemeSetting('dark')}
-          title="switch to dark theme"
+          title={t('switch to dark theme')}
         >
           <Sun />
         </Button>
@@ -30,7 +32,7 @@ export default function ThemeToggle() {
           variant="titlebar"
           size="titlebar"
           onClick={() => setThemeSetting('system')}
-          title="switch to system theme"
+          title={t('switch to system theme')}
         >
           <Moon />
         </Button>

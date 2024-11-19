@@ -9,6 +9,7 @@ import {
 import { Input } from '@renderer/components/ui/input'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { Dispatch, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function LoginDialog({
   open,
@@ -17,6 +18,7 @@ export default function LoginDialog({
   open: boolean
   setOpen: Dispatch<boolean>
 }) {
+  const { t } = useTranslation()
   const { login, canLogin } = useNostr()
   const [nsec, setNsec] = useState('')
   const [errMsg, setErrMsg] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export default function LoginDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="w-80">
         <DialogHeader>
-          <DialogTitle>Sign in</DialogTitle>
+          <DialogTitle />
           <DialogDescription className="text-destructive">
             {!canLogin && 'Encryption is not available in your device.'}
           </DialogDescription>
@@ -57,7 +59,7 @@ export default function LoginDialog({
           {errMsg && <div className="text-xs text-destructive pl-3">{errMsg}</div>}
         </div>
         <Button onClick={handleLogin} disabled={!canLogin}>
-          Login
+          {t('Login')}
         </Button>
       </DialogContent>
     </Dialog>

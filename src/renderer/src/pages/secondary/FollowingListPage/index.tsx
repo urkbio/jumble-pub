@@ -5,8 +5,10 @@ import Username from '@renderer/components/Username'
 import { useFetchFollowings, useFetchProfile } from '@renderer/hooks'
 import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function FollowingListPage({ id }: { id?: string }) {
+  const { t } = useTranslation()
   const { profile } = useFetchProfile(id)
   const { followings } = useFetchFollowings(profile?.pubkey)
   const [visibleFollowings, setVisibleFollowings] = useState<string[]>([])
@@ -46,7 +48,11 @@ export default function FollowingListPage({ id }: { id?: string }) {
 
   return (
     <SecondaryPageLayout
-      titlebarContent={profile?.username ? `${profile.username}'s following` : 'following'}
+      titlebarContent={
+        profile?.username
+          ? t("username's following", { username: profile.username })
+          : t('following')
+      }
     >
       <div className="space-y-2">
         {visibleFollowings.map((pubkey, index) => (

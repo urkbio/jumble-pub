@@ -5,6 +5,7 @@ import ProfileAbout from '@renderer/components/ProfileAbout'
 import ProfileBanner from '@renderer/components/ProfileBanner'
 import { Avatar, AvatarFallback, AvatarImage } from '@renderer/components/ui/avatar'
 import { Separator } from '@renderer/components/ui/separator'
+import { Skeleton } from '@renderer/components/ui/skeleton'
 import { useFetchFollowings, useFetchProfile } from '@renderer/hooks'
 import { useFetchRelayList } from '@renderer/hooks/useFetchRelayList'
 import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
@@ -14,13 +15,13 @@ import { SecondaryPageLink } from '@renderer/PageManager'
 import { useFollowList } from '@renderer/providers/FollowListProvider'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { useMemo } from 'react'
+import NotFoundPage from '../NotFoundPage'
 import PubkeyCopy from './PubkeyCopy'
 import QrCodePopover from './QrCodePopover'
-import LoadingPage from '../LoadingPage'
-import NotFoundPage from '../NotFoundPage'
-import { Skeleton } from '@renderer/components/ui/skeleton'
+import { useTranslation } from 'react-i18next'
 
 export default function ProfilePage({ id }: { id?: string }) {
+  const { t } = useTranslation()
   const { profile, isFetching } = useFetchProfile(id)
   const relayList = useFetchRelayList(profile?.pubkey)
   const { pubkey: accountPubkey } = useNostr()
@@ -85,10 +86,10 @@ export default function ProfilePage({ id }: { id?: string }) {
         <ProfileAbout about={about} className="text-wrap break-words whitespace-pre-wrap mt-2" />
         <SecondaryPageLink
           to={toFollowingList(pubkey)}
-          className="mt-2 flex gap-1 hover:underline text-sm"
+          className="mt-2 flex gap-1 hover:underline text-sm w-fit"
         >
           {isSelf ? selfFollowings.length : followings.length}
-          <div className="text-muted-foreground">Following</div>
+          <div className="text-muted-foreground">{t('Following')}</div>
         </SecondaryPageLink>
       </div>
       <Separator className="my-4" />

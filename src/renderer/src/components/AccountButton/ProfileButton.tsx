@@ -11,6 +11,7 @@ import { toProfile } from '@renderer/lib/link'
 import { generateImageByPubkey } from '@renderer/lib/pubkey'
 import { useSecondaryPage } from '@renderer/PageManager'
 import { useNostr } from '@renderer/providers/NostrProvider'
+import { useTranslation } from 'react-i18next'
 
 export default function ProfileButton({
   pubkey,
@@ -19,6 +20,7 @@ export default function ProfileButton({
   pubkey: string
   variant?: 'titlebar' | 'sidebar'
 }) {
+  const { t } = useTranslation()
   const { logout } = useNostr()
   const { profile } = useFetchProfile(pubkey)
   const { push } = useSecondaryPage()
@@ -61,9 +63,9 @@ export default function ProfileButton({
         {triggerComponent}
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => push(toProfile(pubkey))}>Profile</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => push(toProfile(pubkey))}>{t('Profile')}</DropdownMenuItem>
         <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={logout}>
-          Logout
+          {t('Logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,6 +1,7 @@
 import { Event } from 'nostr-tools'
 import UserAvatar from '../UserAvatar'
 import { cn } from '@renderer/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 export default function ParentNotePreview({
   event,
@@ -11,6 +12,7 @@ export default function ParentNotePreview({
   className?: string
   onClick?: React.MouseEventHandler<HTMLDivElement> | undefined
 }) {
+  const { t } = useTranslation()
   return (
     <div
       className={cn(
@@ -19,7 +21,7 @@ export default function ParentNotePreview({
       )}
       onClick={onClick}
     >
-      <div className="shrink-0">reply to</div>
+      <div className="shrink-0">{t('reply to')}</div>
       <UserAvatar userId={event.pubkey} size="tiny" />
       <div className="truncate">{event.content}</div>
     </div>
