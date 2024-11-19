@@ -45,7 +45,7 @@ class ClientService {
     (ids) => Promise.all(ids.map((id) => this._fetchProfileByBench32Id(id))),
     { cacheMap: this.profileCache }
   )
-  private fetchProfileFromBigRelaysDataloader = new DataLoader<string, TProfile>(
+  private fetchProfileFromBigRelaysDataloader = new DataLoader<string, TProfile | undefined>(
     this.profileBatchLoadFn.bind(this),
     { cache: false }
   )
@@ -172,6 +172,24 @@ class ClientService {
   }
 
   async fetchEventByBench32Id(id: string): Promise<NEvent | undefined> {
+    if (!/^[0-9a-f]{64}$/.test(id)) {
+      let eventId: string | undefined
+      const { type, data } = nip19.decode(id)
+      switch (type) {
+        case 'note':
+          eventId = data
+          break
+        case 'nevent':
+          eventId = data.id
+          break
+      }
+      if (eventId) {
+        const cache = await this.eventCache.get(eventId)
+        if (cache) {
+          return cache
+        }
+      }
+    }
     return this.eventDataLoader.load(id)
   }
 
@@ -180,6 +198,28 @@ class ClientService {
   }
 
   async fetchProfileByBench32Id(id: string): Promise<TProfile | undefined> {
+    if (!/^[0-9a-f]{64}$/.test(id)) {
+      let pubkey: string | undefined
+      const { data, type } = nip19.decode(id)
+      switch (type) {
+        case 'npub':
+          pubkey = data
+          break
+        case 'nprofile':
+          pubkey = data.pubkey
+          break
+      }
+
+      if (!pubkey) {
+        throw new Error('Invalid id')
+      }
+
+      const cache = await this.profileCache.get(pubkey)
+      if (cache) {
+        return cache
+      }
+    }
+
     return this.profileDataloader.load(id)
   }
 
@@ -237,15 +277,7 @@ class ClientService {
 
     let event: NEvent | undefined
     if (filter.ids) {
-      const eventId = filter.ids[0]
-      if (eventId !== id) {
-        const cache = this.eventCache.get(eventId)
-        if (cache) {
-          this.eventDataLoader.prime(id, cache)
-          return cache
-        }
-      }
-      event = await this.fetchEventById(relays, eventId)
+      event = await this.fetchEventById(relays, filter.ids[0])
     } else {
       event = await this.tryHarderToFetchEvent(relays, filter)
     }
@@ -279,15 +311,7 @@ class ClientService {
       throw new Error('Invalid id')
     }
 
-    if (pubkey !== id) {
-      const cache = this.profileCache.get(pubkey)
-      if (cache) {
-        this.profileDataloader.prime(id, cache)
-        return cache
-      }
-    }
-
-    const profileFromBigRelays = this.fetchProfileFromBigRelaysDataloader.load(pubkey)
+    const profileFromBigRelays = await this.fetchProfileFromBigRelaysDataloader.load(pubkey)
     if (profileFromBigRelays) {
       return profileFromBigRelays
     }
@@ -305,8 +329,8 @@ class ClientService {
       ? this.parseProfileFromEvent(profileEvent)
       : { pubkey, username: formatPubkey(pubkey) }
 
-    if (profile.pubkey !== id) {
-      this.profileCache.set(profile.pubkey, Promise.resolve(profile))
+    if (pubkey !== id) {
+      this.profileDataloader.prime(pubkey, Promise.resolve(profile))
     }
 
     return profile
@@ -361,7 +385,7 @@ class ClientService {
 
     return pubkeys.map((pubkey) => {
       const event = eventsMap.get(pubkey)
-      return event ? this.parseProfileFromEvent(event) : { pubkey, username: formatPubkey(pubkey) }
+      return event ? this.parseProfileFromEvent(event) : undefined
     })
   }
 
