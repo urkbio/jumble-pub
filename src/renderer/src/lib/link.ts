@@ -6,3 +6,4 @@ export const toFollowingList = (pubkey: string) => `/user/${pubkey}/following`
 
 export const toNoStrudelProfile = (id: string) => `https://nostrudel.ninja/#/u/${id}`
 export const toNoStrudelNote = (id: string) => `https://nostrudel.ninja/#/n/${id}`
+export const toNoStrudelArticle = (id: string) => `https://nostrudel.ninja/#/articles/${id}`
