@@ -41,15 +41,14 @@ export async function createShortTextNoteDraftEvent(
   content: string,
   parentEvent?: Event
 ): Promise<TDraftEvent> {
-  const { pubkeys, eventIds, rootEventId, parentEventId } = await extractMentions(
-    content,
-    parentEvent
-  )
+  const { pubkeys, otherRelatedEventIds, quoteEventIds, rootEventId, parentEventId } =
+    await extractMentions(content, parentEvent)
   const hashtags = extractHashtags(content)
 
   const tags = pubkeys
     .map((pubkey) => ['p', pubkey])
-    .concat(eventIds.map((eventId) => ['q', eventId])) // TODO: ["q", <event-id>, <relay-url>, <pubkey>]
+    .concat(otherRelatedEventIds.map((eventId) => ['e', eventId]))
+    .concat(quoteEventIds.map((eventId) => ['q', eventId]))
     .concat(hashtags.map((hashtag) => ['t', hashtag]))
     .concat([['client', 'jumble']])
 

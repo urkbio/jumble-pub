@@ -1,5 +1,6 @@
 import { Separator } from '@renderer/components/ui/separator'
-import { getParentEventId, isReplyNoteEvent } from '@renderer/lib/event'
+import { isReplyNoteEvent } from '@renderer/lib/event'
+import { isReplyETag, isRootETag } from '@renderer/lib/tag'
 import { cn } from '@renderer/lib/utils'
 import { useNoteStats } from '@renderer/providers/NoteStatsProvider'
 import client from '@renderer/services/client.service'
@@ -9,8 +10,10 @@ import { useEffect, useRef, useState } from 'react'
 import ReplyNote from '../ReplyNote'
 
 export default function ReplyNoteList({ event, className }: { event: Event; className?: string }) {
-  const [eventsWithParentIds, setEventsWithParentId] = useState<[Event, string | undefined][]>([])
-  const [eventMap, setEventMap] = useState<Record<string, Event>>({})
+  const [replies, setReplies] = useState<Event[]>([])
+  const [replyMap, setReplyMap] = useState<
+    Record<string, { event: Event; level: number; parent?: Event } | undefined>
+  >({})
   const [until, setUntil] = useState<number>(() => dayjs().unix())
   const [loading, setLoading] = useState<boolean>(false)
   const [hasMore, setHasMore] = useState<boolean>(false)
@@ -30,13 +33,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
     const sortedEvents = events.sort((a, b) => a.created_at - b.created_at)
     const processedEvents = events.filter((e) => isReplyNoteEvent(e))
     if (processedEvents.length > 0) {
-      const eventMap: Record<string, Event> = {}
-      const eventsWithParentIds = processedEvents.map((event) => {
-        eventMap[event.id] = event
-        return [event, getParentEventId(event)] as [Event, string | undefined]
-      })
-      setEventsWithParentId((pre) => [...eventsWithParentIds, ...pre])
-      setEventMap((pre) => ({ ...pre, ...eventMap }))
+      setReplies((pre) => [...processedEvents, ...pre])
     }
     if (sortedEvents.length > 0) {
       setUntil(sortedEvents[0].created_at - 1)
@@ -50,8 +47,39 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
   }, [])
 
   useEffect(() => {
-    updateNoteReplyCount(event.id, eventsWithParentIds.length)
-  }, [eventsWithParentIds])
+    updateNoteReplyCount(event.id, replies.length)
+
+    const replyMap: Record<string, { event: Event; level: number; parent?: Event } | undefined> = {}
+    for (const reply of replies) {
+      const parentReplyTag = reply.tags.find(isReplyETag)
+      if (parentReplyTag) {
+        const parentReplyInfo = replyMap[parentReplyTag[1]]
+        const level = parentReplyInfo ? parentReplyInfo.level + 1 : 1
+        replyMap[reply.id] = { event: reply, level, parent: parentReplyInfo?.event }
+        continue
+      }
+
+      const rootReplyTag = reply.tags.find(isRootETag)
+      if (rootReplyTag) {
+        replyMap[reply.id] = { event: reply, level: 1 }
+        continue
+      }
+
+      let level = 0
+      let parent: Event | undefined
+      for (const [tagName, tagValue] of reply.tags) {
+        if (tagName === 'e') {
+          const info = replyMap[tagValue]
+          if (info && info.level > level) {
+            level = info.level
+            parent = info.event
+          }
+        }
+      }
+      replyMap[reply.id] = { event: reply, level: level + 1, parent }
+    }
+    setReplyMap(replyMap)
+  }, [replies])
 
   const onClickParent = (eventId: string) => {
     const ref = replyRefs.current[eventId]
@@ -72,20 +100,23 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
       >
         {loading ? 'loading...' : hasMore ? 'load more older replies' : null}
       </div>
-      {eventsWithParentIds.length > 0 && (loading || hasMore) && <Separator className="my-4" />}
+      {replies.length > 0 && (loading || hasMore) && <Separator className="my-4" />}
       <div className={cn('mb-4', className)}>
-        {eventsWithParentIds.map(([event, parentEventId], index) => (
-          <div ref={(el) => (replyRefs.current[event.id] = el)} key={index}>
-            <ReplyNote
-              event={event}
-              parentEvent={parentEventId ? eventMap[parentEventId] : undefined}
-              onClickParent={onClickParent}
-              highlight={highlightReplyId === event.id}
-            />
-          </div>
-        ))}
+        {replies.map((reply, index) => {
+          const info = replyMap[reply.id]
+          return (
+            <div ref={(el) => (replyRefs.current[reply.id] = el)} key={index}>
+              <ReplyNote
+                event={reply}
+                parentEvent={info?.parent}
+                onClickParent={onClickParent}
+                highlight={highlightReplyId === reply.id}
+              />
+            </div>
+          )
+        })}
       </div>
-      {eventsWithParentIds.length === 0 && !loading && !hasMore && (
+      {replies.length === 0 && !loading && !hasMore && (
         <div className="text-sm text-center text-muted-foreground">no replies</div>
       )}
     </>

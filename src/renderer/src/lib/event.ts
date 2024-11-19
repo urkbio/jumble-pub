@@ -1,6 +1,6 @@
 import client from '@renderer/services/client.service'
 import { Event, kinds, nip19 } from 'nostr-tools'
-import { replyETag, rootETag, tagNameEquals } from './tag'
+import { isReplyETag, isRootETag, tagNameEquals } from './tag'
 
 export function isNsfwEvent(event: Event) {
   return event.tags.some(
@@ -10,15 +10,28 @@ export function isNsfwEvent(event: Event) {
 }
 
 export function isReplyNoteEvent(event: Event) {
-  return event.kind === kinds.ShortTextNote && event.tags.some(rootETag)
+  if (event.kind !== kinds.ShortTextNote) return false
+
+  let hasETag = false
+  let hasMarker = false
+  for (const [tagName, , , marker] of event.tags) {
+    if (tagName !== 'e') continue
+    hasETag = true
+
+    if (!marker) continue
+    hasMarker = true
+
+    if (['root', 'reply'].includes(marker)) return true
+  }
+  return hasETag && !hasMarker
 }
 
 export function getParentEventId(event?: Event) {
-  return event?.tags.find(replyETag)?.[1]
+  return event?.tags.find(isReplyETag)?.[1]
 }
 
 export function getRootEventId(event?: Event) {
-  return event?.tags.find(rootETag)?.[1]
+  return event?.tags.find(isRootETag)?.[1]
 }
 
 export function isReplaceable(kind: number) {
@@ -40,7 +53,8 @@ export function getSharableEventId(event: Event) {
 
 export async function extractMentions(content: string, parentEvent?: Event) {
   const pubkeySet = new Set<string>()
-  const eventIdSet = new Set<string>()
+  const relatedEventIdSet = new Set<string>()
+  const quoteEventIdSet = new Set<string>()
   let rootEventId: string | undefined
   let parentEventId: string | undefined
   const matches = content.match(
@@ -59,6 +73,7 @@ export async function extractMentions(content: string, parentEvent?: Event) {
         const event = await client.fetchEventByBench32Id(id)
         if (event) {
           pubkeySet.add(event.pubkey)
+          quoteEventIdSet.add(event.id)
         }
       }
     } catch (e) {
@@ -67,29 +82,31 @@ export async function extractMentions(content: string, parentEvent?: Event) {
   }
 
   if (parentEvent) {
+    relatedEventIdSet.add(parentEvent.id)
     pubkeySet.add(parentEvent.pubkey)
     parentEvent.tags.forEach((tag) => {
       if (tagNameEquals('p')(tag)) {
         pubkeySet.add(tag[1])
-      } else if (rootETag(tag)) {
+      } else if (isRootETag(tag)) {
         rootEventId = tag[1]
       } else if (tagNameEquals('e')(tag)) {
-        eventIdSet.add(tag[1])
+        relatedEventIdSet.add(tag[1])
       }
     })
-    if (rootEventId) {
+    if (rootEventId || isReplyNoteEvent(parentEvent)) {
       parentEventId = parentEvent.id
     } else {
       rootEventId = parentEvent.id
     }
   }
 
-  if (rootEventId) eventIdSet.delete(rootEventId)
-  if (parentEventId) eventIdSet.delete(parentEventId)
+  if (rootEventId) relatedEventIdSet.delete(rootEventId)
+  if (parentEventId) relatedEventIdSet.delete(parentEventId)
 
   return {
     pubkeys: Array.from(pubkeySet),
-    eventIds: Array.from(eventIdSet),
+    otherRelatedEventIds: Array.from(relatedEventIdSet),
+    quoteEventIds: Array.from(quoteEventIdSet),
     rootEventId,
     parentEventId
   }

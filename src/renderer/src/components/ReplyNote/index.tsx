@@ -38,7 +38,12 @@ export default function ReplyNote({
         <Content event={event} size="small" />
         <div className="flex gap-2 text-xs">
           <div className="text-muted-foreground/60">{formatTimestamp(event.created_at)}</div>
-          <div className="text-muted-foreground hover:text-primary cursor-pointer">reply</div>
+          <div
+            className="text-muted-foreground hover:text-primary cursor-pointer"
+            onClick={() => setIsPostDialogOpen(true)}
+          >
+            reply
+          </div>
         </div>
       </div>
       <LikeButton event={event} variant="reply" />
