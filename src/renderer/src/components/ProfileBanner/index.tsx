@@ -1,4 +1,6 @@
+import { Image } from '@nextui-org/image'
 import { generateImageByPubkey } from '@renderer/lib/pubkey'
+import { cn } from '@renderer/lib/utils'
 import { useEffect, useMemo, useState } from 'react'
 
 export default function ProfileBanner({
@@ -22,11 +24,12 @@ export default function ProfileBanner({
   }, [defaultBanner, banner])
 
   return (
-    <img
+    <Image
       src={bannerUrl}
       alt={`${pubkey} banner`}
-      className={className}
+      className={cn('z-0', className)}
       onError={() => setBannerUrl(defaultBanner)}
+      removeWrapper
     />
   )
 }
