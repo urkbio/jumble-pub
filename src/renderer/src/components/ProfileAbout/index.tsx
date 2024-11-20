@@ -1,16 +1,18 @@
+import { useMemo } from 'react'
 import {
   embedded,
   embeddedHashtagRenderer,
   embeddedNormalUrlRenderer,
-  embeddedNostrNpubRenderer
-} from '@renderer/embedded'
-import { embeddedNpubRenderer } from '@renderer/embedded/EmbeddedNpub'
-import { useMemo } from 'react'
+  embeddedNostrNpubRenderer,
+  embeddedNpubRenderer,
+  embeddedWebsocketUrlRenderer
+} from '../Embedded'
 
 export default function ProfileAbout({ about, className }: { about?: string; className?: string }) {
   const nodes = useMemo(() => {
     return about
       ? embedded(about, [
+          embeddedWebsocketUrlRenderer,
           embeddedNormalUrlRenderer,
           embeddedHashtagRenderer,
           embeddedNostrNpubRenderer,

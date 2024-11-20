@@ -1,7 +1,7 @@
 import { TRelayGroup } from '@common/types'
 import { isWebsocketUrl, normalizeUrl } from '@renderer/lib/url'
 import storage from '@renderer/services/storage.service'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, Dispatch, useContext, useEffect, useState } from 'react'
 
 type TRelaySettingsContext = {
   relayGroups: TRelayGroup[]
@@ -12,6 +12,7 @@ type TRelaySettingsContext = {
   deleteRelayGroup: (groupName: string) => void
   addRelayGroup: (groupName: string, relayUrls?: string[]) => string | null
   updateRelayGroupRelayUrls: (groupName: string, relayUrls: string[]) => void
+  setTemporaryRelayUrls: Dispatch<string[]>
 }
 
 const RelaySettingsContext = createContext<TRelaySettingsContext | undefined>(undefined)
@@ -150,7 +151,8 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
         renameRelayGroup,
         deleteRelayGroup,
         addRelayGroup,
-        updateRelayGroupRelayUrls
+        updateRelayGroupRelayUrls,
+        setTemporaryRelayUrls
       }}
     >
       {children}

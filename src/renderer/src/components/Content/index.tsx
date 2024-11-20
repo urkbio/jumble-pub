@@ -1,15 +1,16 @@
+import { isNsfwEvent } from '@renderer/lib/event'
+import { cn } from '@renderer/lib/utils'
+import { Event } from 'nostr-tools'
+import { memo } from 'react'
 import {
   embedded,
   embeddedHashtagRenderer,
   embeddedNormalUrlRenderer,
   embeddedNostrNpubRenderer,
-  embeddedNostrProfileRenderer
-} from '@renderer/embedded'
-import { isNsfwEvent } from '@renderer/lib/event'
-import { cn } from '@renderer/lib/utils'
-import { Event } from 'nostr-tools'
-import { memo } from 'react'
-import { EmbeddedNote } from '../Embedded'
+  embeddedNostrProfileRenderer,
+  EmbeddedNote,
+  embeddedWebsocketUrlRenderer
+} from '../Embedded'
 import ImageGallery from '../ImageGallery'
 import VideoPlayer from '../VideoPlayer'
 
@@ -26,6 +27,7 @@ const Content = memo(
     const { content, images, videos, embeddedNotes } = preprocess(event.content)
     const isNsfw = isNsfwEvent(event)
     const nodes = embedded(content, [
+      embeddedWebsocketUrlRenderer,
       embeddedNormalUrlRenderer,
       embeddedHashtagRenderer,
       embeddedNostrNpubRenderer,

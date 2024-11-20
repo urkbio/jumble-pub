@@ -22,7 +22,6 @@ i18n
   })
 
 i18n.services.formatter?.add('date', (value, lng) => {
-  console.log('lng', lng)
   if (lng?.startsWith('zh')) {
     return dayjs(value).format('YYYY-MM-DD')
   }
