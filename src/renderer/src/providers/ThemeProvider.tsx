@@ -1,5 +1,6 @@
 import { TTheme, TThemeSetting } from '@common/types'
 import { isElectron } from '@renderer/lib/env'
+import storage from '@renderer/services/storage.service'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 type ThemeProviderProps = {
@@ -12,8 +13,10 @@ type ThemeProviderState = {
   setThemeSetting: (themeSetting: TThemeSetting) => Promise<void>
 }
 
-// web only
-function getSystemTheme() {
+async function getSystemTheme() {
+  if (isElectron(window)) {
+    return await window.api.theme.current()
+  }
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
@@ -27,33 +30,28 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 
   useEffect(() => {
     const init = async () => {
-      // electron
-      if (isElectron(window)) {
-        const [themeSetting, theme] = await Promise.all([
-          window.api.theme.themeSetting(),
-          window.api.theme.current()
-        ])
-        setTheme(theme)
-        setThemeSetting(themeSetting)
-
-        window.api.theme.onChange((theme) => {
-          setTheme(theme)
-        })
-      } else {
-        // web
-        if (themeSetting === 'system') {
-          setTheme(getSystemTheme())
-          return
-        }
-        setTheme(themeSetting)
+      const themeSetting = await storage.getThemeSetting()
+      if (themeSetting === 'system') {
+        setTheme(await getSystemTheme())
+        return
       }
+      setTheme(themeSetting)
     }
 
     init()
   }, [])
 
   useEffect(() => {
-    if (themeSetting !== 'system' || isElectron(window)) return
+    if (themeSetting !== 'system') return
+
+    if (isElectron(window)) {
+      window.api.theme.addChangeListener((theme) => {
+        setTheme(theme)
+      })
+      return () => {
+        isElectron(window) && window.api.theme.removeChangeListener()
+      }
+    }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = (e: MediaQueryListEvent) => {
@@ -80,14 +78,10 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   const value = {
     themeSetting: themeSetting,
     setThemeSetting: async (themeSetting: TThemeSetting) => {
-      if (isElectron(window)) {
-        await window.api.theme.set(themeSetting)
-      } else {
-        localStorage.setItem('themeSetting', themeSetting)
-      }
+      await storage.setThemeSetting(themeSetting)
       setThemeSetting(themeSetting)
       if (themeSetting === 'system') {
-        setTheme(getSystemTheme())
+        setTheme(await getSystemTheme())
         return
       }
       setTheme(themeSetting)

@@ -71,7 +71,7 @@ app.whenReady().then(async () => {
   const storageService = new StorageService()
   storageService.init()
 
-  const themeService = new ThemeService(storageService, sendToRenderer)
+  const themeService = new ThemeService(sendToRenderer)
   themeService.init()
 
   const nostrService = new NostrService()

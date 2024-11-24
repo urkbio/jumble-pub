@@ -1,4 +1,4 @@
-import { TDraftEvent, TRelayGroup, TThemeSetting } from '@common/types'
+import { TDraftEvent, TTheme } from '@common/types'
 import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
 
@@ -8,19 +8,19 @@ const api = {
     isEncryptionAvailable: () => ipcRenderer.invoke('system:isEncryptionAvailable')
   },
   theme: {
-    onChange: (cb: (theme: 'dark' | 'light') => void) => {
+    addChangeListener: (listener: (theme: TTheme) => void) => {
       ipcRenderer.on('theme:change', (_, theme) => {
-        cb(theme)
+        listener(theme)
       })
     },
-    current: () => ipcRenderer.invoke('theme:current'),
-    themeSetting: () => ipcRenderer.invoke('theme:themeSetting'),
-    set: (themeSetting: TThemeSetting) => ipcRenderer.invoke('theme:set', themeSetting)
+    removeChangeListener: () => {
+      ipcRenderer.removeAllListeners('theme:change')
+    },
+    current: () => ipcRenderer.invoke('theme:current')
   },
   storage: {
-    getRelayGroups: () => ipcRenderer.invoke('storage:getRelayGroups'),
-    setRelayGroups: (relayGroups: TRelayGroup[]) =>
-      ipcRenderer.invoke('storage:setRelayGroups', relayGroups)
+    getItem: (key: string) => ipcRenderer.invoke('storage:getItem', key),
+    setItem: (key: string, value: string) => ipcRenderer.invoke('storage:setItem', key, value)
   },
   nostr: {
     login: (nsec: string) => ipcRenderer.invoke('nostr:login', nsec),

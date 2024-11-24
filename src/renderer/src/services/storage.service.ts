@@ -1,4 +1,5 @@
-import { TRelayGroup } from '@common/types'
+import { StorageKey } from '@common/constants'
+import { TRelayGroup, TThemeSetting } from '@common/types'
 import { isElectron } from '@renderer/lib/env'
 
 const DEFAULT_RELAY_GROUPS: TRelayGroup[] = [
@@ -15,21 +16,19 @@ const DEFAULT_RELAY_GROUPS: TRelayGroup[] = [
 ]
 
 class Storage {
-  async getRelayGroups() {
+  async getItem(key: string) {
     if (isElectron(window)) {
-      const relayGroups = await window.api.storage.getRelayGroups()
-      return relayGroups ?? DEFAULT_RELAY_GROUPS
+      return window.api.storage.getItem(key)
     } else {
-      const relayGroupsStr = localStorage.getItem('relayGroups')
-      return relayGroupsStr ? (JSON.parse(relayGroupsStr) as TRelayGroup[]) : DEFAULT_RELAY_GROUPS
+      return localStorage.getItem(key)
     }
   }
 
-  async setRelayGroups(relayGroups: TRelayGroup[]) {
+  async setItem(key: string, value: string) {
     if (isElectron(window)) {
-      return window.api.storage.setRelayGroups(relayGroups)
+      return window.api.storage.setItem(key, value)
     } else {
-      localStorage.setItem('relayGroups', JSON.stringify(relayGroups))
+      return localStorage.setItem(key, value)
     }
   }
 }
@@ -39,6 +38,7 @@ class StorageService {
 
   private initPromise!: Promise<void>
   private relayGroups: TRelayGroup[] = []
+  private themeSetting: TThemeSetting = 'system'
   private storage: Storage = new Storage()
 
   constructor() {
@@ -50,7 +50,10 @@ class StorageService {
   }
 
   async init() {
-    this.relayGroups = await this.storage.getRelayGroups()
+    const relayGroupsStr = await this.storage.getItem(StorageKey.RELAY_GROUPS)
+    this.relayGroups = relayGroupsStr ? JSON.parse(relayGroupsStr) : DEFAULT_RELAY_GROUPS
+    this.themeSetting =
+      ((await this.storage.getItem(StorageKey.THEME_SETTING)) as TThemeSetting) ?? 'system'
   }
 
   async getRelayGroups() {
@@ -60,8 +63,19 @@ class StorageService {
 
   async setRelayGroups(relayGroups: TRelayGroup[]) {
     await this.initPromise
-    await this.storage.setRelayGroups(relayGroups)
+    await this.storage.setItem(StorageKey.RELAY_GROUPS, JSON.stringify(relayGroups))
     this.relayGroups = relayGroups
+  }
+
+  async getThemeSetting() {
+    await this.initPromise
+    return this.themeSetting
+  }
+
+  async setThemeSetting(themeSetting: TThemeSetting) {
+    await this.initPromise
+    await this.storage.setItem(StorageKey.THEME_SETTING, themeSetting)
+    this.themeSetting = themeSetting
   }
 }
 

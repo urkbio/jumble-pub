@@ -1,42 +1,10 @@
-import { TConfig, TRelayGroup, TThemeSetting } from '@common/types'
 import { app, ipcMain } from 'electron'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import path from 'path'
 
 export class StorageService {
-  private storage: Storage
-
-  constructor() {
-    this.storage = new Storage()
-  }
-
-  init() {
-    ipcMain.handle('storage:getRelayGroups', () => this.getRelayGroups())
-    ipcMain.handle('storage:setRelayGroups', (_, relayGroups: TRelayGroup[]) =>
-      this.setRelayGroups(relayGroups)
-    )
-  }
-
-  getRelayGroups(): TRelayGroup[] | null {
-    return this.storage.get('relayGroups') ?? null
-  }
-
-  setRelayGroups(relayGroups: TRelayGroup[]) {
-    this.storage.set('relayGroups', relayGroups)
-  }
-
-  getTheme() {
-    return this.storage.get('theme') ?? 'system'
-  }
-
-  setTheme(theme: TThemeSetting) {
-    this.storage.set('theme', theme)
-  }
-}
-
-class Storage {
   private path: string
-  private config: TConfig
+  private config: Record<string, string> = {}
   private writeTimer: NodeJS.Timeout | null = null
 
   constructor() {
@@ -46,11 +14,20 @@ class Storage {
     this.config = JSON.parse(json)
   }
 
-  get<K extends keyof TConfig, V extends TConfig[K]>(key: K): V | undefined {
-    return this.config[key] as V
+  init() {
+    ipcMain.handle('storage:getItem', (_, key: string) => this.getItem(key))
+    ipcMain.handle('storage:setItem', (_, key: string, value: string) => this.setItem(key, value))
   }
 
-  set<K extends keyof TConfig>(key: K, value: TConfig[K]) {
+  getItem(key: string): string | undefined {
+    const value = this.config[key]
+    // backward compatibility
+    if (value && typeof value !== 'string') return JSON.stringify(value)
+
+    return value
+  }
+
+  setItem(key: string, value: string) {
     this.config[key] = value
     if (this.writeTimer) return
 

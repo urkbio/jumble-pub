@@ -24,14 +24,13 @@ export type TElectronWindow = {
       isEncryptionAvailable: () => Promise<boolean>
     }
     theme: {
-      onChange: (cb: (theme: TTheme) => void) => void
+      addChangeListener: (listener: (theme: TTheme) => void) => void
+      removeChangeListener: () => void
       current: () => Promise<TTheme>
-      themeSetting: () => Promise<TThemeSetting>
-      set: (themeSetting: TThemeSetting) => Promise<void>
     }
     storage: {
-      getRelayGroups: () => Promise<TRelayGroup[]>
-      setRelayGroups: (relayGroups: TRelayGroup[]) => Promise<void>
+      getItem: (key: string) => Promise<string>
+      setItem: (key: string, value: string) => Promise<void>
     }
     nostr: {
       login: (nsec: string) => Promise<{
