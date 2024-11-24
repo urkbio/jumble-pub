@@ -159,7 +159,7 @@ class ClientService {
       onReplies,
       onNew
     }: {
-      onReplies: (events: NEvent[], until?: number) => void
+      onReplies: (events: NEvent[], isCache: boolean, until?: number) => void
       onNew: (evt: NEvent) => void
     }
   ) {
@@ -170,7 +170,7 @@ class ClientService {
       replies = (await Promise.all(cache.refs.map(([id]) => this.eventCache.get(id)))).filter(
         Boolean
       ) as NEvent[]
-      onReplies(replies, cache.until)
+      onReplies(replies, true, cache.until)
     } else {
       cache = { refs }
       this.repliesCache.set(parentEventId, cache)
@@ -206,12 +206,21 @@ class ClientService {
           hasEosed = true
           const newReplies = events.sort((a, b) => a.created_at - b.created_at)
           replies = replies.concat(newReplies)
-          refs.push(...newReplies.map((evt) => [evt.id, evt.created_at] as [string, number]))
           // first fetch
           if (!since) {
             cache.until = events.length >= limit ? events[0].created_at - 1 : undefined
           }
-          onReplies(replies, cache.until)
+          onReplies(replies, false, cache.until)
+          const lastRefCreatedAt = refs.length ? refs[refs.length - 1][1] : undefined
+          if (lastRefCreatedAt) {
+            refs.push(
+              ...newReplies
+                .filter((reply) => reply.created_at > lastRefCreatedAt)
+                .map((evt) => [evt.id, evt.created_at] as [string, number])
+            )
+          } else {
+            refs.push(...newReplies.map((evt) => [evt.id, evt.created_at] as [string, number]))
+          }
         }
       }
     )

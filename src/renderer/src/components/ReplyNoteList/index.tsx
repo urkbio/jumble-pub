@@ -33,10 +33,12 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
       try {
         const relayList = await client.fetchRelayList(event.pubkey)
         const closer = await client.subscribeReplies(relayList.read.slice(0, 5), event.id, 100, {
-          onReplies: (evts, until) => {
+          onReplies: (evts, isCache, until) => {
             setReplies(evts)
             setUntil(until)
-            setLoading(false)
+            if (!isCache) {
+              setLoading(false)
+            }
           },
           onNew: (evt) => {
             setReplies((pre) => [...pre, evt])
