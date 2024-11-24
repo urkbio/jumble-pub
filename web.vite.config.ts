@@ -10,7 +10,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@renderer': path.resolve('src/renderer/src')
+      '@renderer': path.resolve('src/renderer/src'),
+      '@common': path.resolve('src/common')
     }
   },
   plugins: [react()]
