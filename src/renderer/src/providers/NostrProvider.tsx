@@ -7,6 +7,7 @@ import client from '@renderer/services/client.service'
 import dayjs from 'dayjs'
 import { Event, kinds } from 'nostr-tools'
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useRelaySettings } from './RelaySettingsProvider'
 
 type TNostrContext = {
   isReady: boolean
@@ -40,6 +41,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [pubkey, setPubkey] = useState<string | null>(null)
   const [canLogin, setCanLogin] = useState(false)
   const [openLoginDialog, setOpenLoginDialog] = useState(false)
+  const { relayUrls: currentRelayUrls } = useRelaySettings()
   const relayList = useFetchRelayList(pubkey)
 
   useEffect(() => {
@@ -108,7 +110,10 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     if (!event) {
       throw new Error('sign event failed')
     }
-    await client.publishEvent(relayList.write.concat(additionalRelayUrls), event)
+    await client.publishEvent(
+      relayList.write.concat(additionalRelayUrls).concat(currentRelayUrls),
+      event
+    )
     return event
   }
 

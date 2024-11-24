@@ -14,18 +14,18 @@ export default function App(): JSX.Element {
   return (
     <div className="h-screen">
       <ThemeProvider>
-        <NostrProvider>
-          <FollowListProvider>
-            <RelaySettingsProvider>
+        <RelaySettingsProvider>
+          <NostrProvider>
+            <FollowListProvider>
               <NoteStatsProvider>
                 <PageManager>
                   <NoteListPage />
                 </PageManager>
                 <Toaster />
               </NoteStatsProvider>
-            </RelaySettingsProvider>
-          </FollowListProvider>
-        </NostrProvider>
+            </FollowListProvider>
+          </NostrProvider>
+        </RelaySettingsProvider>
       </ThemeProvider>
     </div>
   )

@@ -56,9 +56,6 @@ export default function NoteList({
             setUntil(events[events.length - 1].created_at - 1)
           }
           setInitialized(true)
-          processedEvents.forEach((e) => {
-            client.addEventToCache(e)
-          })
         },
         onNew: (event) => {
           if (!isReplyNoteEvent(event)) {
@@ -101,7 +98,7 @@ export default function NoteList({
   }, [until, initialized, hasMore])
 
   const loadMore = async () => {
-    const events = await client.fetchEvents(relayUrls, { ...noteFilter, until })
+    const events = await client.fetchEvents(relayUrls, { ...noteFilter, until }, true)
     const sortedEvents = events.sort((a, b) => b.created_at - a.created_at)
     if (sortedEvents.length === 0) {
       setHasMore(false)
@@ -114,9 +111,6 @@ export default function NoteList({
     }
 
     setUntil(sortedEvents[sortedEvents.length - 1].created_at - 1)
-    processedEvents.forEach((e) => {
-      client.addEventToCache(e)
-    })
   }
 
   const showNewEvents = () => {

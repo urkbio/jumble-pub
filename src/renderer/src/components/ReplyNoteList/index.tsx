@@ -1,52 +1,62 @@
 import { Separator } from '@renderer/components/ui/separator'
-import { isReplyNoteEvent } from '@renderer/lib/event'
 import { isReplyETag, isRootETag } from '@renderer/lib/tag'
 import { cn } from '@renderer/lib/utils'
+import { useNostr } from '@renderer/providers/NostrProvider'
 import { useNoteStats } from '@renderer/providers/NoteStatsProvider'
 import client from '@renderer/services/client.service'
-import dayjs from 'dayjs'
 import { Event } from 'nostr-tools'
 import { useEffect, useRef, useState } from 'react'
-import ReplyNote from '../ReplyNote'
 import { useTranslation } from 'react-i18next'
+import ReplyNote from '../ReplyNote'
 
 export default function ReplyNoteList({ event, className }: { event: Event; className?: string }) {
   const { t } = useTranslation()
+  const { isReady, pubkey } = useNostr()
   const [replies, setReplies] = useState<Event[]>([])
   const [replyMap, setReplyMap] = useState<
     Record<string, { event: Event; level: number; parent?: Event } | undefined>
   >({})
-  const [until, setUntil] = useState<number>(() => dayjs().unix())
+  const [until, setUntil] = useState<number | undefined>()
   const [loading, setLoading] = useState<boolean>(false)
-  const [hasMore, setHasMore] = useState<boolean>(false)
   const [highlightReplyId, setHighlightReplyId] = useState<string | undefined>(undefined)
   const { updateNoteReplyCount } = useNoteStats()
   const replyRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
-  const loadMore = async () => {
-    setLoading(true)
-    const relayList = await client.fetchRelayList(event.pubkey)
-    const events = await client.fetchEvents(relayList.read.slice(0, 5), {
-      '#e': [event.id],
-      kinds: [1],
-      limit: 100,
-      until
-    })
-    const sortedEvents = events.sort((a, b) => a.created_at - b.created_at)
-    const processedEvents = events.filter((e) => isReplyNoteEvent(e))
-    if (processedEvents.length > 0) {
-      setReplies((pre) => [...processedEvents, ...pre])
-    }
-    if (sortedEvents.length > 0) {
-      setUntil(sortedEvents[0].created_at - 1)
-    }
-    setHasMore(sortedEvents.length >= 100)
-    setLoading(false)
-  }
-
   useEffect(() => {
-    loadMore()
-  }, [])
+    if (!isReady || loading) return
+
+    const init = async () => {
+      setLoading(true)
+      setReplies([])
+      setUntil(undefined)
+
+      try {
+        const relayList = await client.fetchRelayList(event.pubkey)
+        const closer = await client.subscribeReplies(relayList.read.slice(0, 5), event.id, 100, {
+          onReplies: (evts, until) => {
+            setReplies(evts)
+            setUntil(until)
+            setLoading(false)
+          },
+          onNew: (evt) => {
+            setReplies((pre) => [...pre, evt])
+            if (evt.pubkey === pubkey) {
+              highlightReply(evt.id)
+            }
+          }
+        })
+        return closer
+      } catch {
+        setLoading(false)
+      }
+      return
+    }
+
+    const promise = init()
+    return () => {
+      promise.then((closer) => closer?.())
+    }
+  }, [isReady])
 
   useEffect(() => {
     updateNoteReplyCount(event.id, replies.length)
@@ -83,7 +93,25 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
     setReplyMap(replyMap)
   }, [replies])
 
-  const onClickParent = (eventId: string) => {
+  const loadMore = async () => {
+    if (loading || !until) return
+
+    setLoading(true)
+    const relayList = await client.fetchRelayList(event.pubkey)
+    const { replies: olderReplies, until: newUntil } = await client.fetchMoreReplies(
+      relayList.read.slice(0, 5),
+      event.id,
+      until,
+      100
+    )
+    if (olderReplies.length > 0) {
+      setReplies((pre) => [...olderReplies, ...pre])
+    }
+    setUntil(newUntil)
+    setLoading(false)
+  }
+
+  const highlightReply = (eventId: string) => {
     const ref = replyRefs.current[eventId]
     if (ref) {
       ref.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -100,9 +128,9 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
         className={`text-sm text-center text-muted-foreground ${!loading ? 'hover:text-foreground cursor-pointer' : ''}`}
         onClick={loadMore}
       >
-        {loading ? t('loading...') : hasMore ? t('load more older replies') : null}
+        {loading ? t('loading...') : until ? t('load more older replies') : null}
       </div>
-      {replies.length > 0 && (loading || hasMore) && <Separator className="my-4" />}
+      {replies.length > 0 && (loading || until) && <Separator className="my-4" />}
       <div className={cn('mb-4', className)}>
         {replies.map((reply, index) => {
           const info = replyMap[reply.id]
@@ -111,14 +139,14 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
               <ReplyNote
                 event={reply}
                 parentEvent={info?.parent}
-                onClickParent={onClickParent}
+                onClickParent={highlightReply}
                 highlight={highlightReplyId === reply.id}
               />
             </div>
           )
         })}
       </div>
-      {replies.length === 0 && !loading && !hasMore && (
+      {replies.length === 0 && !loading && !until && (
         <div className="text-sm text-center text-muted-foreground">{t('no replies')}</div>
       )}
     </>

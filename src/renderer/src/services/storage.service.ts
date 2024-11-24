@@ -1,5 +1,4 @@
 import { TRelayGroup } from '@common/types'
-import { createRelayGroupsChangedEvent, eventBus } from './event-bus.service'
 import { isElectron } from '@renderer/lib/env'
 
 const DEFAULT_RELAY_GROUPS: TRelayGroup[] = [
@@ -40,7 +39,6 @@ class StorageService {
 
   private initPromise!: Promise<void>
   private relayGroups: TRelayGroup[] = []
-  private activeRelayUrls: string[] = []
   private storage: Storage = new Storage()
 
   constructor() {
@@ -53,7 +51,6 @@ class StorageService {
 
   async init() {
     this.relayGroups = await this.storage.getRelayGroups()
-    this.activeRelayUrls = this.relayGroups.find((group) => group.isActive)?.relayUrls ?? []
   }
 
   async getRelayGroups() {
@@ -65,14 +62,6 @@ class StorageService {
     await this.initPromise
     await this.storage.setRelayGroups(relayGroups)
     this.relayGroups = relayGroups
-    const newActiveRelayUrls = relayGroups.find((group) => group.isActive)?.relayUrls ?? []
-    if (
-      this.activeRelayUrls.length !== newActiveRelayUrls.length ||
-      this.activeRelayUrls.some((url) => !newActiveRelayUrls.includes(url))
-    ) {
-      eventBus.emit(createRelayGroupsChangedEvent(relayGroups))
-    }
-    this.activeRelayUrls = newActiveRelayUrls
   }
 }
 
