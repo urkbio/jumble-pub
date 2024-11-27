@@ -1,5 +1,6 @@
 import { TRelayGroup } from '@common/types'
 import { isWebsocketUrl, normalizeUrl } from '@renderer/lib/url'
+import client from '@renderer/services/client.service'
 import storage from '@renderer/services/storage.service'
 import { createContext, Dispatch, useContext, useEffect, useState } from 'react'
 
@@ -7,6 +8,7 @@ type TRelaySettingsContext = {
   relayGroups: TRelayGroup[]
   temporaryRelayUrls: string[]
   relayUrls: string[]
+  searchableRelayUrls: string[]
   switchRelayGroup: (groupName: string) => void
   renameRelayGroup: (oldGroupName: string, newGroupName: string) => string | null
   deleteRelayGroup: (groupName: string) => void
@@ -33,6 +35,7 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
       ? temporaryRelayUrls
       : (relayGroups.find((group) => group.isActive)?.relayUrls ?? [])
   )
+  const [searchableRelayUrls, setSearchableRelayUrls] = useState<string[]>([])
 
   useEffect(() => {
     const init = async () => {
@@ -66,6 +69,17 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
         : (relayGroups.find((group) => group.isActive)?.relayUrls ?? [])
     )
   }, [relayGroups, temporaryRelayUrls])
+
+  useEffect(() => {
+    const handler = async () => {
+      setSearchableRelayUrls([])
+      const relayInfos = await client.fetchRelayInfos(relayUrls)
+      setSearchableRelayUrls(
+        relayUrls.filter((_, index) => relayInfos[index]?.supported_nips?.includes(50))
+      )
+    }
+    handler()
+  }, [relayUrls])
 
   const updateGroups = async (fn: (pre: TRelayGroup[]) => TRelayGroup[]) => {
     let newGroups = relayGroups
@@ -147,6 +161,7 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
         relayGroups,
         temporaryRelayUrls,
         relayUrls,
+        searchableRelayUrls,
         switchRelayGroup,
         renameRelayGroup,
         deleteRelayGroup,

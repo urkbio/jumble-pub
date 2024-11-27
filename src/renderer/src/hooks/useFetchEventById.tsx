@@ -9,6 +9,7 @@ export function useFetchEventById(id?: string) {
 
   useEffect(() => {
     const fetchEvent = async () => {
+      setIsFetching(true)
       if (!id) {
         setIsFetching(false)
         setError(new Error('No id provided'))

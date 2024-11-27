@@ -1,9 +1,10 @@
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
+import { useFetchRelayInfos } from '@renderer/hooks'
 import { isWebsocketUrl, normalizeUrl } from '@renderer/lib/url'
 import { useRelaySettings } from '@renderer/providers/RelaySettingsProvider'
 import client from '@renderer/services/client.service'
-import { CircleX } from 'lucide-react'
+import { CircleX, SearchCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -111,6 +112,9 @@ function RelayUrl({
   isConnected: boolean
   onRemove: () => void
 }) {
+  const { t } = useTranslation()
+  const [relayInfo] = useFetchRelayInfos([url])
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex gap-2 items-center">
@@ -122,6 +126,11 @@ function RelayUrl({
           <div className="text-red-500 text-xs">●</div>
         )}
         <div className="text-muted-foreground text-sm">{url}</div>
+        {relayInfo?.supported_nips?.includes(50) && (
+          <div title={t('supports search')} className="text-highlight">
+            <SearchCheck size={14} />
+          </div>
+        )}
       </div>
       <div>
         <CircleX

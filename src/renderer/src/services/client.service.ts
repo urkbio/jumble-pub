@@ -3,7 +3,7 @@ import { isReplyNoteEvent } from '@renderer/lib/event'
 import { formatPubkey } from '@renderer/lib/pubkey'
 import { tagNameEquals } from '@renderer/lib/tag'
 import { isWebsocketUrl, normalizeUrl } from '@renderer/lib/url'
-import { TProfile, TRelayList } from '@renderer/types'
+import { TProfile, TRelayInfo, TRelayList } from '@renderer/types'
 import DataLoader from 'dataloader'
 import { LRUCache } from 'lru-cache'
 import {
@@ -55,6 +55,19 @@ class ClientService {
       cacheMap: new LRUCache<string, Promise<TRelayList>>({ max: 10000 })
     }
   )
+  private relayInfoDataLoader = new DataLoader<string, TRelayInfo | undefined>(async (urls) => {
+    return await Promise.all(
+      urls.map(async (url) => {
+        return (await (
+          await fetch(url.replace('ws://', 'http://').replace('wss://', 'https://'), {
+            headers: { Accept: 'application/nostr+json' }
+          })
+        )
+          .json()
+          .catch(() => undefined)) as TRelayInfo | undefined
+      })
+    )
+  })
   private followListCache = new LRUCache<string, Promise<NEvent | undefined>>({
     max: 10000,
     fetchMethod: this._fetchFollowListEvent.bind(this)
@@ -329,6 +342,19 @@ class ClientService {
     return this.profileDataloader.load(id)
   }
 
+  async fetchProfiles(relayUrls: string[], filter: Filter): Promise<TProfile[]> {
+    const events = await this.pool.querySync(relayUrls, {
+      ...filter,
+      kinds: [kinds.Metadata]
+    })
+
+    const profiles = events
+      .sort((a, b) => b.created_at - a.created_at)
+      .map((event) => this.parseProfileFromEvent(event))
+    profiles.forEach((profile) => this.profileDataloader.prime(profile.pubkey, profile))
+    return profiles
+  }
+
   async fetchRelayList(pubkey: string): Promise<TRelayList> {
     return this.relayListDataLoader.load(pubkey)
   }
@@ -339,6 +365,11 @@ class ClientService {
 
   updateFollowListCache(pubkey: string, event: NEvent) {
     this.followListCache.set(pubkey, Promise.resolve(event))
+  }
+
+  async fetchRelayInfos(urls: string[]) {
+    const infos = await this.relayInfoDataLoader.loadMany(urls)
+    return infos.map((info) => (info ? (info instanceof Error ? undefined : info) : undefined))
   }
 
   private async fetchEventById(relayUrls: string[], id: string): Promise<NEvent | undefined> {
@@ -561,7 +592,8 @@ class ClientService {
           profileObj.nip05?.split('@')[0]?.trim() ||
           formatPubkey(event.pubkey),
         nip05: profileObj.nip05,
-        about: profileObj.about
+        about: profileObj.about,
+        created_at: event.created_at
       }
     } catch (err) {
       console.error(err)

@@ -1,10 +1,13 @@
+import { Button } from '@renderer/components/ui/button'
+import { useFetchRelayInfos } from '@renderer/hooks'
 import { useRelaySettings } from '@renderer/providers/RelaySettingsProvider'
 import client from '@renderer/services/client.service'
-import { Save } from 'lucide-react'
+import { Save, SearchCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button } from '../ui/button'
+import { useTranslation } from 'react-i18next'
 
 export default function TemporaryRelayGroup() {
+  const { t } = useTranslation()
   const { temporaryRelayUrls, relayGroups, addRelayGroup, switchRelayGroup } = useRelaySettings()
   const [relays, setRelays] = useState<
     {
@@ -12,6 +15,7 @@ export default function TemporaryRelayGroup() {
       isConnected: boolean
     }[]
   >(temporaryRelayUrls.map((url) => ({ url, isConnected: false })))
+  const relayInfos = useFetchRelayInfos(relays.map((relay) => relay.url))
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -64,6 +68,11 @@ export default function TemporaryRelayGroup() {
               <div className="text-red-500 text-xs">●</div>
             )}
             <div className="text-muted-foreground text-sm">{relay.url}</div>
+            {relayInfos[index]?.supported_nips?.includes(50) && (
+              <div title={t('supports search')} className="text-highlight">
+                <SearchCheck size={14} />
+              </div>
+            )}
           </div>
         </div>
       ))}

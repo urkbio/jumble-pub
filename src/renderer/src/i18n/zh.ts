@@ -62,6 +62,12 @@ export default {
     'Lost in the void': '迷失在虚空中',
     'Carry me home': '带我回家',
     'no replies': '暂无回复',
-    'Reply to': '回复'
+    'Reply to': '回复',
+    Search: '搜索',
+    search: '搜索',
+    'The relays you are connected to do not support search': '您连接的服务器不支持搜索',
+    'supports search': '支持搜索',
+    'Show more...': '查看更多...',
+    'all users': '所有用户'
   }
 }

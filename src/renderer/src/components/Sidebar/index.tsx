@@ -3,12 +3,13 @@ import { IS_ELECTRON } from '@renderer/lib/env'
 import { toHome } from '@renderer/lib/link'
 import { SecondaryPageLink } from '@renderer/PageManager'
 import { Info } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import AboutInfoDialog from '../AboutInfoDialog'
 import AccountButton from '../AccountButton'
 import PostButton from '../PostButton'
 import RefreshButton from '../RefreshButton'
 import RelaySettingsPopover from '../RelaySettingsPopover'
-import { useTranslation } from 'react-i18next'
+import SearchButton from '../SearchButton'
 
 export default function PrimaryPageSidebar() {
   const { t } = useTranslation()
@@ -20,6 +21,7 @@ export default function PrimaryPageSidebar() {
         </div>
         <PostButton variant="sidebar" />
         <RelaySettingsPopover variant="sidebar" />
+        <SearchButton variant="sidebar" />
         <RefreshButton variant="sidebar" />
         {!IS_ELECTRON && (
           <AboutInfoDialog>

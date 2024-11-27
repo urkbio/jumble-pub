@@ -19,11 +19,13 @@ import NotFoundPage from '../NotFoundPage'
 import PubkeyCopy from './PubkeyCopy'
 import QrCodePopover from './QrCodePopover'
 import { useTranslation } from 'react-i18next'
+import { useRelaySettings } from '@renderer/providers/RelaySettingsProvider'
 
 export default function ProfilePage({ id }: { id?: string }) {
   const { t } = useTranslation()
   const { profile, isFetching } = useFetchProfile(id)
   const relayList = useFetchRelayList(profile?.pubkey)
+  const { relayUrls: currentRelayUrls } = useRelaySettings()
   const { pubkey: accountPubkey } = useNostr()
   const { followings: selfFollowings } = useFollowList()
   const { followings } = useFetchFollowings(profile?.pubkey)
@@ -96,7 +98,7 @@ export default function ProfilePage({ id }: { id?: string }) {
       <NoteList
         key={pubkey}
         filter={{ authors: [pubkey] }}
-        relayUrls={relayList.write.slice(0, 5)}
+        relayUrls={relayList.write.slice(0, 5).concat(currentRelayUrls)}
       />
     </SecondaryPageLayout>
   )

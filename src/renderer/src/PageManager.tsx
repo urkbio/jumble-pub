@@ -56,9 +56,8 @@ export function PageManager({
   const [secondaryStack, setSecondaryStack] = useState<TStackItem[]>([])
 
   useEffect(() => {
-    const url = window.location.pathname
-    if (url !== '/') {
-      pushSecondary(url)
+    if (window.location.pathname !== '/') {
+      pushSecondary(window.location.pathname + window.location.search)
     }
 
     const onPopState = (e: PopStateEvent) => {
@@ -175,8 +174,9 @@ function isCurrentPage(stack: TStackItem[], url: string) {
 }
 
 function findAndCreateComponent(url: string) {
+  const path = url.split('?')[0]
   for (const { matcher, element } of routes) {
-    const match = matcher(url)
+    const match = matcher(path)
     if (!match) continue
 
     if (!element) return <NotFoundPage />

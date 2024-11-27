@@ -1,7 +1,19 @@
 export const toHome = () => '/'
-export const toProfile = (pubkey: string) => `/user/${pubkey}`
 export const toNote = (eventId: string) => `/note/${eventId}`
-export const toHashtag = (hashtag: string) => `/hashtag/${hashtag}`
+export const toNoteList = ({ hashtag, search }: { hashtag?: string; search?: string }) => {
+  const path = '/note'
+  const query = new URLSearchParams()
+  if (hashtag) query.set('t', hashtag.toLowerCase())
+  if (search) query.set('s', search)
+  return `${path}?${query.toString()}`
+}
+export const toProfile = (pubkey: string) => `/user/${pubkey}`
+export const toProfileList = ({ search }: { search?: string }) => {
+  const path = '/user'
+  const query = new URLSearchParams()
+  if (search) query.set('s', search)
+  return `${path}?${query.toString()}`
+}
 export const toFollowingList = (pubkey: string) => `/user/${pubkey}/following`
 
 export const toNoStrudelProfile = (id: string) => `https://nostrudel.ninja/#/u/${id}`

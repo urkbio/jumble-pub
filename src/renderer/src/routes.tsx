@@ -1,17 +1,19 @@
 import { match } from 'path-to-regexp'
 import { isValidElement } from 'react'
 import FollowingListPage from './pages/secondary/FollowingListPage'
-import HashtagPage from './pages/secondary/HashtagPage'
 import HomePage from './pages/secondary/HomePage'
+import NoteListPage from './pages/secondary/NoteListPage'
 import NotePage from './pages/secondary/NotePage'
+import ProfileListPage from './pages/secondary/ProfileListPage'
 import ProfilePage from './pages/secondary/ProfilePage'
 
 const ROUTES = [
   { path: '/', element: <HomePage /> },
+  { path: '/note', element: <NoteListPage /> },
   { path: '/note/:id', element: <NotePage /> },
+  { path: '/user', element: <ProfileListPage /> },
   { path: '/user/:id', element: <ProfilePage /> },
-  { path: '/user/:id/following', element: <FollowingListPage /> },
-  { path: '/hashtag/:id', element: <HashtagPage /> }
+  { path: '/user/:id/following', element: <FollowingListPage /> }
 ]
 
 export const routes = ROUTES.map(({ path, element }) => ({

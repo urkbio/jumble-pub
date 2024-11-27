@@ -9,6 +9,7 @@ export function useFetchProfile(id?: string) {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setIsFetching(true)
       try {
         if (!id) {
           setIsFetching(false)

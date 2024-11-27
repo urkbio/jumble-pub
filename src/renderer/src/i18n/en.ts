@@ -62,6 +62,13 @@ export default {
     'Lost in the void': 'Lost in the void',
     'Carry me home': 'Carry me home',
     'no replies': 'no replies',
-    'Reply to': 'Reply to'
+    'Reply to': 'Reply to',
+    Search: 'Search',
+    search: 'search',
+    'The relays you are connected to do not support search':
+      'The relays you are connected to do not support search',
+    'supports search': 'supports search',
+    'Show more...': 'Show more...',
+    'all users': 'all users'
   }
 }
