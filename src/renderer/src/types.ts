@@ -16,3 +16,9 @@ export type TRelayList = {
 export type TRelayInfo = {
   supported_nips?: number[]
 }
+
+export type TWebMetadata = {
+  title?: string | null
+  description?: string | null
+  image?: string | null
+}

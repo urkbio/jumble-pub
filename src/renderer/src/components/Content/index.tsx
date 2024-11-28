@@ -13,6 +13,7 @@ import {
 } from '../Embedded'
 import ImageGallery from '../ImageGallery'
 import VideoPlayer from '../VideoPlayer'
+import WebPreview from '../WebPreview'
 
 const Content = memo(
   ({
@@ -24,7 +25,7 @@ const Content = memo(
     className?: string
     size?: 'normal' | 'small'
   }) => {
-    const { content, images, videos, embeddedNotes } = preprocess(event.content)
+    const { content, images, videos, embeddedNotes, lastNonMediaUrl } = preprocess(event.content)
     const isNsfw = isNsfwEvent(event)
     const nodes = embedded(content, [
       embeddedWebsocketUrlRenderer,
@@ -62,6 +63,17 @@ const Content = memo(
       })
     }
 
+    // Add website preview
+    if (lastNonMediaUrl) {
+      nodes.push(
+        <WebPreview
+          className={size === 'small' ? 'mt-1' : 'mt-2'}
+          key={`web-preview-${event.id}`}
+          url={lastNonMediaUrl}
+        />
+      )
+    }
+
     // Add embedded notes
     if (embeddedNotes.length) {
       embeddedNotes.forEach((note, index) => {
@@ -79,6 +91,7 @@ export default Content
 function preprocess(content: string) {
   const urlRegex = /(https?:\/\/[^\s"']+)/g
   const urls = content.match(urlRegex) || []
+  let lastNonMediaUrl: string | undefined
 
   let c = content
   const images: string[] = []
@@ -91,6 +104,8 @@ function preprocess(content: string) {
     } else if (isVideo(url)) {
       c = c.replace(url, '').trim()
       videos.push(url)
+    } else {
+      lastNonMediaUrl = url
     }
   })
 
@@ -101,7 +116,7 @@ function preprocess(content: string) {
     embeddedNotes.push(note)
   })
 
-  return { content: c, images, videos, embeddedNotes }
+  return { content: c, images, videos, embeddedNotes, lastNonMediaUrl }
 }
 
 function isImage(url: string) {
