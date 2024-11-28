@@ -70,6 +70,7 @@ const Content = memo(
           className={size === 'small' ? 'mt-1' : 'mt-2'}
           key={`web-preview-${event.id}`}
           url={lastNonMediaUrl}
+          size={size}
         />
       )
     }
