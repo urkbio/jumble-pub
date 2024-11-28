@@ -1,9 +1,11 @@
 import { Image } from '@nextui-org/image'
 import { useFetchWebMetadata } from '@renderer/hooks/useFetchWebMetadata'
 import { cn } from '@renderer/lib/utils'
+import { useMemo } from 'react'
 
 export default function WebPreview({ url, className }: { url: string; className?: string }) {
   const { title, description, image } = useFetchWebMetadata(url)
+  const hostname = useMemo(() => new URL(url).hostname, [url])
 
   if (!title && !description && !image) {
     return null
@@ -19,8 +21,9 @@ export default function WebPreview({ url, className }: { url: string; className?
     >
       {image && <Image src={image} className="rounded-l-lg object-cover w-2/5" removeWrapper />}
       <div className={`flex-1 w-0 p-2 border ${image ? 'rounded-r-lg' : 'rounded-lg'}`}>
-        <div className="font-semibold truncate">{title}</div>
-        <div className="text-sm text-muted-foreground line-clamp-2">{description}</div>
+        <div className="text-xs text-muted-foreground">{hostname}</div>
+        <div className="font-semibold line-clamp-2">{title}</div>
+        <div className="text-xs text-muted-foreground line-clamp-5">{description}</div>
       </div>
     </div>
   )
