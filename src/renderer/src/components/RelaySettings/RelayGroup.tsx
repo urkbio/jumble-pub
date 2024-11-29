@@ -82,6 +82,9 @@ function RelayGroupName({ groupName }: { groupName: string }) {
   const hasRelayUrls = relayGroups.find((group) => group.groupName === groupName)?.relayUrls.length
 
   const saveNewGroupName = () => {
+    if (groupName === newGroupName) {
+      return setRenamingGroup(null)
+    }
     if (relayGroups.find((group) => group.groupName === newGroupName)) {
       return setNewNameError(t('relay collection name already exists'))
     }
