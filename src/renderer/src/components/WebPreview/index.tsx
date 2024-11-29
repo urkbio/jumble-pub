@@ -13,7 +13,13 @@ export default function WebPreview({
   size?: 'normal' | 'small'
 }) {
   const { title, description, image } = useFetchWebMetadata(url)
-  const hostname = useMemo(() => new URL(url).hostname, [url])
+  const hostname = useMemo(() => {
+    try {
+      return new URL(url).hostname
+    } catch {
+      return ''
+    }
+  }, [url])
 
   if (!title) {
     return null
