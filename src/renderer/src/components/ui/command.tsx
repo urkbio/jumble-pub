@@ -3,7 +3,13 @@ import { Command as CommandPrimitive } from 'cmdk'
 import { Search } from 'lucide-react'
 import * as React from 'react'
 
-import { Dialog, DialogContent } from '@renderer/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@renderer/components/ui/dialog'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { cn } from '@renderer/lib/utils'
 
@@ -25,6 +31,10 @@ Command.displayName = CommandPrimitive.displayName
 const CommandDialog = ({ children, ...props }: DialogProps) => {
   return (
     <Dialog {...props}>
+      <DialogHeader className="hidden">
+        <DialogTitle />
+        <DialogDescription />
+      </DialogHeader>
       <DialogContent className="overflow-hidden p-0 shadow-lg top-4 translate-y-0 data-[state=closed]:slide-out-to-top-0 data-[state=open]:slide-in-from-top-0">
         <Command
           shouldFilter={false}

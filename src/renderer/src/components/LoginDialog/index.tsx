@@ -42,7 +42,7 @@ export default function LoginDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="w-80">
         <DialogHeader>
-          <DialogTitle />
+          <DialogTitle className="hidden" />
           <DialogDescription className="text-destructive">
             {!canLogin && 'Encryption is not available in your device.'}
           </DialogDescription>

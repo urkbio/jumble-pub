@@ -107,7 +107,7 @@ export default function PostDialog({
                   t('New post')
                 )}
               </DialogTitle>
-              <DialogDescription />
+              <DialogDescription className="hidden" />
             </DialogHeader>
             <Textarea
               className="h-32"

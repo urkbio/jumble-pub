@@ -23,8 +23,7 @@ class WebService {
             ?.content
 
           return { title, description, image }
-        } catch (e) {
-          console.error(e)
+        } catch {
           return {}
         }
       })

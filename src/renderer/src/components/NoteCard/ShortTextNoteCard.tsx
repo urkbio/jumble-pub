@@ -1,10 +1,10 @@
-import { Event } from 'nostr-tools'
 import { Card } from '@renderer/components/ui/card'
+import { useFetchEvent } from '@renderer/hooks'
+import { getParentEventId, getRootEventId } from '@renderer/lib/event'
 import { toNote } from '@renderer/lib/link'
 import { useSecondaryPage } from '@renderer/PageManager'
+import { Event } from 'nostr-tools'
 import Note from '../Note'
-import { useFetchEventById } from '@renderer/hooks'
-import { getParentEventId, getRootEventId } from '@renderer/lib/event'
 
 export default function ShortTextNoteCard({
   event,
@@ -18,8 +18,8 @@ export default function ShortTextNoteCard({
   hideStats?: boolean
 }) {
   const { push } = useSecondaryPage()
-  const { event: rootEvent } = useFetchEventById(getRootEventId(event))
-  const { event: parentEvent } = useFetchEventById(getParentEventId(event))
+  const { event: rootEvent } = useFetchEvent(getRootEventId(event))
+  const { event: parentEvent } = useFetchEvent(getParentEventId(event))
 
   return (
     <div

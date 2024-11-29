@@ -30,7 +30,7 @@ class ClientService {
 
   private eventCache = new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 })
   private eventDataLoader = new DataLoader<string, NEvent | undefined>(
-    (ids) => Promise.all(ids.map((id) => this._fetchEventByBench32Id(id))),
+    (ids) => Promise.all(ids.map((id) => this._fetchEvent(id))),
     { cacheMap: this.eventCache }
   )
   private fetchEventFromBigRelaysDataloader = new DataLoader<string, NEvent | undefined>(
@@ -42,7 +42,7 @@ class ClientService {
   })
   private profileCache = new LRUCache<string, Promise<TProfile>>({ max: 10000 })
   private profileDataloader = new DataLoader<string, TProfile>(
-    (ids) => Promise.all(ids.map((id) => this._fetchProfileByBench32Id(id))),
+    (ids) => Promise.all(ids.map((id) => this._fetchProfile(id))),
     { cacheMap: this.profileCache }
   )
   private fetchProfileFromBigRelaysDataloader = new DataLoader<string, TProfile | undefined>(
@@ -58,13 +58,14 @@ class ClientService {
   private relayInfoDataLoader = new DataLoader<string, TRelayInfo | undefined>(async (urls) => {
     return await Promise.all(
       urls.map(async (url) => {
-        return (await (
-          await fetch(url.replace('ws://', 'http://').replace('wss://', 'https://'), {
+        try {
+          const res = await fetch(url.replace('ws://', 'http://').replace('wss://', 'https://'), {
             headers: { Accept: 'application/nostr+json' }
           })
-        )
-          .json()
-          .catch(() => undefined)) as TRelayInfo | undefined
+          return res.json() as TRelayInfo
+        } catch {
+          return undefined
+        }
       })
     )
   })
@@ -290,7 +291,7 @@ class ClientService {
     return events
   }
 
-  async fetchEventByBench32Id(id: string): Promise<NEvent | undefined> {
+  async fetchEvent(id: string): Promise<NEvent | undefined> {
     if (!/^[0-9a-f]{64}$/.test(id)) {
       let eventId: string | undefined
       const { type, data } = nip19.decode(id)
@@ -316,7 +317,7 @@ class ClientService {
     this.eventDataLoader.prime(event.id, Promise.resolve(event))
   }
 
-  async fetchProfileByBench32Id(id: string): Promise<TProfile | undefined> {
+  async fetchProfile(id: string): Promise<TProfile | undefined> {
     if (!/^[0-9a-f]{64}$/.test(id)) {
       let pubkey: string | undefined
       const { data, type } = nip19.decode(id)
@@ -381,7 +382,7 @@ class ClientService {
     return this.tryHarderToFetchEvent(relayUrls, { ids: [id], limit: 1 }, true)
   }
 
-  private async _fetchEventByBench32Id(id: string): Promise<NEvent | undefined> {
+  private async _fetchEvent(id: string): Promise<NEvent | undefined> {
     let filter: Filter | undefined
     let relays: string[] = []
     if (/^[0-9a-f]{64}$/.test(id)) {
@@ -426,7 +427,7 @@ class ClientService {
     return event
   }
 
-  private async _fetchProfileByBench32Id(id: string): Promise<TProfile> {
+  private async _fetchProfile(id: string): Promise<TProfile> {
     let pubkey: string | undefined
     let relays: string[] = []
     if (/^[0-9a-f]{64}$/.test(id)) {

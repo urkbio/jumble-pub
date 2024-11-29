@@ -70,7 +70,7 @@ export async function extractMentions(content: string, parentEvent?: Event) {
       } else if (type === 'npub') {
         pubkeySet.add(data)
       } else if (['nevent', 'note', 'naddr'].includes(type)) {
-        const event = await client.fetchEventByBench32Id(id)
+        const event = await client.fetchEvent(id)
         if (event) {
           pubkeySet.add(event.pubkey)
           quoteEventIdSet.add(event.id)

@@ -1,4 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@renderer/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@renderer/components/ui/dialog'
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area'
 import { Event } from 'nostr-tools'
 
@@ -16,6 +22,7 @@ export default function RawEventDialog({
       <DialogContent className="h-[60vh]">
         <DialogHeader>
           <DialogTitle>Raw Event</DialogTitle>
+          <DialogDescription className="hidden" />
         </DialogHeader>
         <ScrollArea className="h-full">
           <pre className="text-sm overflow-x-auto text-muted-foreground">

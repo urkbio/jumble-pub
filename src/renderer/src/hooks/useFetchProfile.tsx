@@ -17,7 +17,7 @@ export function useFetchProfile(id?: string) {
           return
         }
 
-        const profile = await client.fetchProfileByBench32Id(id)
+        const profile = await client.fetchProfile(id)
         if (profile) {
           setProfile(profile)
         }

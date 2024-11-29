@@ -2,7 +2,7 @@ import client from '@renderer/services/client.service'
 import { Event } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 
-export function useFetchEventById(id?: string) {
+export function useFetchEvent(id?: string) {
   const [isFetching, setIsFetching] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const [event, setEvent] = useState<Event | undefined>(undefined)
@@ -17,7 +17,7 @@ export function useFetchEventById(id?: string) {
       }
 
       try {
-        const event = await client.fetchEventByBench32Id(id)
+        const event = await client.fetchEvent(id)
         if (event) {
           setEvent(event)
         }

@@ -6,7 +6,7 @@ import Username from '@renderer/components/Username'
 import { Card } from '@renderer/components/ui/card'
 import { Separator } from '@renderer/components/ui/separator'
 import { Skeleton } from '@renderer/components/ui/skeleton'
-import { useFetchEventById } from '@renderer/hooks'
+import { useFetchEvent } from '@renderer/hooks'
 import SecondaryPageLayout from '@renderer/layouts/SecondaryPageLayout'
 import { getParentEventId, getRootEventId } from '@renderer/lib/event'
 import { toNote } from '@renderer/lib/link'
@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 
 export default function NotePage({ id }: { id?: string }) {
   const { t } = useTranslation()
-  const { event, isFetching } = useFetchEventById(id)
+  const { event, isFetching } = useFetchEvent(id)
   const parentEventId = useMemo(() => getParentEventId(event), [event])
   const rootEventId = useMemo(() => getRootEventId(event), [event])
 
@@ -42,7 +42,7 @@ export default function NotePage({ id }: { id?: string }) {
 
 function ParentNote({ eventId }: { eventId?: string }) {
   const { push } = useSecondaryPage()
-  const { event } = useFetchEventById(eventId)
+  const { event } = useFetchEvent(eventId)
   if (!event) return null
 
   return (
