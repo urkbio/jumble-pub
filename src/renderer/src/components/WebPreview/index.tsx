@@ -36,7 +36,7 @@ export default function WebPreview({
       {image && (
         <Image
           src={image}
-          className={`rounded-l-lg object-cover ${size === 'normal' ? 'h-44' : 'h-24'}`}
+          className={`rounded-l-lg object-cover w-2/5 ${size === 'normal' ? 'h-44' : 'h-24'}`}
           removeWrapper
         />
       )}
