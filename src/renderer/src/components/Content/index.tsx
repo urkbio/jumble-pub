@@ -79,7 +79,13 @@ const Content = memo(
     if (embeddedNotes.length) {
       embeddedNotes.forEach((note, index) => {
         const id = note.split(':')[1]
-        nodes.push(<EmbeddedNote key={`embedded-event-${index}`} noteId={id} />)
+        nodes.push(
+          <EmbeddedNote
+            key={`embedded-event-${index}`}
+            noteId={id}
+            className={size === 'small' ? 'mt-1' : 'mt-2'}
+          />
+        )
       })
     }
 

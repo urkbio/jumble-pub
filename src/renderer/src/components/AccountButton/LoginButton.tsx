@@ -5,12 +5,12 @@ import { LogIn } from 'lucide-react'
 export default function LoginButton({
   variant = 'titlebar'
 }: {
-  variant?: 'titlebar' | 'sidebar'
+  variant?: 'titlebar' | 'sidebar' | 'small-screen-titlebar'
 }) {
   const { checkLogin } = useNostr()
 
   let triggerComponent: React.ReactNode
-  if (variant === 'titlebar') {
+  if (variant === 'titlebar' || variant === 'small-screen-titlebar') {
     triggerComponent = <LogIn />
   } else {
     triggerComponent = (

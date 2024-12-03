@@ -3,14 +3,20 @@ import { useSecondaryPage } from '@renderer/PageManager'
 import { ChevronLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-export default function BackButton({ hide = false }: { hide?: boolean }) {
+export default function BackButton({
+  hide = false,
+  variant = 'titlebar'
+}: {
+  hide?: boolean
+  variant?: 'titlebar' | 'small-screen-titlebar'
+}) {
   const { t } = useTranslation()
   const { pop } = useSecondaryPage()
 
   return (
     <>
       {!hide && (
-        <Button variant="titlebar" size="titlebar" title={t('back')} onClick={() => pop()}>
+        <Button variant={variant} size={variant} title={t('back')} onClick={() => pop()}>
           <ChevronLeft />
         </Button>
       )}

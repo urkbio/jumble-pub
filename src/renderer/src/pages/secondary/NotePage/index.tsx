@@ -38,7 +38,7 @@ export default function NotePage({ id }: { id?: string }) {
         <ParentNote key={`parent-note-${event.id}`} eventId={parentEventId} />
         <Note key={`note-${event.id}`} event={event} fetchNoteStats />
       </div>
-      <Separator className="my-4" />
+      <Separator className="mb-2 mt-4" />
       <ReplyNoteList key={`reply-note-list-${event.id}`} event={event} className="max-sm:px-2" />
     </SecondaryPageLayout>
   )

@@ -7,7 +7,7 @@ import { SearchDialog } from '../SearchDialog'
 export default function RefreshButton({
   variant = 'titlebar'
 }: {
-  variant?: 'titlebar' | 'sidebar'
+  variant?: 'titlebar' | 'sidebar' | 'small-screen-titlebar'
 }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)

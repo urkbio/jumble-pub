@@ -3,7 +3,11 @@ import { useTheme } from '@renderer/providers/ThemeProvider'
 import { Moon, Sun, SunMoon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-export default function ThemeToggle() {
+export default function ThemeToggle({
+  variant = 'titlebar'
+}: {
+  variant?: 'titlebar' | 'small-screen-titlebar'
+}) {
   const { t } = useTranslation()
   const { themeSetting, setThemeSetting } = useTheme()
 
@@ -11,8 +15,8 @@ export default function ThemeToggle() {
     <>
       {themeSetting === 'system' ? (
         <Button
-          variant="titlebar"
-          size="titlebar"
+          variant={variant}
+          size={variant}
           onClick={() => setThemeSetting('light')}
           title={t('switch to light theme')}
         >
@@ -20,8 +24,8 @@ export default function ThemeToggle() {
         </Button>
       ) : themeSetting === 'light' ? (
         <Button
-          variant="titlebar"
-          size="titlebar"
+          variant={variant}
+          size={variant}
           onClick={() => setThemeSetting('dark')}
           title={t('switch to dark theme')}
         >
@@ -29,8 +33,8 @@ export default function ThemeToggle() {
         </Button>
       ) : (
         <Button
-          variant="titlebar"
-          size="titlebar"
+          variant={variant}
+          size={variant}
           onClick={() => setThemeSetting('system')}
           title={t('switch to system theme')}
         >

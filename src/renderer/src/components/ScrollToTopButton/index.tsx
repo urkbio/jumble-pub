@@ -1,40 +1,25 @@
 import { Button } from '@renderer/components/ui/button'
 import { cn } from '@renderer/lib/utils'
 import { ChevronUp } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 export default function ScrollToTopButton({
   scrollAreaRef,
-  className
+  className,
+  visible = true
 }: {
   scrollAreaRef: React.RefObject<HTMLDivElement>
   className?: string
+  visible?: boolean
 }) {
-  const [showScrollToTop, setShowScrollToTop] = useState(false)
-
   const handleScrollToTop = () => {
     scrollAreaRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
-
-  const handleScroll = () => {
-    if (scrollAreaRef.current) {
-      setShowScrollToTop(scrollAreaRef.current.scrollTop > 600)
-    }
-  }
-
-  useEffect(() => {
-    const scrollArea = scrollAreaRef.current
-    scrollArea?.addEventListener('scroll', handleScroll)
-    return () => {
-      scrollArea?.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
 
   return (
     <Button
       variant="secondary-2"
       className={cn(
-        `absolute bottom-8 right-2 rounded-full w-10 h-10 p-0 hover:text-background transition-transform ${showScrollToTop ? '' : 'translate-y-20'}`,
+        `absolute bottom-2 right-2 rounded-full w-11 h-11 p-0 hover:text-background transition-transform ${visible ? '' : 'translate-y-14'}`,
         className
       )}
       onClick={handleScrollToTop}

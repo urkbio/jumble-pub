@@ -6,7 +6,7 @@ import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { isMacOS } from '@renderer/lib/env'
 import { cn } from '@renderer/lib/utils'
 import { useScreenSize } from '@renderer/providers/ScreenSizeProvider'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function SecondaryPageLayout({
   children,
@@ -18,30 +18,58 @@ export default function SecondaryPageLayout({
   hideBackButton?: boolean
 }): JSX.Element {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(true)
+  const [lastScrollTop, setLastScrollTop] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = scrollAreaRef.current?.scrollTop || 0
+      if (scrollTop > lastScrollTop) {
+        setVisible(false)
+      } else {
+        setVisible(true)
+      }
+      setLastScrollTop(scrollTop)
+    }
+
+    const scrollArea = scrollAreaRef.current
+    scrollArea?.addEventListener('scroll', handleScroll)
+
+    return () => {
+      scrollArea?.removeEventListener('scroll', handleScroll)
+    }
+  }, [lastScrollTop])
+
   return (
     <ScrollArea ref={scrollAreaRef} className="h-full" scrollBarClassName="pt-9">
-      <SecondaryPageTitlebar content={titlebarContent} hideBackButton={hideBackButton} />
+      <SecondaryPageTitlebar
+        content={titlebarContent}
+        hideBackButton={hideBackButton}
+        visible={visible}
+      />
       <div className={cn('sm:px-4 pb-4 pt-11 w-full h-full', isMacOS() ? 'max-sm:pt-20' : '')}>
         {children}
       </div>
-      <ScrollToTopButton scrollAreaRef={scrollAreaRef} />
+      <ScrollToTopButton scrollAreaRef={scrollAreaRef} visible={visible} />
     </ScrollArea>
   )
 }
 
 export function SecondaryPageTitlebar({
   content,
-  hideBackButton = false
+  hideBackButton = false,
+  visible = true
 }: {
   content?: React.ReactNode
   hideBackButton?: boolean
+  visible?: boolean
 }): JSX.Element {
   const { isSmallScreen } = useScreenSize()
 
   if (isSmallScreen) {
     return (
-      <Titlebar className="pl-2">
-        <BackButton hide={hideBackButton} />
+      <Titlebar className="pl-2" visible={visible}>
+        <BackButton hide={hideBackButton} variant="small-screen-titlebar" />
         <div className="truncate text-lg">{content}</div>
       </Titlebar>
     )

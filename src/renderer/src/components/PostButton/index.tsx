@@ -4,7 +4,11 @@ import { PencilLine } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export default function PostButton({ variant = 'titlebar' }: { variant?: 'titlebar' | 'sidebar' }) {
+export default function PostButton({
+  variant = 'titlebar'
+}: {
+  variant?: 'titlebar' | 'sidebar' | 'small-screen-titlebar'
+}) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 

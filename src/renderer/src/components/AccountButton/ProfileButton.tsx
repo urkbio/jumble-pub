@@ -18,7 +18,7 @@ export default function ProfileButton({
   variant = 'titlebar'
 }: {
   pubkey: string
-  variant?: 'titlebar' | 'sidebar'
+  variant?: 'titlebar' | 'sidebar' | 'small-screen-titlebar'
 }) {
   const { t } = useTranslation()
   const { logout } = useNostr()
@@ -33,7 +33,18 @@ export default function ProfileButton({
   if (variant === 'titlebar') {
     triggerComponent = (
       <button>
-        <Avatar className="w-6 h-6 hover:opacity-90">
+        <Avatar className="ml-2 w-7 h-7 hover:opacity-90">
+          <AvatarImage src={avatar} />
+          <AvatarFallback>
+            <img src={defaultAvatar} />
+          </AvatarFallback>
+        </Avatar>
+      </button>
+    )
+  } else if (variant === 'small-screen-titlebar') {
+    triggerComponent = (
+      <button>
+        <Avatar className="w-8 h-8 hover:opacity-90">
           <AvatarImage src={avatar} />
           <AvatarFallback>
             <img src={defaultAvatar} />

@@ -5,7 +5,7 @@ import ProfileButton from './ProfileButton'
 export default function AccountButton({
   variant = 'titlebar'
 }: {
-  variant?: 'titlebar' | 'sidebar'
+  variant?: 'titlebar' | 'sidebar' | 'small-screen-titlebar'
 }) {
   const { pubkey } = useNostr()
 

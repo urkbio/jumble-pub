@@ -4,15 +4,18 @@ import RefreshButton from '@renderer/components/RefreshButton'
 import RelaySettingsButton from '@renderer/components/RelaySettingsButton'
 import ScrollToTopButton from '@renderer/components/ScrollToTopButton'
 import SearchButton from '@renderer/components/SearchButton'
+import ThemeToggle from '@renderer/components/ThemeToggle'
 import { Titlebar } from '@renderer/components/Titlebar'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import { isMacOS } from '@renderer/lib/env'
 import { cn } from '@renderer/lib/utils'
 import { useScreenSize } from '@renderer/providers/ScreenSizeProvider'
-import { forwardRef, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 const PrimaryPageLayout = forwardRef(({ children }: { children?: React.ReactNode }, ref) => {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(true)
+  const [lastScrollTop, setLastScrollTop] = useState(0)
 
   useImperativeHandle(
     ref,
@@ -24,17 +27,36 @@ const PrimaryPageLayout = forwardRef(({ children }: { children?: React.ReactNode
     []
   )
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = scrollAreaRef.current?.scrollTop || 0
+      if (scrollTop > lastScrollTop) {
+        setVisible(false)
+      } else {
+        setVisible(true)
+      }
+      setLastScrollTop(scrollTop)
+    }
+
+    const scrollArea = scrollAreaRef.current
+    scrollArea?.addEventListener('scroll', handleScroll)
+
+    return () => {
+      scrollArea?.removeEventListener('scroll', handleScroll)
+    }
+  }, [lastScrollTop])
+
   return (
     <ScrollArea
       ref={scrollAreaRef}
       className="h-full w-full"
       scrollBarClassName="pt-9 max-sm:pt-0 xl:pt-0"
     >
-      <PrimaryPageTitlebar />
-      <div className={cn('sm:px-4 pb-4 pt-11 xl:pt-4', isMacOS() ? 'max-sm:pt-20' : 'max-sm:pt-9')}>
+      <PrimaryPageTitlebar visible={visible} />
+      <div className={cn('sm:px-4 pb-4 pt-11 xl:pt-4', isMacOS() ? 'max-sm:pt-20' : '')}>
         {children}
       </div>
-      <ScrollToTopButton scrollAreaRef={scrollAreaRef} />
+      <ScrollToTopButton scrollAreaRef={scrollAreaRef} visible={visible} />
     </ScrollArea>
   )
 })
@@ -45,18 +67,24 @@ export type TPrimaryPageLayoutRef = {
   scrollToTop: () => void
 }
 
-function PrimaryPageTitlebar() {
+function PrimaryPageTitlebar({ visible = true }: { visible?: boolean }) {
   const { isSmallScreen } = useScreenSize()
 
   if (isSmallScreen) {
     return (
-      <Titlebar className="justify-between px-4">
-        <div className="text-2xl font-extrabold font-mono">Jumble</div>
-        <div className="flex gap-2 items-center">
-          <SearchButton />
-          <PostButton />
-          <RelaySettingsButton />
-          <AccountButton />
+      <Titlebar
+        className="justify-between px-4 transition-transform duration-500"
+        visible={visible}
+      >
+        <div className="flex gap-1 items-center">
+          <div className="text-2xl font-extrabold font-mono">Jumble</div>
+          <ThemeToggle variant="small-screen-titlebar" />
+        </div>
+        <div className="flex gap-1 items-center">
+          <SearchButton variant="small-screen-titlebar" />
+          <PostButton variant="small-screen-titlebar" />
+          <RelaySettingsButton variant="small-screen-titlebar" />
+          <AccountButton variant="small-screen-titlebar" />
         </div>
       </Titlebar>
     )

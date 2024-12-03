@@ -132,7 +132,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
       >
         {loading ? t('loading...') : until ? t('load more older replies') : null}
       </div>
-      {replies.length > 0 && (loading || until) && <Separator className="my-4" />}
+      {replies.length > 0 && (loading || until) && <Separator className="my-2" />}
       <div className={cn('mb-4', className)}>
         {replies.map((reply, index) => {
           const info = replyMap[reply.id]

@@ -41,7 +41,7 @@ const CommandDialog = ({
       </DialogHeader>
       <DialogContent
         className={cn(
-          'overflow-hidden p-0 shadow-lg top-4 translate-y-0 data-[state=closed]:slide-out-to-top-0 data-[state=open]:slide-in-from-top-0',
+          'overflow-hidden p-0 shadow-lg top-4 translate-y-0 data-[state=closed]:slide-out-to-top-4 data-[state=open]:slide-in-from-top-4',
           classNames?.content
         )}
       >

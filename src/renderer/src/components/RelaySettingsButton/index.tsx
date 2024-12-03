@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 export default function RelaySettingsButton({
   variant = 'titlebar'
 }: {
-  variant?: 'titlebar' | 'sidebar'
+  variant?: 'titlebar' | 'sidebar' | 'small-screen-titlebar'
 }) {
   const { t } = useTranslation()
   const { isSmallScreen } = useScreenSize()
