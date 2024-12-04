@@ -46,14 +46,6 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
         .map((url) => normalizeUrl(url))
       if (tempRelays.length) {
         setTemporaryRelayUrls(tempRelays)
-        // remove relay urls from query string
-        searchParams.delete('r')
-        const newSearch = searchParams.toString()
-        window.history.replaceState(
-          {},
-          '',
-          `${window.location.pathname}${newSearch.length ? `?${newSearch}` : ''}`
-        )
       }
       const storedGroups = await storage.getRelayGroups()
       setRelayGroups(storedGroups)

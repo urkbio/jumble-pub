@@ -121,7 +121,7 @@ export default function NoteList({
   return (
     <>
       {newEvents.length > 0 && (
-        <div className="flex justify-center w-full mb-4">
+        <div className="flex justify-center w-full sm:mb-4 max-sm:mt-2">
           <Button size="lg" onClick={showNewEvents}>
             {t('show new notes')}
           </Button>
