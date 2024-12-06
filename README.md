@@ -1,6 +1,15 @@
-# jumble
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./resources/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./resources/logo-light.svg">
+    <img src="./resources/logo-light.svg" alt="Jumble Logo" width="400" />
+  </picture>
+  <p>logo designed by <a href="http://wolfertdan.com/">Daniel David</a></p>
+</div>
 
-Yet another Nostr client
+# Jumble
+
+A beautiful nostr client focused on browsing relay feeds
 
 ## Features
 
