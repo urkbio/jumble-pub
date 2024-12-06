@@ -1,5 +1,5 @@
 export const toHome = () => '/'
-export const toNote = (eventId: string) => `/note/${eventId}`
+export const toNote = (eventId: string) => `/notes/${eventId}`
 export const toNoteList = ({
   hashtag,
   search,
@@ -9,21 +9,21 @@ export const toNoteList = ({
   search?: string
   relay?: string
 }) => {
-  const path = '/note'
+  const path = '/notes'
   const query = new URLSearchParams()
   if (hashtag) query.set('t', hashtag.toLowerCase())
   if (search) query.set('s', search)
   if (relay) query.set('relay', relay)
   return `${path}?${query.toString()}`
 }
-export const toProfile = (pubkey: string) => `/user/${pubkey}`
+export const toProfile = (pubkey: string) => `/users/${pubkey}`
 export const toProfileList = ({ search }: { search?: string }) => {
-  const path = '/user'
+  const path = '/users'
   const query = new URLSearchParams()
   if (search) query.set('s', search)
   return `${path}?${query.toString()}`
 }
-export const toFollowingList = (pubkey: string) => `/user/${pubkey}/following`
+export const toFollowingList = (pubkey: string) => `/users/${pubkey}/following`
 export const toRelaySettings = () => '/relay-settings'
 
 export const toNoStrudelProfile = (id: string) => `https://nostrudel.ninja/#/u/${id}`

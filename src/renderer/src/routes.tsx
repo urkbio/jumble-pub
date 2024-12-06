@@ -10,11 +10,11 @@ import RelaySettingsPage from './pages/secondary/RelaySettingsPage'
 
 const ROUTES = [
   { path: '/', element: <HomePage /> },
-  { path: '/note', element: <NoteListPage /> },
-  { path: '/note/:id', element: <NotePage /> },
-  { path: '/user', element: <ProfileListPage /> },
-  { path: '/user/:id', element: <ProfilePage /> },
-  { path: '/user/:id/following', element: <FollowingListPage /> },
+  { path: '/notes', element: <NoteListPage /> },
+  { path: '/notes/:id', element: <NotePage /> },
+  { path: '/users', element: <ProfileListPage /> },
+  { path: '/users/:id', element: <ProfilePage /> },
+  { path: '/users/:id/following', element: <FollowingListPage /> },
   { path: '/relay-settings', element: <RelaySettingsPage /> }
 ]
 
