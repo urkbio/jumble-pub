@@ -21,7 +21,7 @@ type TNostrContext = {
    */
   publish: (draftEvent: TDraftEvent, additionalRelayUrls?: string[]) => Promise<Event>
   signHttpAuth: (url: string, method: string) => Promise<string>
-  singEvent: (draftEvent: TDraftEvent) => Promise<Event>
+  signEvent: (draftEvent: TDraftEvent) => Promise<Event>
   checkLogin: (cb?: () => void | Promise<void>) => void
 }
 
@@ -117,7 +117,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     return event
   }
 
-  const singEvent = async (draftEvent: TDraftEvent) => {
+  const signEvent = async (draftEvent: TDraftEvent) => {
     const event = await window.nostr?.signEvent(draftEvent)
     if (!event) {
       throw new Error('sign event failed')
@@ -173,7 +173,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         publish,
         signHttpAuth,
         checkLogin,
-        singEvent
+        signEvent
       }}
     >
       {children}

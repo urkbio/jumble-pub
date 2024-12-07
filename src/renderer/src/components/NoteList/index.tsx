@@ -1,4 +1,5 @@
 import { Button } from '@renderer/components/ui/button'
+import { useFetchRelayInfos } from '@renderer/hooks'
 import { isReplyNoteEvent } from '@renderer/lib/event'
 import { cn } from '@renderer/lib/utils'
 import { useNostr } from '@renderer/providers/NostrProvider'
@@ -6,8 +7,8 @@ import client from '@renderer/services/client.service'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import NoteCard from '../NoteCard'
 import { useTranslation } from 'react-i18next'
+import NoteCard from '../NoteCard'
 
 export default function NoteList({
   relayUrls,
@@ -19,7 +20,8 @@ export default function NoteList({
   className?: string
 }) {
   const { t } = useTranslation()
-  const { isReady, singEvent } = useNostr()
+  const { isReady, signEvent } = useNostr()
+  const { isFetching: isFetchingRelayInfo, areAlgoRelays } = useFetchRelayInfos(relayUrls)
   const [events, setEvents] = useState<Event[]>([])
   const [newEvents, setNewEvents] = useState<Event[]>([])
   const [until, setUntil] = useState<number>(() => dayjs().unix())
@@ -30,13 +32,13 @@ export default function NoteList({
   const noteFilter = useMemo(() => {
     return {
       kinds: [kinds.ShortTextNote, kinds.Repost],
-      limit: 200,
+      limit: areAlgoRelays ? 500 : 200,
       ...filter
     }
-  }, [JSON.stringify(filter)])
+  }, [JSON.stringify(filter), areAlgoRelays])
 
   useEffect(() => {
-    if (!isReady) return
+    if (!isReady || isFetchingRelayInfo) return
 
     setInitialized(false)
     setEvents([])
@@ -48,12 +50,18 @@ export default function NoteList({
       noteFilter,
       {
         onEose: (events) => {
+          if (!areAlgoRelays) {
+            events.sort((a, b) => b.created_at - a.created_at)
+          }
           const processedEvents = events.filter((e) => !isReplyNoteEvent(e))
           if (processedEvents.length > 0) {
             setEvents((pre) => [...pre, ...processedEvents])
           }
           if (events.length > 0) {
             setUntil(events[events.length - 1].created_at - 1)
+          }
+          if (areAlgoRelays) {
+            setHasMore(false)
           }
           setInitialized(true)
         },
@@ -63,13 +71,19 @@ export default function NoteList({
           }
         }
       },
-      singEvent
+      signEvent
     )
 
     return () => {
       subCloser()
     }
-  }, [JSON.stringify(relayUrls), JSON.stringify(noteFilter), isReady])
+  }, [
+    JSON.stringify(relayUrls),
+    JSON.stringify(noteFilter),
+    isReady,
+    isFetchingRelayInfo,
+    areAlgoRelays
+  ])
 
   useEffect(() => {
     if (!initialized) return
@@ -119,9 +133,9 @@ export default function NoteList({
   }
 
   return (
-    <>
+    <div className="space-y-2 sm:space-y-4">
       {newEvents.length > 0 && (
-        <div className="flex justify-center w-full sm:mb-4 max-sm:mt-2">
+        <div className="flex justify-center w-full max-sm:mt-2">
           <Button size="lg" onClick={showNewEvents}>
             {t('show new notes')}
           </Button>
@@ -132,9 +146,9 @@ export default function NoteList({
           <NoteCard key={`${i}-${event.id}`} className="w-full" event={event} />
         ))}
       </div>
-      <div className="text-center text-sm text-muted-foreground mt-2">
+      <div className="text-center text-sm text-muted-foreground">
         {hasMore ? <div ref={bottomRef}>{t('loading...')}</div> : t('no more notes')}
       </div>
-    </>
+    </div>
   )
 }

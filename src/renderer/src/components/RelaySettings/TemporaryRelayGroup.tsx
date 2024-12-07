@@ -15,7 +15,7 @@ export default function TemporaryRelayGroup() {
       isConnected: boolean
     }[]
   >(temporaryRelayUrls.map((url) => ({ url, isConnected: false })))
-  const relayInfos = useFetchRelayInfos(relays.map((relay) => relay.url))
+  const { relayInfos } = useFetchRelayInfos(relays.map((relay) => relay.url))
 
   useEffect(() => {
     const interval = setInterval(() => {

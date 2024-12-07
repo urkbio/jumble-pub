@@ -26,6 +26,7 @@ const BIG_RELAY_URLS = [
 class ClientService {
   static instance: ClientService
 
+  private defaultRelayUrls: string[] = BIG_RELAY_URLS
   private pool = new SimplePool()
 
   private eventCache = new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 })
@@ -33,7 +34,7 @@ class ClientService {
     (ids) => Promise.all(ids.map((id) => this._fetchEvent(id))),
     { cacheMap: this.eventCache }
   )
-  private fetchEventFromBigRelaysDataloader = new DataLoader<string, NEvent | undefined>(
+  private fetchEventFromDefaultRelaysDataloader = new DataLoader<string, NEvent | undefined>(
     this.eventBatchLoadFn.bind(this),
     { cache: false }
   )
@@ -45,7 +46,7 @@ class ClientService {
     (ids) => Promise.all(ids.map((id) => this._fetchProfile(id))),
     { cacheMap: this.profileCache }
   )
-  private fetchProfileFromBigRelaysDataloader = new DataLoader<string, TProfile | undefined>(
+  private fetchProfileFromDefaultRelaysDataloader = new DataLoader<string, TProfile | undefined>(
     this.profileBatchLoadFn.bind(this),
     { cache: false }
   )
@@ -83,6 +84,10 @@ class ClientService {
 
   listConnectionStatus() {
     return this.pool.listConnectionStatus()
+  }
+
+  setCurrentRelayUrls(urls: string[]) {
+    this.defaultRelayUrls = Array.from(new Set(urls.concat(BIG_RELAY_URLS)))
   }
 
   async publishEvent(relayUrls: string[], event: NEvent) {
@@ -146,7 +151,6 @@ class ClientService {
           oneose() {
             eosed++
             if (eosed === started) {
-              events.sort((a, b) => b.created_at - a.created_at)
               onEose(events)
             }
           }
@@ -196,7 +200,7 @@ class ClientService {
     const events: NEvent[] = []
     let hasEosed = false
     const closer = this.pool.subscribeMany(
-      relayUrls.length > 0 ? relayUrls : BIG_RELAY_URLS,
+      relayUrls.length > 0 ? relayUrls : this.defaultRelayUrls,
       [
         {
           '#e': [parentEventId],
@@ -280,7 +284,7 @@ class ClientService {
 
   async fetchEvents(relayUrls: string[], filter: Filter, cache = false) {
     const events = await this.pool.querySync(
-      relayUrls.length > 0 ? relayUrls : BIG_RELAY_URLS,
+      relayUrls.length > 0 ? relayUrls : this.defaultRelayUrls,
       filter
     )
     if (cache) {
@@ -374,7 +378,7 @@ class ClientService {
   }
 
   private async fetchEventById(relayUrls: string[], id: string): Promise<NEvent | undefined> {
-    const event = await this.fetchEventFromBigRelaysDataloader.load(id)
+    const event = await this.fetchEventFromDefaultRelaysDataloader.load(id)
     if (event) {
       return event
     }
@@ -449,9 +453,9 @@ class ClientService {
       throw new Error('Invalid id')
     }
 
-    const profileFromBigRelays = await this.fetchProfileFromBigRelaysDataloader.load(pubkey)
-    if (profileFromBigRelays) {
-      return profileFromBigRelays
+    const profileFromDefaultRelays = await this.fetchProfileFromDefaultRelaysDataloader.load(pubkey)
+    if (profileFromDefaultRelays) {
+      return profileFromDefaultRelays
     }
 
     const profileEvent = await this.tryHarderToFetchEvent(
@@ -477,15 +481,15 @@ class ClientService {
   private async tryHarderToFetchEvent(
     relayUrls: string[],
     filter: Filter,
-    alreadyFetchedFromBigRelays = false
+    alreadyFetchedFromDefaultRelays = false
   ) {
     if (!relayUrls.length && filter.authors?.length) {
       const relayList = await this.fetchRelayList(filter.authors[0])
-      relayUrls = alreadyFetchedFromBigRelays
-        ? relayList.write.filter((url) => !BIG_RELAY_URLS.includes(url)).slice(0, 4)
+      relayUrls = alreadyFetchedFromDefaultRelays
+        ? relayList.write.filter((url) => !this.defaultRelayUrls.includes(url)).slice(0, 4)
         : relayList.write.slice(0, 4)
-    } else if (!relayUrls.length && !alreadyFetchedFromBigRelays) {
-      relayUrls = BIG_RELAY_URLS
+    } else if (!relayUrls.length && !alreadyFetchedFromDefaultRelays) {
+      relayUrls = this.defaultRelayUrls
     }
     if (!relayUrls.length) return
 
@@ -494,7 +498,7 @@ class ClientService {
   }
 
   private async eventBatchLoadFn(ids: readonly string[]) {
-    const events = await this.pool.querySync(BIG_RELAY_URLS, {
+    const events = await this.pool.querySync(this.defaultRelayUrls, {
       ids: Array.from(new Set(ids)),
       limit: ids.length
     })
@@ -507,7 +511,7 @@ class ClientService {
   }
 
   private async profileBatchLoadFn(pubkeys: readonly string[]) {
-    const events = await this.pool.querySync(BIG_RELAY_URLS, {
+    const events = await this.pool.querySync(this.defaultRelayUrls, {
       authors: Array.from(new Set(pubkeys)),
       kinds: [kinds.Metadata],
       limit: pubkeys.length
@@ -528,7 +532,7 @@ class ClientService {
   }
 
   private async relayListBatchLoadFn(pubkeys: readonly string[]) {
-    const events = await this.pool.querySync(BIG_RELAY_URLS, {
+    const events = await this.pool.querySync(this.defaultRelayUrls, {
       authors: pubkeys as string[],
       kinds: [kinds.RelayList],
       limit: pubkeys.length
@@ -572,10 +576,13 @@ class ClientService {
 
   private async _fetchFollowListEvent(pubkey: string) {
     const relayList = await this.fetchRelayList(pubkey)
-    const followListEvents = await this.pool.querySync(relayList.write.concat(BIG_RELAY_URLS), {
-      authors: [pubkey],
-      kinds: [kinds.Contacts]
-    })
+    const followListEvents = await this.pool.querySync(
+      relayList.write.concat(this.defaultRelayUrls),
+      {
+        authors: [pubkey],
+        kinds: [kinds.Contacts]
+      }
+    )
 
     return followListEvents.sort((a, b) => b.created_at - a.created_at)[0]
   }

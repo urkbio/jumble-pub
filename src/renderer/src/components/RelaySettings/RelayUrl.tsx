@@ -113,7 +113,9 @@ function RelayUrl({
   onRemove: () => void
 }) {
   const { t } = useTranslation()
-  const [relayInfo] = useFetchRelayInfos([url])
+  const {
+    relayInfos: [relayInfo]
+  } = useFetchRelayInfos([url])
 
   return (
     <div className="flex items-center justify-between">

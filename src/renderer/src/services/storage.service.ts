@@ -5,12 +5,7 @@ import { isElectron } from '@renderer/lib/env'
 const DEFAULT_RELAY_GROUPS: TRelayGroup[] = [
   {
     groupName: 'Global',
-    relayUrls: [
-      'wss://relay.damus.io/',
-      'wss://nos.lol/',
-      'wss://nostr.mom/',
-      'wss://relay.primal.net/'
-    ],
+    relayUrls: ['wss://relay.damus.io/', 'wss://nos.lol/'],
     isActive: true
   }
 ]

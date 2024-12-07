@@ -1,4 +1,5 @@
 import { TRelayGroup } from '@common/types'
+import { checkIfAlgoRelay } from '@renderer/lib/relay'
 import { isWebsocketUrl, normalizeUrl } from '@renderer/lib/url'
 import client from '@renderer/services/client.service'
 import storage from '@renderer/services/storage.service'
@@ -9,6 +10,7 @@ type TRelaySettingsContext = {
   temporaryRelayUrls: string[]
   relayUrls: string[]
   searchableRelayUrls: string[]
+  areAlgoRelays: boolean
   switchRelayGroup: (groupName: string) => void
   renameRelayGroup: (oldGroupName: string, newGroupName: string) => string | null
   deleteRelayGroup: (groupName: string) => void
@@ -36,6 +38,7 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
       : (relayGroups.find((group) => group.isActive)?.relayUrls ?? [])
   )
   const [searchableRelayUrls, setSearchableRelayUrls] = useState<string[]>([])
+  const [areAlgoRelays, setAreAlgoRelays] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -55,23 +58,24 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
   }, [])
 
   useEffect(() => {
-    setRelayUrls(
-      temporaryRelayUrls.length
+    const handler = async () => {
+      const relayUrls = temporaryRelayUrls.length
         ? temporaryRelayUrls
         : (relayGroups.find((group) => group.isActive)?.relayUrls ?? [])
-    )
-  }, [relayGroups, temporaryRelayUrls])
 
-  useEffect(() => {
-    const handler = async () => {
       setSearchableRelayUrls([])
+      setRelayUrls([])
       const relayInfos = await client.fetchRelayInfos(relayUrls)
       setSearchableRelayUrls(
         relayUrls.filter((_, index) => relayInfos[index]?.supported_nips?.includes(50))
       )
+      const nonAlgoRelayUrls = relayUrls.filter((_, index) => !checkIfAlgoRelay(relayInfos[index]))
+      setAreAlgoRelays(relayUrls.length > 0 && nonAlgoRelayUrls.length === 0)
+      setRelayUrls(relayUrls)
+      client.setCurrentRelayUrls(nonAlgoRelayUrls)
     }
     handler()
-  }, [relayUrls])
+  }, [relayGroups, temporaryRelayUrls])
 
   const updateGroups = async (fn: (pre: TRelayGroup[]) => TRelayGroup[]) => {
     let newGroups = relayGroups
@@ -154,6 +158,7 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
         temporaryRelayUrls,
         relayUrls,
         searchableRelayUrls,
+        areAlgoRelays,
         switchRelayGroup,
         renameRelayGroup,
         deleteRelayGroup,
