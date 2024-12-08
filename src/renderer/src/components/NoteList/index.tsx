@@ -170,13 +170,13 @@ function DisplayRepliesSwitch({
       <div>
         <div className="flex">
           <div
-            className={`w-1/2 text-center py-2 font-semibold ${displayReplies ? 'text-muted-foreground' : ''}`}
+            className={`w-1/2 text-center py-2 font-semibold hover:bg-muted cursor-pointer rounded-lg ${displayReplies ? 'text-muted-foreground' : ''}`}
             onClick={() => setDisplayReplies(false)}
           >
             {t('Notes')}
           </div>
           <div
-            className={`w-1/2 text-center py-2 font-semibold ${displayReplies ? '' : 'text-muted-foreground'}`}
+            className={`w-1/2 text-center py-2 font-semibold hover:bg-muted cursor-pointer rounded-lg ${displayReplies ? '' : 'text-muted-foreground'}`}
             onClick={() => setDisplayReplies(true)}
           >
             {t('Notes & Replies')}
