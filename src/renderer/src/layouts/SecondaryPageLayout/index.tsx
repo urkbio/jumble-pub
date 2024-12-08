@@ -26,9 +26,16 @@ export default function SecondaryPageLayout({
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = scrollAreaRef.current?.scrollTop || 0
-      if (scrollTop > lastScrollTop) {
+      const diff = scrollTop - lastScrollTop
+      if (scrollTop <= 100) {
+        setVisible(true)
+        setLastScrollTop(scrollTop)
+        return
+      }
+
+      if (diff > 50) {
         setVisible(false)
-      } else {
+      } else if (diff < -50) {
         setVisible(true)
       }
       setLastScrollTop(scrollTop)

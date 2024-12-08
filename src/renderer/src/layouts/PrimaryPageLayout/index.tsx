@@ -32,13 +32,18 @@ const PrimaryPageLayout = forwardRef(({ children }: { children?: React.ReactNode
     const handleScroll = () => {
       const scrollTop = scrollAreaRef.current?.scrollTop || 0
       const diff = scrollTop - lastScrollTop
-      if (diff > 50) {
-        setVisible(false)
-        setLastScrollTop(scrollTop)
-      } else if (diff < -50) {
+      if (scrollTop <= 100) {
         setVisible(true)
         setLastScrollTop(scrollTop)
+        return
       }
+
+      if (diff > 50) {
+        setVisible(false)
+      } else if (diff < -50) {
+        setVisible(true)
+      }
+      setLastScrollTop(scrollTop)
     }
 
     const scrollArea = scrollAreaRef.current
