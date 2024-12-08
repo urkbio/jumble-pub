@@ -69,6 +69,9 @@ export default {
       'The relays you are connected to do not support search',
     'supports search': 'supports search',
     'Show more...': 'Show more...',
-    'all users': 'all users'
+    'all users': 'all users',
+    'Display replies': 'Display replies',
+    Notes: 'Notes',
+    'Notes & Replies': 'Notes & Replies'
   }
 }

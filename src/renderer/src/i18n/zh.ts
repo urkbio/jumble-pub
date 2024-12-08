@@ -68,6 +68,9 @@ export default {
     'The relays you are connected to do not support search': '您连接的服务器不支持搜索',
     'supports search': '支持搜索',
     'Show more...': '查看更多...',
-    'all users': '所有用户'
+    'all users': '所有用户',
+    'Display replies': '显示回复',
+    Notes: '笔记',
+    'Notes & Replies': '笔记 & 回复'
   }
 }

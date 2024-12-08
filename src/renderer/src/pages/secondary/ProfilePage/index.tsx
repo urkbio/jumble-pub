@@ -98,11 +98,12 @@ export default function ProfilePage({ id }: { id?: string }) {
           </SecondaryPageLink>
         </div>
       </div>
-      <Separator className="mt-4 sm:my-4" />
+      <Separator className="hidden sm:block mt-4 sm:my-4" />
       <NoteList
         key={pubkey}
         filter={{ authors: [pubkey] }}
         relayUrls={relayList.write.slice(0, 5).concat(currentRelayUrls)}
+        className="max-sm:mt-2"
       />
     </SecondaryPageLayout>
   )

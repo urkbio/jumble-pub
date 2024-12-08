@@ -1,8 +1,10 @@
 import { Button } from '@renderer/components/ui/button'
+import { Switch } from '@renderer/components/ui/switch'
 import { useFetchRelayInfos } from '@renderer/hooks'
 import { isReplyNoteEvent } from '@renderer/lib/event'
 import { cn } from '@renderer/lib/utils'
 import { useNostr } from '@renderer/providers/NostrProvider'
+import { useScreenSize } from '@renderer/providers/ScreenSizeProvider'
 import client from '@renderer/services/client.service'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
@@ -27,6 +29,7 @@ export default function NoteList({
   const [until, setUntil] = useState<number>(() => dayjs().unix())
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [initialized, setInitialized] = useState(false)
+  const [displayReplies, setDisplayReplies] = useState(false)
   const observer = useRef<IntersectionObserver | null>(null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const noteFilter = useMemo(() => {
@@ -53,9 +56,8 @@ export default function NoteList({
           if (!areAlgoRelays) {
             events.sort((a, b) => b.created_at - a.created_at)
           }
-          const processedEvents = events.filter((e) => !isReplyNoteEvent(e))
-          if (processedEvents.length > 0) {
-            setEvents((pre) => [...pre, ...processedEvents])
+          if (events.length > 0) {
+            setEvents((pre) => [...pre, ...events])
           }
           if (events.length > 0) {
             setUntil(events[events.length - 1].created_at - 1)
@@ -66,9 +68,7 @@ export default function NoteList({
           setInitialized(true)
         },
         onNew: (event) => {
-          if (!isReplyNoteEvent(event)) {
-            setNewEvents((oldEvents) => [event, ...oldEvents])
-          }
+          setNewEvents((oldEvents) => [event, ...oldEvents])
         }
       },
       signEvent
@@ -119,9 +119,8 @@ export default function NoteList({
       return
     }
 
-    const processedEvents = sortedEvents.filter((e) => !isReplyNoteEvent(e))
-    if (processedEvents.length > 0) {
-      setEvents((oldEvents) => [...oldEvents, ...processedEvents])
+    if (sortedEvents.length > 0) {
+      setEvents((oldEvents) => [...oldEvents, ...sortedEvents])
     }
 
     setUntil(sortedEvents[sortedEvents.length - 1].created_at - 1)
@@ -133,7 +132,8 @@ export default function NoteList({
   }
 
   return (
-    <div className="space-y-2 sm:space-y-4">
+    <div className={cn('space-y-2 sm:space-y-4', className)}>
+      <DisplayRepliesSwitch displayReplies={displayReplies} setDisplayReplies={setDisplayReplies} />
       {newEvents.length > 0 && (
         <div className="flex justify-center w-full max-sm:mt-2">
           <Button size="lg" onClick={showNewEvents}>
@@ -141,14 +141,60 @@ export default function NoteList({
           </Button>
         </div>
       )}
-      <div className={cn('flex flex-col sm:gap-4', className)}>
-        {events.map((event, i) => (
-          <NoteCard key={`${i}-${event.id}`} className="w-full" event={event} />
-        ))}
+      <div className="flex flex-col sm:gap-4">
+        {events
+          .filter((event) => displayReplies || !isReplyNoteEvent(event))
+          .map((event, i) => (
+            <NoteCard key={`${i}-${event.id}`} className="w-full" event={event} />
+          ))}
       </div>
       <div className="text-center text-sm text-muted-foreground">
         {hasMore ? <div ref={bottomRef}>{t('loading...')}</div> : t('no more notes')}
       </div>
+    </div>
+  )
+}
+
+function DisplayRepliesSwitch({
+  displayReplies,
+  setDisplayReplies
+}: {
+  displayReplies: boolean
+  setDisplayReplies: (value: boolean) => void
+}) {
+  const { t } = useTranslation()
+  const { isSmallScreen } = useScreenSize()
+
+  if (isSmallScreen) {
+    return (
+      <div>
+        <div className="flex">
+          <div
+            className={`w-1/2 text-center py-2 font-semibold ${displayReplies ? 'text-muted-foreground' : ''}`}
+            onClick={() => setDisplayReplies(false)}
+          >
+            {t('Notes')}
+          </div>
+          <div
+            className={`w-1/2 text-center py-2 font-semibold ${displayReplies ? '' : 'text-muted-foreground'}`}
+            onClick={() => setDisplayReplies(true)}
+          >
+            {t('Notes & Replies')}
+          </div>
+        </div>
+        <div
+          className={`w-1/2 px-4 transition-transform duration-500 ${displayReplies ? 'translate-x-full' : ''}`}
+        >
+          <div className="w-full h-1 bg-primary rounded-full" />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex justify-end gap-2">
+      <div>{t('Display replies')}</div>
+      <Switch checked={displayReplies} onCheckedChange={setDisplayReplies} />
     </div>
   )
 }
