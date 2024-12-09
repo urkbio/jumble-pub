@@ -58,8 +58,6 @@ export default function NoteList({
           }
           if (events.length > 0) {
             setEvents((pre) => [...pre, ...events])
-          }
-          if (events.length > 0) {
             setUntil(events[events.length - 1].created_at - 1)
           }
           if (areAlgoRelays) {

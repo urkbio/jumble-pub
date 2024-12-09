@@ -14,6 +14,9 @@ export function useFetchRelayInfos(urls: string[]) {
       if (urls.length === 0) {
         return setIsFetching(false)
       }
+      const timer = setTimeout(() => {
+        setIsFetching(false)
+      }, 5000)
       try {
         const relayInfos = await client.fetchRelayInfos(urls)
         setRelayInfos(relayInfos)
@@ -21,6 +24,7 @@ export function useFetchRelayInfos(urls: string[]) {
       } catch (err) {
         console.error(err)
       } finally {
+        clearTimeout(timer)
         setIsFetching(false)
       }
     }

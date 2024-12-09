@@ -8,7 +8,7 @@ import {
 } from '@renderer/components/ui/dropdown-menu'
 import { useFetchProfile } from '@renderer/hooks'
 import { toProfile } from '@renderer/lib/link'
-import { generateImageByPubkey } from '@renderer/lib/pubkey'
+import { formatPubkey, generateImageByPubkey } from '@renderer/lib/pubkey'
 import { useSecondaryPage } from '@renderer/PageManager'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { useTranslation } from 'react-i18next'
@@ -24,10 +24,9 @@ export default function ProfileButton({
   const { logout } = useNostr()
   const { profile } = useFetchProfile(pubkey)
   const { push } = useSecondaryPage()
-  if (!profile) return null
 
-  const { username, avatar } = profile
   const defaultAvatar = generateImageByPubkey(pubkey)
+  const { username, avatar } = profile || { username: formatPubkey(pubkey), avatar: defaultAvatar }
 
   let triggerComponent: React.ReactNode
   if (variant === 'titlebar') {
