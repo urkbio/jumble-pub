@@ -35,7 +35,7 @@ export default function NoteList({
   const noteFilter = useMemo(() => {
     return {
       kinds: [kinds.ShortTextNote, kinds.Repost],
-      limit: areAlgoRelays ? 500 : 200,
+      limit: areAlgoRelays ? 500 : 50,
       ...filter
     }
   }, [JSON.stringify(filter), areAlgoRelays])
