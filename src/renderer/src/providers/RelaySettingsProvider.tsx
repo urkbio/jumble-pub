@@ -1,5 +1,5 @@
 import { TRelayGroup } from '@common/types'
-import { checkIfAlgoRelay } from '@renderer/lib/relay'
+import { checkAlgoRelay, checkSearchRelay } from '@renderer/lib/relay'
 import { isWebsocketUrl, normalizeUrl } from '@renderer/lib/url'
 import client from '@renderer/services/client.service'
 import storage from '@renderer/services/storage.service'
@@ -59,20 +59,18 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const handler = async () => {
-      const relayUrls = temporaryRelayUrls.length
+      const newRelayUrls = temporaryRelayUrls.length
         ? temporaryRelayUrls
         : (relayGroups.find((group) => group.isActive)?.relayUrls ?? [])
 
-      setSearchableRelayUrls([])
-      setRelayUrls([])
-      const relayInfos = await client.fetchRelayInfos(relayUrls)
-      setSearchableRelayUrls(
-        relayUrls.filter((_, index) => relayInfos[index]?.supported_nips?.includes(50))
-      )
-      const nonAlgoRelayUrls = relayUrls.filter((_, index) => !checkIfAlgoRelay(relayInfos[index]))
-      setAreAlgoRelays(relayUrls.length > 0 && nonAlgoRelayUrls.length === 0)
-      setRelayUrls(relayUrls)
+      const relayInfos = await client.fetchRelayInfos(newRelayUrls)
+      setSearchableRelayUrls(newRelayUrls.filter((_, index) => checkSearchRelay(relayInfos[index])))
+      const nonAlgoRelayUrls = newRelayUrls.filter((_, index) => !checkAlgoRelay(relayInfos[index]))
+      setAreAlgoRelays(newRelayUrls.length > 0 && nonAlgoRelayUrls.length === 0)
       client.setCurrentRelayUrls(nonAlgoRelayUrls)
+      if (JSON.stringify(relayUrls) !== JSON.stringify(newRelayUrls)) {
+        setRelayUrls(newRelayUrls)
+      }
     }
     handler()
   }, [relayGroups, temporaryRelayUrls])

@@ -1,4 +1,4 @@
-import { checkIfAlgoRelay } from '@renderer/lib/relay'
+import { checkAlgoRelay } from '@renderer/lib/relay'
 import client from '@renderer/services/client.service'
 import { TRelayInfo } from '@renderer/types'
 import { useEffect, useState } from 'react'
@@ -17,7 +17,7 @@ export function useFetchRelayInfos(urls: string[]) {
       try {
         const relayInfos = await client.fetchRelayInfos(urls)
         setRelayInfos(relayInfos)
-        setAreAlgoRelays(relayInfos.every((relayInfo) => checkIfAlgoRelay(relayInfo)))
+        setAreAlgoRelays(relayInfos.every((relayInfo) => checkAlgoRelay(relayInfo)))
       } catch (err) {
         console.error(err)
       } finally {
