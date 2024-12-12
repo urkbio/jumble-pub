@@ -32,5 +32,5 @@ export function FormattedTimestamp({
     return short ? t('n m', { n: diffMinute }) : t('n minutes ago', { n: diffMinute })
   }
 
-  return short ? t('n s', { n: now.diff(time, 'second') }) : t('just now')
+  return t('just now')
 }

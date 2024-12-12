@@ -12,7 +12,6 @@ export default {
     Following: '关注',
     reposted: '转发',
     'just now': '刚刚',
-    'n s': '{{n}}秒',
     'n minutes ago': '{{n}} 分钟前',
     'n m': '{{n}}分',
     'n hours ago': '{{n}} 小时前',

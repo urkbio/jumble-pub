@@ -12,7 +12,6 @@ export default {
     Following: 'Following',
     reposted: 'reposted',
     'just now': 'just now',
-    'n s': '{{n}}s',
     'n minutes ago': '{{n}} minutes ago',
     'n m': '{{n}}m',
     'n hours ago': '{{n}} hours ago',
