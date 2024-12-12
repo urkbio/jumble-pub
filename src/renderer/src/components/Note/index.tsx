@@ -1,12 +1,12 @@
 import { useSecondaryPage } from '@renderer/PageManager'
 import { toNote } from '@renderer/lib/link'
-import { formatTimestamp } from '@renderer/lib/timestamp'
 import { Event } from 'nostr-tools'
 import Content from '../Content'
+import { FormattedTimestamp } from '../FormattedTimestamp'
 import NoteStats from '../NoteStats'
+import ParentNotePreview from '../ParentNotePreview'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
-import ParentNotePreview from '../ParentNotePreview'
 
 export default function Note({
   event,
@@ -38,7 +38,7 @@ export default function Note({
             skeletonClassName={size === 'small' ? 'h-3' : 'h-4'}
           />
           <div className="text-xs text-muted-foreground line-clamp-1">
-            {formatTimestamp(event.created_at)}
+            <FormattedTimestamp timestamp={event.created_at} />
           </div>
         </div>
       </div>

@@ -103,6 +103,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       await window.api.nostr.logout()
     }
     setPubkey(null)
+    client.clearNotificationsCache()
   }
 
   const publish = async (draftEvent: TDraftEvent, additionalRelayUrls: string[] = []) => {

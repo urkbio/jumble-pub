@@ -56,9 +56,12 @@ export default function NoteList({
           if (!areAlgoRelays) {
             events.sort((a, b) => b.created_at - a.created_at)
           }
+          events = events.slice(0, noteFilter.limit)
           if (events.length > 0) {
             setEvents((pre) => [...pre, ...events])
             setUntil(events[events.length - 1].created_at - 1)
+          } else {
+            setHasMore(false)
           }
           if (areAlgoRelays) {
             setHasMore(false)
@@ -111,7 +114,9 @@ export default function NoteList({
 
   const loadMore = async () => {
     const events = await client.fetchEvents(relayUrls, { ...noteFilter, until }, true)
-    const sortedEvents = events.sort((a, b) => b.created_at - a.created_at)
+    const sortedEvents = events
+      .sort((a, b) => b.created_at - a.created_at)
+      .slice(0, noteFilter.limit)
     if (sortedEvents.length === 0) {
       setHasMore(false)
       return

@@ -1,13 +1,13 @@
-import { formatTimestamp } from '@renderer/lib/timestamp'
 import { Event } from 'nostr-tools'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Content from '../Content'
+import { FormattedTimestamp } from '../FormattedTimestamp'
 import LikeButton from '../NoteStats/LikeButton'
 import ParentNotePreview from '../ParentNotePreview'
 import PostDialog from '../PostDialog'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
-import { useTranslation } from 'react-i18next'
 
 export default function ReplyNote({
   event,
@@ -39,7 +39,9 @@ export default function ReplyNote({
         )}
         <Content event={event} size="small" />
         <div className="flex gap-2 text-xs">
-          <div className="text-muted-foreground/60">{formatTimestamp(event.created_at)}</div>
+          <div className="text-muted-foreground/60">
+            <FormattedTimestamp timestamp={event.created_at} />
+          </div>
           <div
             className="text-muted-foreground hover:text-primary cursor-pointer"
             onClick={() => setIsPostDialogOpen(true)}

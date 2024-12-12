@@ -1,5 +1,6 @@
 import Logo from '@renderer/assets/Logo'
 import AccountButton from '@renderer/components/AccountButton'
+import NotificationButton from '@renderer/components/NotificationButton'
 import PostButton from '@renderer/components/PostButton'
 import RefreshButton from '@renderer/components/RefreshButton'
 import RelaySettingsButton from '@renderer/components/RelaySettingsButton'
@@ -38,12 +39,13 @@ const PrimaryPageLayout = forwardRef(({ children }: { children?: React.ReactNode
         return
       }
 
-      if (diff > 50) {
+      if (diff > 20) {
         setVisible(false)
-      } else if (diff < -50) {
+        setLastScrollTop(scrollTop)
+      } else if (diff < -20) {
         setVisible(true)
+        setLastScrollTop(scrollTop)
       }
-      setLastScrollTop(scrollTop)
     }
 
     const scrollArea = scrollAreaRef.current
@@ -94,6 +96,7 @@ function PrimaryPageTitlebar({ visible = true }: { visible?: boolean }) {
           <SearchButton variant="small-screen-titlebar" />
           <PostButton variant="small-screen-titlebar" />
           <RelaySettingsButton variant="small-screen-titlebar" />
+          <NotificationButton variant="small-screen-titlebar" />
           <AccountButton variant="small-screen-titlebar" />
         </div>
       </Titlebar>
@@ -110,6 +113,7 @@ function PrimaryPageTitlebar({ visible = true }: { visible?: boolean }) {
       <div className="flex gap-2 items-center">
         <RefreshButton />
         <RelaySettingsButton />
+        <NotificationButton />
       </div>
     </Titlebar>
   )

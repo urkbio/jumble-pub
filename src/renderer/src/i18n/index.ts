@@ -21,11 +21,11 @@ i18n
     }
   })
 
-i18n.services.formatter?.add('date', (value, lng) => {
+i18n.services.formatter?.add('date', (timestamp, lng) => {
   if (lng?.startsWith('zh')) {
-    return dayjs(value).format('YYYY-MM-DD')
+    return dayjs(timestamp).format('YYYY/MM/DD')
   }
-  return dayjs(value).format('MMM D, YYYY')
+  return dayjs(timestamp).format('MMM D, YYYY')
 })
 
 export default i18n

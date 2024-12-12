@@ -12,9 +12,13 @@ export default {
     Following: 'Following',
     reposted: 'reposted',
     'just now': 'just now',
+    'n s': '{{n}}s',
     'n minutes ago': '{{n}} minutes ago',
+    'n m': '{{n}}m',
     'n hours ago': '{{n}} hours ago',
+    'n h': '{{n}}h',
     'n days ago': '{{n}} days ago',
+    'n d': '{{n}}d',
     date: '{{timestamp, date}}',
     Follow: 'Follow',
     Unfollow: 'Unfollow',
@@ -72,6 +76,9 @@ export default {
     'all users': 'all users',
     'Display replies': 'Display replies',
     Notes: 'Notes',
-    'Notes & Replies': 'Notes & Replies'
+    'Notes & Replies': 'Notes & Replies',
+    notifications: 'notifications',
+    Notifications: 'Notifications',
+    'no more notifications': 'no more notifications'
   }
 }

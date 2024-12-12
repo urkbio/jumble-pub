@@ -12,9 +12,13 @@ export default {
     Following: '关注',
     reposted: '转发',
     'just now': '刚刚',
+    'n s': '{{n}}秒',
     'n minutes ago': '{{n}} 分钟前',
+    'n m': '{{n}}分',
     'n hours ago': '{{n}} 小时前',
+    'n h': '{{n}}时',
     'n days ago': '{{n}} 天前',
+    'n d': '{{n}}天',
     date: '{{timestamp, date}}',
     Follow: '关注',
     Unfollow: '取消关注',
@@ -71,6 +75,9 @@ export default {
     'all users': '所有用户',
     'Display replies': '显示回复',
     Notes: '笔记',
-    'Notes & Replies': '笔记 & 回复'
+    'Notes & Replies': '笔记 & 回复',
+    notifications: '通知',
+    Notifications: '通知',
+    'no more notifications': '到底了'
   }
 }

@@ -25,6 +25,7 @@ export const toProfileList = ({ search }: { search?: string }) => {
 }
 export const toFollowingList = (pubkey: string) => `/users/${pubkey}/following`
 export const toRelaySettings = () => '/relay-settings'
+export const toNotifications = () => '/notifications'
 
 export const toNoStrudelProfile = (id: string) => `https://nostrudel.ninja/#/u/${id}`
 export const toNoStrudelNote = (id: string) => `https://nostrudel.ninja/#/n/${id}`

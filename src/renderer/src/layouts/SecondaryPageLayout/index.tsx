@@ -33,12 +33,13 @@ export default function SecondaryPageLayout({
         return
       }
 
-      if (diff > 50) {
+      if (diff > 20) {
         setVisible(false)
-      } else if (diff < -50) {
+        setLastScrollTop(scrollTop)
+      } else if (diff < -20) {
         setVisible(true)
+        setLastScrollTop(scrollTop)
       }
-      setLastScrollTop(scrollTop)
     }
 
     const scrollArea = scrollAreaRef.current

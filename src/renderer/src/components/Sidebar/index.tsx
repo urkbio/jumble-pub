@@ -7,6 +7,7 @@ import { Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import AboutInfoDialog from '../AboutInfoDialog'
 import AccountButton from '../AccountButton'
+import NotificationButton from '../NotificationButton'
 import PostButton from '../PostButton'
 import RefreshButton from '../RefreshButton'
 import RelaySettingsButton from '../RelaySettingsButton'
@@ -24,6 +25,7 @@ export default function PrimaryPageSidebar() {
         </div>
         <PostButton variant="sidebar" />
         <RelaySettingsButton variant="sidebar" />
+        <NotificationButton variant="sidebar" />
         <SearchButton variant="sidebar" />
         <RefreshButton variant="sidebar" />
         {!IS_ELECTRON && (
