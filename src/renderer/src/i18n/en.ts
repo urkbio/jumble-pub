@@ -78,6 +78,12 @@ export default {
     'Notes & Replies': 'Notes & Replies',
     notifications: 'notifications',
     Notifications: 'Notifications',
-    'no more notifications': 'no more notifications'
+    'no more notifications': 'no more notifications',
+    'There are no secret keys stored on this device. Your nsec will be unprotected.':
+      'There are no secret keys stored on this device. Your nsec will be unprotected.',
+    'Your nsec will be encrypted using the {{backend}}.':
+      'Your nsec will be encrypted using the {{backend}}.',
+    'Using private key login is insecure. It is recommended to use a browser extension for login, such as alby, nostr-keyx or nos2x.':
+      'Using private key login is insecure. It is recommended to use a browser extension for login, such as alby, nostr-keyx or nos2x.'
   }
 }

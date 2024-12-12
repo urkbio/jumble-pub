@@ -17,6 +17,7 @@ export class StorageService {
   init() {
     ipcMain.handle('storage:getItem', (_, key: string) => this.getItem(key))
     ipcMain.handle('storage:setItem', (_, key: string, value: string) => this.setItem(key, value))
+    ipcMain.handle('storage:removeItem', (_, key: string) => this.removeItem(key))
   }
 
   getItem(key: string): string | undefined {
@@ -29,6 +30,15 @@ export class StorageService {
 
   setItem(key: string, value: string) {
     this.config[key] = value
+    this.setWriteTimeout()
+  }
+
+  removeItem(key: string) {
+    delete this.config[key]
+    this.setWriteTimeout()
+  }
+
+  private setWriteTimeout() {
     if (this.writeTimer) return
 
     this.writeTimer = setTimeout(() => {

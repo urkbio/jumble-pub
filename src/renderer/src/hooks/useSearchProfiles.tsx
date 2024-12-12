@@ -11,6 +11,8 @@ export function useSearchProfiles(search: string, limit: number) {
 
   useEffect(() => {
     const fetchProfiles = async () => {
+      if (!search) return
+
       setIsFetching(true)
       setProfiles([])
       if (searchableRelayUrls.length === 0) {

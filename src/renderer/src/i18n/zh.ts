@@ -77,6 +77,11 @@ export default {
     'Notes & Replies': '笔记 & 回复',
     notifications: '通知',
     Notifications: '通知',
-    'no more notifications': '到底了'
+    'no more notifications': '到底了',
+    'There are no secret keys stored on this device. Your nsec will be unprotected.':
+      '此设备上没有可用的密码管理工具。您的密钥将不受保护',
+    'Your nsec will be encrypted using the {{backend}}.': '您的密钥将使用 {{backend}} 加密',
+    'Using private key login is insecure. It is recommended to use a browser extension for login, such as alby, nostr-keyx or nos2x.':
+      '使用私钥登录是不安全的。建议使用浏览器插件进行登录，例如 alby、nostr-keyx 或 nos2x'
   }
 }

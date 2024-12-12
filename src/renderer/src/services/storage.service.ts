@@ -1,5 +1,5 @@
 import { StorageKey } from '@common/constants'
-import { TRelayGroup, TThemeSetting } from '@common/types'
+import { TAccount, TRelayGroup, TThemeSetting } from '@common/types'
 import { isElectron } from '@renderer/lib/env'
 
 const DEFAULT_RELAY_GROUPS: TRelayGroup[] = [
@@ -26,6 +26,14 @@ class Storage {
       return localStorage.setItem(key, value)
     }
   }
+
+  async removeItem(key: string) {
+    if (isElectron(window)) {
+      return window.api.storage.removeItem(key)
+    } else {
+      return localStorage.removeItem(key)
+    }
+  }
 }
 
 class StorageService {
@@ -34,6 +42,7 @@ class StorageService {
   private initPromise!: Promise<void>
   private relayGroups: TRelayGroup[] = []
   private themeSetting: TThemeSetting = 'system'
+  private account: TAccount | null = null
   private storage: Storage = new Storage()
 
   constructor() {
@@ -49,6 +58,8 @@ class StorageService {
     this.relayGroups = relayGroupsStr ? JSON.parse(relayGroupsStr) : DEFAULT_RELAY_GROUPS
     this.themeSetting =
       ((await this.storage.getItem(StorageKey.THEME_SETTING)) as TThemeSetting) ?? 'system'
+    const accountStr = await this.storage.getItem(StorageKey.ACCOUNT)
+    this.account = accountStr ? JSON.parse(accountStr) : null
   }
 
   async getRelayGroups() {
@@ -71,6 +82,21 @@ class StorageService {
     await this.initPromise
     await this.storage.setItem(StorageKey.THEME_SETTING, themeSetting)
     this.themeSetting = themeSetting
+  }
+
+  async getAccountInfo() {
+    await this.initPromise
+    return this.account
+  }
+
+  async setAccountInfo(account: TAccount | null) {
+    await this.initPromise
+    if (account === null) {
+      await this.storage.removeItem(StorageKey.ACCOUNT)
+    } else {
+      await this.storage.setItem(StorageKey.ACCOUNT, JSON.stringify(account))
+    }
+    this.account = account
   }
 }
 

@@ -5,7 +5,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 // Custom APIs for renderer
 const api = {
   system: {
-    isEncryptionAvailable: () => ipcRenderer.invoke('system:isEncryptionAvailable')
+    isEncryptionAvailable: () => ipcRenderer.invoke('system:isEncryptionAvailable'),
+    getSelectedStorageBackend: () => ipcRenderer.invoke('system:getSelectedStorageBackend')
   },
   theme: {
     addChangeListener: (listener: (theme: TTheme) => void) => {
@@ -20,7 +21,8 @@ const api = {
   },
   storage: {
     getItem: (key: string) => ipcRenderer.invoke('storage:getItem', key),
-    setItem: (key: string, value: string) => ipcRenderer.invoke('storage:setItem', key, value)
+    setItem: (key: string, value: string) => ipcRenderer.invoke('storage:setItem', key, value),
+    removeItem: (key: string) => ipcRenderer.invoke('storage:removeItem', key)
   },
   nostr: {
     login: (nsec: string) => ipcRenderer.invoke('nostr:login', nsec),

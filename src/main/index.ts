@@ -78,6 +78,15 @@ app.whenReady().then(async () => {
   nostrService.init()
 
   ipcMain.handle('system:isEncryptionAvailable', () => safeStorage.isEncryptionAvailable())
+  ipcMain.handle('system:getSelectedStorageBackend', () => {
+    if (process.platform === 'darwin') {
+      return 'keychain'
+    }
+    if (process.platform === 'win32') {
+      return 'dpapi'
+    }
+    return safeStorage.getSelectedStorageBackend()
+  })
 
   createWindow()
 

@@ -17,11 +17,17 @@ export type TTheme = 'light' | 'dark'
 
 export type TDraftEvent = Pick<Event, 'content' | 'created_at' | 'kind' | 'tags'>
 
+export interface ISigner {
+  getPublicKey: () => Promise<string | null>
+  signEvent: (draftEvent: TDraftEvent) => Promise<Event | null>
+}
+
 export type TElectronWindow = {
   electron: ElectronAPI
   api: {
     system: {
       isEncryptionAvailable: () => Promise<boolean>
+      getSelectedStorageBackend: () => Promise<string>
     }
     theme: {
       addChangeListener: (listener: (theme: TTheme) => void) => void
@@ -31,6 +37,7 @@ export type TElectronWindow = {
     storage: {
       getItem: (key: string) => Promise<string>
       setItem: (key: string, value: string) => Promise<void>
+      removeItem: (key: string) => Promise<void>
     }
     nostr: {
       login: (nsec: string) => Promise<{
@@ -40,8 +47,10 @@ export type TElectronWindow = {
       logout: () => Promise<void>
     }
   }
-  nostr: {
-    getPublicKey: () => Promise<string | null>
-    signEvent: (draftEvent: TDraftEvent) => Promise<Event | null>
-  }
+  nostr: ISigner
+}
+
+export type TAccount = {
+  signerType: 'nsec' | 'browser-nsec' | 'nip-07'
+  nsec?: string
 }

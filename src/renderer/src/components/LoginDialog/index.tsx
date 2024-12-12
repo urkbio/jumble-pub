@@ -6,10 +6,11 @@ import {
   DialogHeader,
   DialogTitle
 } from '@renderer/components/ui/dialog'
-import { Input } from '@renderer/components/ui/input'
+import { IS_ELECTRON } from '@renderer/lib/env'
 import { useNostr } from '@renderer/providers/NostrProvider'
+import { ArrowLeft } from 'lucide-react'
 import { Dispatch, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import PrivateKeyLogin from './NsecLogin'
 
 export default function LoginDialog({
   open,
@@ -18,49 +19,38 @@ export default function LoginDialog({
   open: boolean
   setOpen: Dispatch<boolean>
 }) {
-  const { t } = useTranslation()
-  const { login, canLogin } = useNostr()
-  const [nsec, setNsec] = useState('')
-  const [errMsg, setErrMsg] = useState<string | null>(null)
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNsec(e.target.value)
-    setErrMsg(null)
-  }
-
-  const handleLogin = () => {
-    if (nsec === '') return
-
-    login(nsec)
-      .then(() => setOpen(false))
-      .catch((err) => {
-        setErrMsg(err.message)
-      })
-  }
+  const [loginMethod, setLoginMethod] = useState<'nsec' | 'nip07' | null>(null)
+  const { nip07Login } = useNostr()
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-80">
+      <DialogContent className="w-96">
         <DialogHeader>
           <DialogTitle className="hidden" />
-          <DialogDescription className="text-destructive">
-            {!canLogin && 'Encryption is not available in your device.'}
-          </DialogDescription>
+          <DialogDescription className="hidden" />
         </DialogHeader>
-        <div className="space-y-1">
-          <Input
-            type="password"
-            placeholder="nsec1.."
-            value={nsec}
-            onChange={handleInputChange}
-            className={errMsg ? 'border-destructive' : ''}
-            disabled={!canLogin}
-          />
-          {errMsg && <div className="text-xs text-destructive pl-3">{errMsg}</div>}
-        </div>
-        <Button onClick={handleLogin} disabled={!canLogin}>
-          {t('Login')}
-        </Button>
+        {loginMethod === 'nsec' ? (
+          <>
+            <div
+              className="absolute left-4 top-4 opacity-70 hover:opacity-100 cursor-pointer"
+              onClick={() => setLoginMethod(null)}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </div>
+            <PrivateKeyLogin onLoginSuccess={() => setOpen(false)} />
+          </>
+        ) : (
+          <>
+            {!IS_ELECTRON && !!window.nostr && (
+              <Button onClick={() => nip07Login().then(() => setOpen(false))} className="w-full">
+                Login with NIP-07
+              </Button>
+            )}
+            <Button variant="secondary" onClick={() => setLoginMethod('nsec')} className="w-full">
+              Login with Private Key
+            </Button>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )
