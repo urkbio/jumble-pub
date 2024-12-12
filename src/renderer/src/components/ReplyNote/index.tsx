@@ -28,7 +28,7 @@ export default function ReplyNote({
       className={`flex space-x-2 items-start rounded-lg p-2 transition-colors duration-500 ${highlight ? 'bg-highlight/50' : ''}`}
     >
       <UserAvatar userId={event.pubkey} size="small" className="shrink-0" />
-      <div className="w-full overflow-hidden">
+      <div className="w-full overflow-hidden space-y-1">
         <Username
           userId={event.pubkey}
           className="text-sm font-semibold text-muted-foreground hover:text-foreground truncate"
