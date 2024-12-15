@@ -156,8 +156,9 @@ class ClientService {
     const that = this
     const _knownIds = new Set<string>()
     let events: NEvent[] = []
-    let started = 0
-    let eosed = 0
+    let startedCount = 0
+    let eosedCount = 0
+    let eosed = false
     const subPromises = urls.map(async (url) => {
       const relay = await this.pool.ensureRelay(url)
       let hasAuthed = false
@@ -165,7 +166,7 @@ class ClientService {
       return startSub()
 
       function startSub() {
-        started++
+        startedCount++
         return relay.subscribe([since ? { ...filter, since } : filter], {
           alreadyHaveEvent: (id: string) => {
             const have = _knownIds.has(id)
@@ -178,7 +179,7 @@ class ClientService {
           onevent(evt: NEvent) {
             that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
             // not eosed yet, push to events
-            if (eosed < started) {
+            if (eosedCount < startedCount) {
               return events.push(evt)
             }
             // eosed, (algo relay feeds) no need to sort and cache
@@ -228,8 +229,10 @@ class ClientService {
             }
           },
           oneose() {
-            eosed++
-            if (eosed < started) return
+            eosedCount++
+            if (eosedCount < startedCount || eosed) return
+
+            eosed = true
 
             // (algo feeds) no need to sort and cache
             if (!needSort) {
