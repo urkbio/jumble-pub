@@ -14,26 +14,26 @@ export default function NoteListPage() {
   const {
     title = '',
     filter,
-    specificRelayUrl
+    urls
   } = useMemo<{
     title?: string
     filter?: Filter
-    specificRelayUrl?: string
+    urls: string[]
   }>(() => {
     const hashtag = searchParams.get('t')
     if (hashtag) {
-      return { title: `# ${hashtag}`, filter: { '#t': [hashtag] } }
+      return { title: `# ${hashtag}`, filter: { '#t': [hashtag] }, urls: relayUrls }
     }
     const search = searchParams.get('s')
     if (search) {
-      return { title: `${t('search')}: ${search}`, filter: { search } }
+      return { title: `${t('search')}: ${search}`, filter: { search }, urls: relayUrls }
     }
     const relayUrl = searchParams.get('relay')
     if (relayUrl && isWebsocketUrl(relayUrl)) {
-      return { title: relayUrl, specificRelayUrl: relayUrl }
+      return { title: relayUrl, urls: [relayUrl] }
     }
-    return {}
-  }, [searchParams])
+    return { urls: relayUrls }
+  }, [searchParams, JSON.stringify(relayUrls)])
 
   if (filter?.search && searchableRelayUrls.length === 0) {
     return (
@@ -47,11 +47,7 @@ export default function NoteListPage() {
 
   return (
     <SecondaryPageLayout titlebarContent={title}>
-      <NoteList
-        key={title}
-        filter={filter}
-        relayUrls={specificRelayUrl ? [specificRelayUrl] : relayUrls}
-      />
+      <NoteList key={title} filter={filter} relayUrls={urls} />
     </SecondaryPageLayout>
   )
 }

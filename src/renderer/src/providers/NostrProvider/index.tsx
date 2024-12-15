@@ -160,7 +160,6 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     }
     setPubkey(null)
     await storage.setAccountInfo(null)
-    client.clearNotificationsCache()
   }
 
   const signEvent = async (draftEvent: TDraftEvent) => {

@@ -12,6 +12,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import NoteCard from '../NoteCard'
 
+const NORMAL_RELAY_LIMIT = 100
+const ALGO_RELAY_LIMIT = 500
+
 export default function NoteList({
   relayUrls,
   filter = {},
@@ -24,9 +27,9 @@ export default function NoteList({
   const { t } = useTranslation()
   const { isReady, signEvent } = useNostr()
   const { isFetching: isFetchingRelayInfo, areAlgoRelays } = useFetchRelayInfos(relayUrls)
+  const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
   const [events, setEvents] = useState<Event[]>([])
   const [newEvents, setNewEvents] = useState<Event[]>([])
-  const [until, setUntil] = useState<number>(() => dayjs().unix())
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [initialized, setInitialized] = useState(false)
   const [displayReplies, setDisplayReplies] = useState(false)
@@ -35,7 +38,7 @@ export default function NoteList({
   const noteFilter = useMemo(() => {
     return {
       kinds: [kinds.ShortTextNote, kinds.Repost],
-      limit: areAlgoRelays ? 500 : 50,
+      limit: areAlgoRelays ? ALGO_RELAY_LIMIT : NORMAL_RELAY_LIMIT,
       ...filter
     }
   }, [JSON.stringify(filter), areAlgoRelays])
@@ -43,40 +46,44 @@ export default function NoteList({
   useEffect(() => {
     if (!isReady || isFetchingRelayInfo) return
 
-    setInitialized(false)
-    setEvents([])
-    setNewEvents([])
-    setHasMore(true)
+    async function init() {
+      setInitialized(false)
+      setEvents([])
+      setNewEvents([])
+      setHasMore(true)
 
-    const subCloser = client.subscribeEventsWithAuth(
-      relayUrls,
-      noteFilter,
-      {
-        onEose: (events) => {
-          if (!areAlgoRelays) {
-            events.sort((a, b) => b.created_at - a.created_at)
+      const { closer, timelineKey } = await client.subscribeTimeline(
+        relayUrls,
+        noteFilter,
+        {
+          onEvents: (events, eosed) => {
+            if (events.length > 0) {
+              setEvents(events)
+            } else {
+              setHasMore(false)
+            }
+            if (areAlgoRelays) {
+              setHasMore(false)
+            }
+            if (eosed) {
+              setInitialized(true)
+            }
+          },
+          onNew: (event) => {
+            setNewEvents((oldEvents) =>
+              [event, ...oldEvents].sort((a, b) => b.created_at - a.created_at)
+            )
           }
-          events = events.slice(0, noteFilter.limit)
-          if (events.length > 0) {
-            setEvents((pre) => [...pre, ...events])
-            setUntil(events[events.length - 1].created_at - 1)
-          } else {
-            setHasMore(false)
-          }
-          if (areAlgoRelays) {
-            setHasMore(false)
-          }
-          setInitialized(true)
         },
-        onNew: (event) => {
-          setNewEvents((oldEvents) => [event, ...oldEvents])
-        }
-      },
-      signEvent
-    )
+        { signer: signEvent, needSort: !areAlgoRelays }
+      )
+      setTimelineKey(timelineKey)
+      return closer
+    }
 
+    const promise = init()
     return () => {
-      subCloser()
+      promise.then((closer) => closer())
     }
   }, [
     JSON.stringify(relayUrls),
@@ -110,23 +117,21 @@ export default function NoteList({
         observer.current.unobserve(bottomRef.current)
       }
     }
-  }, [until, initialized, hasMore])
+  }, [initialized, hasMore, events, timelineKey])
 
   const loadMore = async () => {
-    const events = await client.fetchEvents(relayUrls, { ...noteFilter, until }, true)
-    const sortedEvents = events
-      .sort((a, b) => b.created_at - a.created_at)
-      .slice(0, noteFilter.limit)
-    if (sortedEvents.length === 0) {
+    if (!timelineKey) return
+
+    const newEvents = await client.loadMoreTimeline(
+      timelineKey,
+      events.length ? events[events.length - 1].created_at - 1 : dayjs().unix(),
+      noteFilter.limit
+    )
+    if (newEvents.length === 0) {
       setHasMore(false)
       return
     }
-
-    if (sortedEvents.length > 0) {
-      setEvents((oldEvents) => [...oldEvents, ...sortedEvents])
-    }
-
-    setUntil(sortedEvents[sortedEvents.length - 1].created_at - 1)
+    setEvents((oldEvents) => [...oldEvents, ...newEvents])
   }
 
   const showNewEvents = () => {

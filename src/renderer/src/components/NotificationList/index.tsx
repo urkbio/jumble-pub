@@ -17,35 +17,46 @@ const LIMIT = 50
 export default function NotificationList() {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
+  const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
   const [initialized, setInitialized] = useState(false)
   const [notifications, setNotifications] = useState<Event[]>([])
-  const [until, setUntil] = useState<number>(dayjs().unix())
+  const [until, setUntil] = useState<number | undefined>(dayjs().unix())
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const observer = useRef<IntersectionObserver | null>(null)
-  const [hasMore, setHasMore] = useState(true)
 
   useEffect(() => {
     if (!pubkey) {
-      setHasMore(false)
+      setUntil(undefined)
       return
     }
 
     const init = async () => {
-      setHasMore(true)
-      const subCloser = await client.subscribeNotifications(pubkey, LIMIT, {
-        onNotifications: (events, isCache) => {
-          setNotifications(events)
-          setUntil(events.length ? events[events.length - 1].created_at - 1 : dayjs().unix())
-          if (!isCache) {
-            setInitialized(true)
-          }
+      const relayList = await client.fetchRelayList(pubkey)
+      const { closer, timelineKey } = await client.subscribeTimeline(
+        relayList.read.length >= 4
+          ? relayList.read
+          : relayList.read.concat(client.getDefaultRelayUrls()).slice(0, 4),
+        {
+          '#p': [pubkey],
+          kinds: [kinds.ShortTextNote, kinds.Repost, kinds.Reaction],
+          limit: LIMIT
         },
-        onNew: (event) => {
-          setNotifications((oldEvents) => [event, ...oldEvents])
+        {
+          onEvents: (events, eosed) => {
+            setNotifications(events.filter((event) => event.pubkey !== pubkey))
+            setUntil(events.length >= LIMIT ? events[events.length - 1].created_at - 1 : undefined)
+            if (eosed) {
+              setInitialized(true)
+            }
+          },
+          onNew: (event) => {
+            if (event.pubkey === pubkey) return
+            setNotifications((oldEvents) => [event, ...oldEvents])
+          }
         }
-      })
-
-      return subCloser
+      )
+      setTimelineKey(timelineKey)
+      return closer
     }
 
     const promise = init()
@@ -64,7 +75,7 @@ export default function NotificationList() {
     }
 
     observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore) {
+      if (entries[0].isIntersecting) {
         loadMore()
       }
     }, options)
@@ -78,13 +89,13 @@ export default function NotificationList() {
         observer.current.unobserve(bottomRef.current)
       }
     }
-  }, [until, initialized, hasMore])
+  }, [until, initialized, timelineKey])
 
   const loadMore = async () => {
-    if (!pubkey) return
-    const notifications = await client.fetchMoreNotifications(pubkey, until, LIMIT)
+    if (!pubkey || !timelineKey || !until) return
+    const notifications = await client.loadMoreTimeline(timelineKey, until, LIMIT)
     if (notifications.length === 0) {
-      setHasMore(false)
+      setUntil(undefined)
       return
     }
 
@@ -101,7 +112,7 @@ export default function NotificationList() {
         <NotificationItem key={index} notification={notification} />
       ))}
       <div className="text-center text-sm text-muted-foreground">
-        {hasMore ? <div ref={bottomRef}>{t('loading...')}</div> : t('no more notifications')}
+        {until ? <div ref={bottomRef}>{t('loading...')}</div> : t('no more notifications')}
       </div>
     </div>
   )

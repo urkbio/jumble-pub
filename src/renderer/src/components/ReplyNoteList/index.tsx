@@ -1,22 +1,27 @@
 import { Separator } from '@renderer/components/ui/separator'
+import { isReplyNoteEvent } from '@renderer/lib/event'
 import { isReplyETag, isRootETag } from '@renderer/lib/tag'
 import { cn } from '@renderer/lib/utils'
 import { useNostr } from '@renderer/providers/NostrProvider'
 import { useNoteStats } from '@renderer/providers/NoteStatsProvider'
 import client from '@renderer/services/client.service'
-import { Event } from 'nostr-tools'
+import dayjs from 'dayjs'
+import { Event, kinds } from 'nostr-tools'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ReplyNote from '../ReplyNote'
 
+const LIMIT = 100
+
 export default function ReplyNoteList({ event, className }: { event: Event; className?: string }) {
   const { t } = useTranslation()
   const { isReady, pubkey } = useNostr()
+  const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
+  const [until, setUntil] = useState<number | undefined>(() => dayjs().unix())
   const [replies, setReplies] = useState<Event[]>([])
   const [replyMap, setReplyMap] = useState<
     Record<string, { event: Event; level: number; parent?: Event } | undefined>
   >({})
-  const [until, setUntil] = useState<number | undefined>()
   const [loading, setLoading] = useState<boolean>(false)
   const [highlightReplyId, setHighlightReplyId] = useState<string | undefined>(undefined)
   const { updateNoteReplyCount } = useNoteStats()
@@ -28,25 +33,35 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
     const init = async () => {
       setLoading(true)
       setReplies([])
-      setUntil(undefined)
 
       try {
         const relayList = await client.fetchRelayList(event.pubkey)
-        const closer = await client.subscribeReplies(relayList.read.slice(0, 5), event.id, 100, {
-          onReplies: (evts, isCache, until) => {
-            setReplies(evts)
-            setUntil(until)
-            if (!isCache) {
-              setLoading(false)
-            }
+        const { closer, timelineKey } = await client.subscribeTimeline(
+          relayList.read.slice(0, 5),
+          {
+            '#e': [event.id],
+            kinds: [kinds.ShortTextNote],
+            limit: LIMIT
           },
-          onNew: (evt) => {
-            setReplies((pre) => [...pre, evt])
-            if (evt.pubkey === pubkey) {
-              highlightReply(evt.id)
+          {
+            onEvents: (evts, eosed) => {
+              setReplies(evts.filter((evt) => isReplyNoteEvent(evt)).reverse())
+              if (eosed) {
+                setLoading(false)
+                setUntil(evts.length >= LIMIT ? evts[evts.length - 1].created_at - 1 : undefined)
+              }
+            },
+            onNew: (evt) => {
+              if (!isReplyNoteEvent(evt)) return
+
+              setReplies((pre) => [...pre, evt])
+              if (evt.pubkey === pubkey) {
+                highlightReply(evt.id)
+              }
             }
           }
-        })
+        )
+        setTimelineKey(timelineKey)
         return closer
       } catch {
         setLoading(false)
@@ -96,20 +111,15 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
   }, [replies])
 
   const loadMore = async () => {
-    if (loading || !until) return
+    if (loading || !until || !timelineKey) return
 
     setLoading(true)
-    const relayList = await client.fetchRelayList(event.pubkey)
-    const { replies: olderReplies, until: newUntil } = await client.fetchMoreReplies(
-      relayList.read.slice(0, 5),
-      event.id,
-      until,
-      100
-    )
+    const events = await client.loadMoreTimeline(timelineKey, until, LIMIT)
+    const olderReplies = events.filter((evt) => isReplyNoteEvent(evt)).reverse()
     if (olderReplies.length > 0) {
       setReplies((pre) => [...olderReplies, ...pre])
     }
-    setUntil(newUntil)
+    setUntil(events.length ? events[events.length - 1].created_at - 1 : undefined)
     setLoading(false)
   }
 
