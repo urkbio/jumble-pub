@@ -35,6 +35,7 @@ export default function ShortTextNoteCard({
       <RepostDescription reposter={reposter} className="max-sm:hidden pl-4" />
       <div
         className={`hover:bg-muted/50 text-left cursor-pointer ${embedded ? 'p-2 sm:p-3 border rounded-lg' : 'px-4 py-3 sm:py-4 sm:border sm:rounded-lg max-sm:border-b'}`}
+        onClick={(e) => e.stopPropagation()}
       >
         <RepostDescription reposter={reposter} className="sm:hidden" />
         <Note

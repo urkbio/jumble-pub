@@ -5,9 +5,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@renderer/components/ui
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
 import PrimaryPageLayout from '@renderer/layouts/PrimaryPageLayout'
 import { useRelaySettings } from '@renderer/providers/RelaySettingsProvider'
+import { useEffect, useRef } from 'react'
 
 export default function NoteListPage() {
+  const layoutRef = useRef<{ scrollToTop: () => void }>(null)
   const { relayUrls } = useRelaySettings()
+
+  useEffect(() => {
+    if (layoutRef.current) {
+      layoutRef.current.scrollToTop()
+    }
+  }, [JSON.stringify(relayUrls)])
 
   if (!relayUrls.length) {
     return (
@@ -33,7 +41,7 @@ export default function NoteListPage() {
   }
 
   return (
-    <PrimaryPageLayout>
+    <PrimaryPageLayout ref={layoutRef}>
       <NoteList relayUrls={relayUrls} />
     </PrimaryPageLayout>
   )

@@ -1,8 +1,6 @@
 import Logo from '@renderer/assets/Logo'
 import { Button } from '@renderer/components/ui/button'
 import { IS_ELECTRON } from '@renderer/lib/env'
-import { toHome } from '@renderer/lib/link'
-import { SecondaryPageLink } from '@renderer/PageManager'
 import { Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import AboutInfoDialog from '../AboutInfoDialog'
@@ -16,18 +14,17 @@ import SearchButton from '../SearchButton'
 export default function PrimaryPageSidebar() {
   const { t } = useTranslation()
   return (
-    <div className="draggable w-52 h-full shrink-0 hidden xl:flex flex-col pb-8 pt-10 pl-4 justify-between">
+    <div className="w-52 h-full shrink-0 hidden xl:flex flex-col pb-8 pt-10 pl-4 justify-between relative">
+      <div className="draggable absolute top-0 left-0 h-11 w-full" />
       <div className="space-y-2">
-        <div className="ml-4 mb-8 w-40">
-          <SecondaryPageLink to={toHome()}>
-            <Logo />
-          </SecondaryPageLink>
+        <div className="draggable ml-4 mb-8 w-40">
+          <Logo />
         </div>
         <PostButton variant="sidebar" />
         <RelaySettingsButton variant="sidebar" />
         <NotificationButton variant="sidebar" />
         <SearchButton variant="sidebar" />
-        <RefreshButton variant="sidebar" />
+        {IS_ELECTRON && <RefreshButton variant="sidebar" />}
         {!IS_ELECTRON && (
           <AboutInfoDialog>
             <Button variant="sidebar" size="sidebar">

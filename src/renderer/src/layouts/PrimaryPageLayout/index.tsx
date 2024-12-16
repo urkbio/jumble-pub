@@ -9,7 +9,7 @@ import SearchButton from '@renderer/components/SearchButton'
 import ThemeToggle from '@renderer/components/ThemeToggle'
 import { Titlebar } from '@renderer/components/Titlebar'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
-import { isMacOS } from '@renderer/lib/env'
+import { IS_ELECTRON, isMacOS } from '@renderer/lib/env'
 import { cn } from '@renderer/lib/utils'
 import { useScreenSize } from '@renderer/providers/ScreenSizeProvider'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
@@ -60,7 +60,7 @@ const PrimaryPageLayout = forwardRef(({ children }: { children?: React.ReactNode
     <ScrollArea
       ref={scrollAreaRef}
       className="h-full w-full"
-      scrollBarClassName="pt-9 max-sm:pt-0 xl:pt-0"
+      scrollBarClassName={`pt-9 xl:pt-0 ${isMacOS() ? 'max-sm:pt-20' : 'max-sm:pt-11'}`}
     >
       <PrimaryPageTitlebar visible={visible} />
       <div className={cn('sm:px-4 pb-4 pt-11 xl:pt-4', isMacOS() ? 'max-sm:pt-20' : '')}>
@@ -111,7 +111,7 @@ function PrimaryPageTitlebar({ visible = true }: { visible?: boolean }) {
         <SearchButton />
       </div>
       <div className="flex gap-2 items-center">
-        <RefreshButton />
+        {IS_ELECTRON && <RefreshButton />}
         <RelaySettingsButton />
         <NotificationButton />
       </div>

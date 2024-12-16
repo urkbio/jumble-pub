@@ -15,7 +15,9 @@ export default function AboutInfoDialog({ children }: { children: React.ReactNod
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Jumble</DialogTitle>
-          <DialogDescription>yet another nostr client</DialogDescription>
+          <DialogDescription>
+            A beautiful nostr client focused on browsing relay feeds
+          </DialogDescription>
         </DialogHeader>
         <div>
           Made by{' '}

@@ -8,8 +8,8 @@ import { getSharableEventId } from '@renderer/lib/event'
 import { Code, Copy, Ellipsis } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useState } from 'react'
-import RawEventDialog from './RawEventDialog'
 import { useTranslation } from 'react-i18next'
+import RawEventDialog from './RawEventDialog'
 
 export default function NoteOptions({ event }: { event: Event }) {
   const { t } = useTranslation()
@@ -26,20 +26,12 @@ export default function NoteOptions({ event }: { event: Event }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent collisionPadding={8}>
           <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              navigator.clipboard.writeText('nostr:' + getSharableEventId(event))
-            }}
+            onClick={() => navigator.clipboard.writeText('nostr:' + getSharableEventId(event))}
           >
             <Copy />
             {t('copy embedded code')}
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsRawEventDialogOpen(true)
-            }}
-          >
+          <DropdownMenuItem onClick={() => setIsRawEventDialogOpen(true)}>
             <Code />
             {t('raw event')}
           </DropdownMenuItem>

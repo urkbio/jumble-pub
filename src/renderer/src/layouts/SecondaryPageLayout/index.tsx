@@ -51,7 +51,11 @@ export default function SecondaryPageLayout({
   }, [lastScrollTop])
 
   return (
-    <ScrollArea ref={scrollAreaRef} className="h-full" scrollBarClassName="pt-9">
+    <ScrollArea
+      ref={scrollAreaRef}
+      className="h-full"
+      scrollBarClassName={`sm:pt-9 ${isMacOS() ? 'pt-20' : 'pt-11'}`}
+    >
       <SecondaryPageTitlebar
         content={titlebarContent}
         hideBackButton={hideBackButton}
