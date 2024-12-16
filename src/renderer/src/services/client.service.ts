@@ -176,7 +176,7 @@ class ClientService {
             _knownIds.add(id)
             return false
           },
-          onevent(evt: NEvent) {
+          onevent: (evt: NEvent) => {
             that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
             // not eosed yet, push to events
             if (eosedCount < startedCount) {
@@ -214,7 +214,7 @@ class ClientService {
             // insert the event to the right position
             timeline.refs.splice(idx, 0, [evt.id, evt.created_at])
           },
-          onclose(reason: string) {
+          onclose: (reason: string) => {
             if (reason.startsWith('auth-required:')) {
               if (!hasAuthed && signer) {
                 relay
@@ -228,18 +228,21 @@ class ClientService {
               }
             }
           },
-          oneose() {
+          oneose: () => {
+            if (eosed) return
             eosedCount++
-            if (eosedCount < startedCount || eosed) return
-
-            eosed = true
+            eosed = eosedCount >= startedCount
 
             // (algo feeds) no need to sort and cache
             if (!needSort) {
-              return onEvents(events, true)
+              return onEvents(events, eosed)
             }
-            events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
+            if (!eosed) {
+              events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
+              return onEvents(events.concat(cachedEvents), false)
+            }
 
+            events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
             const timeline = that.timelines[key]
             // no cache yet
             if (!timeline || !timeline.refs.length) {
@@ -302,21 +305,17 @@ class ClientService {
             )
           ).filter(Boolean) as NEvent[])
         : []
-    if (cachedEvents.length >= limit) {
+    if (cachedEvents.length > 0) {
       return cachedEvents
     }
-    const restLimit = limit - cachedEvents.length
-    const restUntil = cachedEvents.length
-      ? cachedEvents[cachedEvents.length - 1].created_at - 1
-      : until
 
-    let events = await this.pool.querySync(urls, { ...filter, until: restUntil, limit: restLimit })
+    let events = await this.pool.querySync(urls, { ...filter, until: until, limit: limit })
     events.forEach((evt) => {
       this.eventDataLoader.prime(evt.id, Promise.resolve(evt))
     })
-    events = events.sort((a, b) => b.created_at - a.created_at).slice(0, restLimit)
+    events = events.sort((a, b) => b.created_at - a.created_at).slice(0, limit)
     timeline.refs.push(...events.map((evt) => [evt.id, evt.created_at] as TTimelineRef))
-    return cachedEvents.concat(events)
+    return events
   }
 
   async fetchEvents(relayUrls: string[], filter: Filter, cache = false) {
