@@ -107,9 +107,9 @@ export default function NotificationList() {
   }
 
   return (
-    <div className="">
-      {notifications.map((notification, index) => (
-        <NotificationItem key={index} notification={notification} />
+    <div>
+      {notifications.map((notification) => (
+        <NotificationItem key={notification.id} notification={notification} />
       ))}
       <div className="text-center text-sm text-muted-foreground">
         {until ? <div ref={bottomRef}>{t('loading...')}</div> : t('no more notifications')}
