@@ -16,7 +16,7 @@ export default function NoteOptions({ event }: { event: Event }) {
   const [isRawEventDialogOpen, setIsRawEventDialogOpen] = useState(false)
 
   return (
-    <>
+    <div onClick={(e) => e.stopPropagation()}>
       <DropdownMenu>
         <DropdownMenuTrigger>
           <Ellipsis
@@ -42,6 +42,6 @@ export default function NoteOptions({ event }: { event: Event }) {
         isOpen={isRawEventDialogOpen}
         onClose={() => setIsRawEventDialogOpen(false)}
       />
-    </>
+    </div>
   )
 }
