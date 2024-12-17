@@ -28,8 +28,8 @@ const Content = memo(
     const { content, images, videos, embeddedNotes, lastNonMediaUrl } = preprocess(event.content)
     const isNsfw = isNsfwEvent(event)
     const nodes = embedded(content, [
-      embeddedWebsocketUrlRenderer,
       embeddedNormalUrlRenderer,
+      embeddedWebsocketUrlRenderer,
       embeddedHashtagRenderer,
       embeddedNostrNpubRenderer,
       embeddedNostrProfileRenderer

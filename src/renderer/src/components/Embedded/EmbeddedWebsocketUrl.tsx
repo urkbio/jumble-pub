@@ -6,13 +6,14 @@ export function EmbeddedWebsocketUrl({ url }: { url: string }) {
   const { push } = useSecondaryPage()
   return (
     <span
-      className="cursor-pointer px-1 rounded-md text-highlight border border-highlight/60 hover:border-highlight hover:bg-muted/60"
+      className="cursor-pointer px-1 text-highlight hover:bg-highlight/20"
       onClick={(e) => {
         e.stopPropagation()
         push(toNoteList({ relay: url }))
       }}
     >
-      {url}
+      [ {url} ]
+      <span className="w-2 h-1 bg-highlight" />
     </span>
   )
 }
