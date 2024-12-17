@@ -6,26 +6,44 @@ import { useNostr } from '@renderer/providers/NostrProvider'
 import { useNoteStats } from '@renderer/providers/NoteStatsProvider'
 import client from '@renderer/services/client.service'
 import dayjs from 'dayjs'
-import { Event, kinds } from 'nostr-tools'
+import { Event as NEvent, kinds } from 'nostr-tools'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ReplyNote from '../ReplyNote'
 
 const LIMIT = 100
 
-export default function ReplyNoteList({ event, className }: { event: Event; className?: string }) {
+export default function ReplyNoteList({ event, className }: { event: NEvent; className?: string }) {
   const { t } = useTranslation()
   const { isReady, pubkey } = useNostr()
   const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
   const [until, setUntil] = useState<number | undefined>(() => dayjs().unix())
-  const [replies, setReplies] = useState<Event[]>([])
+  const [replies, setReplies] = useState<NEvent[]>([])
   const [replyMap, setReplyMap] = useState<
-    Record<string, { event: Event; level: number; parent?: Event } | undefined>
+    Record<string, { event: NEvent; level: number; parent?: NEvent } | undefined>
   >({})
   const [loading, setLoading] = useState<boolean>(false)
   const [highlightReplyId, setHighlightReplyId] = useState<string | undefined>(undefined)
   const { updateNoteReplyCount } = useNoteStats()
   const replyRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  useEffect(() => {
+    const handleEventPublished = (data: Event) => {
+      const customEvent = data as CustomEvent<NEvent>
+      const evt = customEvent.detail
+      if (
+        isReplyNoteEvent(evt) &&
+        evt.tags.some(([tagName, tagValue]) => tagName === 'e' && tagValue === event.id)
+      ) {
+        onNewReply(evt)
+      }
+    }
+
+    client.addEventListener('eventPublished', handleEventPublished)
+    return () => {
+      client.removeEventListener('eventPublished', handleEventPublished)
+    }
+  }, [])
 
   useEffect(() => {
     if (!isReady || loading) return
@@ -53,11 +71,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
             },
             onNew: (evt) => {
               if (!isReplyNoteEvent(evt)) return
-
-              setReplies((pre) => [...pre, evt])
-              if (evt.pubkey === pubkey) {
-                highlightReply(evt.id)
-              }
+              onNewReply(evt)
             }
           }
         )
@@ -78,7 +92,8 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
   useEffect(() => {
     updateNoteReplyCount(event.id, replies.length)
 
-    const replyMap: Record<string, { event: Event; level: number; parent?: Event } | undefined> = {}
+    const replyMap: Record<string, { event: NEvent; level: number; parent?: NEvent } | undefined> =
+      {}
     for (const reply of replies) {
       const parentReplyTag = reply.tags.find(isReplyETag)
       if (parentReplyTag) {
@@ -95,7 +110,7 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
       }
 
       let level = 0
-      let parent: Event | undefined
+      let parent: NEvent | undefined
       for (const [tagName, tagValue] of reply.tags) {
         if (tagName === 'e') {
           const info = replyMap[tagValue]
@@ -123,10 +138,20 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
     setLoading(false)
   }
 
+  const onNewReply = (evt: NEvent) => {
+    if (replies.some((reply) => reply.id === evt.id)) return
+    setReplies((pre) => [...pre, evt])
+    if (evt.pubkey === pubkey) {
+      setTimeout(() => {
+        highlightReply(evt.id)
+      }, 100)
+    }
+  }
+
   const highlightReply = (eventId: string) => {
     const ref = replyRefs.current[eventId]
     if (ref) {
-      ref.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      ref.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
     setHighlightReplyId(eventId)
     setTimeout(() => {
@@ -144,10 +169,10 @@ export default function ReplyNoteList({ event, className }: { event: Event; clas
       </div>
       {replies.length > 0 && (loading || until) && <Separator className="my-2" />}
       <div className={cn('mb-4', className)}>
-        {replies.map((reply, index) => {
+        {replies.map((reply) => {
           const info = replyMap[reply.id]
           return (
-            <div ref={(el) => (replyRefs.current[reply.id] = el)} key={index}>
+            <div ref={(el) => (replyRefs.current[reply.id] = el)} key={reply.id}>
               <ReplyNote
                 event={reply}
                 parentEvent={info?.parent}

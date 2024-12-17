@@ -24,7 +24,7 @@ const BIG_RELAY_URLS = [
 
 type TTimelineRef = [string, number]
 
-class ClientService {
+class ClientService extends EventTarget {
   static instance: ClientService
 
   private defaultRelayUrls: string[] = BIG_RELAY_URLS
@@ -84,6 +84,7 @@ class ClientService {
 
   constructor() {
     if (!ClientService.instance) {
+      super()
       ClientService.instance = this
     }
     return ClientService.instance
@@ -102,7 +103,9 @@ class ClientService {
   }
 
   async publishEvent(relayUrls: string[], event: NEvent) {
-    return await Promise.any(this.pool.publish(relayUrls, event))
+    const result = await Promise.any(this.pool.publish(relayUrls, event))
+    this.dispatchEvent(new CustomEvent('eventPublished', { detail: event }))
+    return result
   }
 
   private async generateTimelineKey(urls: string[], filter: Filter): Promise<string> {
