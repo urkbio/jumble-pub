@@ -53,7 +53,7 @@ function ParentNote({ eventId }: { eventId?: string }) {
     <div>
       <Card
         className="flex space-x-1 p-1 items-center hover:bg-muted/50 cursor-pointer text-sm text-muted-foreground hover:text-foreground"
-        onClick={() => push(toNote(event.id))}
+        onClick={() => push(toNote(event))}
       >
         <UserAvatar userId={event.pubkey} size="tiny" />
         <Username userId={event.pubkey} className="font-semibold" skeletonClassName="h-4" />

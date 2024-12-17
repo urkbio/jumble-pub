@@ -1,5 +1,11 @@
+import { Event, nip19 } from 'nostr-tools'
+
 export const toHome = () => '/'
-export const toNote = (eventId: string) => `/notes/${eventId}`
+export const toNote = (eventOrId: Event | string) => {
+  if (typeof eventOrId === 'string') return `/notes/${eventOrId}`
+  const nevent = nip19.neventEncode({ id: eventOrId.id, author: eventOrId.pubkey })
+  return `/notes/${nevent}`
+}
 export const toNoteList = ({
   hashtag,
   search,
@@ -16,14 +22,20 @@ export const toNoteList = ({
   if (relay) query.set('relay', relay)
   return `${path}?${query.toString()}`
 }
-export const toProfile = (pubkey: string) => `/users/${pubkey}`
+export const toProfile = (pubkey: string) => {
+  const npub = nip19.npubEncode(pubkey)
+  return `/users/${npub}`
+}
 export const toProfileList = ({ search }: { search?: string }) => {
   const path = '/users'
   const query = new URLSearchParams()
   if (search) query.set('s', search)
   return `${path}?${query.toString()}`
 }
-export const toFollowingList = (pubkey: string) => `/users/${pubkey}/following`
+export const toFollowingList = (pubkey: string) => {
+  const npub = nip19.npubEncode(pubkey)
+  return `/users/${npub}/following`
+}
 export const toRelaySettings = () => '/relay-settings'
 export const toNotifications = () => '/notifications'
 

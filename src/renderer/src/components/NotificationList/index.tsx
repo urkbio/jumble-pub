@@ -167,7 +167,7 @@ function ReplyNotification({ notification }: { notification: Event }) {
   return (
     <div
       className="flex gap-2 items-center cursor-pointer py-2"
-      onClick={() => push(toNote(notification.id))}
+      onClick={() => push(toNote(notification))}
     >
       <UserAvatar userId={notification.pubkey} size="small" />
       <MessageCircle size={24} className="text-blue-400" />
@@ -197,7 +197,7 @@ function RepostNotification({ notification }: { notification: Event }) {
   return (
     <div
       className="flex gap-2 items-center cursor-pointer py-2"
-      onClick={() => push(toNote(event.id))}
+      onClick={() => push(toNote(event))}
     >
       <UserAvatar userId={notification.pubkey} size="small" />
       <Repeat size={24} className="text-green-400" />

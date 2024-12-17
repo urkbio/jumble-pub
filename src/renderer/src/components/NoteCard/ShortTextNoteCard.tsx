@@ -29,7 +29,7 @@ export default function ShortTextNoteCard({
       className={className}
       onClick={(e) => {
         e.stopPropagation()
-        push(toNote(event.id))
+        push(toNote(event))
       }}
     >
       <RepostDescription reposter={reposter} className="max-sm:hidden pl-4" />
