@@ -6,7 +6,6 @@ import AboutInfoDialog from '../AboutInfoDialog'
 import AccountButton from '../AccountButton'
 import NotificationButton from '../NotificationButton'
 import PostButton from '../PostButton'
-import RefreshButton from '../RefreshButton'
 import RelaySettingsButton from '../RelaySettingsButton'
 import SearchButton from '../SearchButton'
 
@@ -23,7 +22,6 @@ export default function PrimaryPageSidebar() {
         <RelaySettingsButton variant="sidebar" />
         <NotificationButton variant="sidebar" />
         <SearchButton variant="sidebar" />
-        <RefreshButton variant="sidebar" />
         <AboutInfoDialog>
           <Button variant="sidebar" size="sidebar">
             <Info />
