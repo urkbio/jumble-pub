@@ -3,6 +3,7 @@
 @tailwind utilities;
 @layer base {
   * {
+    @apply border-border;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -18,11 +19,26 @@
   }
 
   body {
+    @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
-    overflow: hidden;
     -webkit-overflow-scrolling: touch;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
+  }
+
+  .clickable {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:active {
+      background-color: hsl(var(--muted) / 0.5);
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .clickable:hover {
+      background-color: hsl(var(--muted) / 0.5);
+    }
   }
 
   :root {
@@ -79,13 +95,5 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     --highlight: 259 43% 56%;
-  }
-}
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }

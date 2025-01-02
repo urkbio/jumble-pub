@@ -4,13 +4,13 @@ import { formatPubkey } from '@/lib/pubkey'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { TAccountPointer, TSignerType } from '@/types'
-import { Loader, Trash2 } from 'lucide-react'
+import { Loader } from 'lucide-react'
 import { useState } from 'react'
 import { SimpleUserAvatar } from '../UserAvatar'
 import { SimpleUsername } from '../Username'
 
 export default function AccountList({ afterSwitch }: { afterSwitch: () => void }) {
-  const { accounts, account, switchAccount, removeAccount } = useNostr()
+  const { accounts, account, switchAccount } = useNostr()
   const [switchingAccount, setSwitchingAccount] = useState<TAccountPointer | null>(null)
 
   return (
@@ -20,9 +20,7 @@ export default function AccountList({ afterSwitch }: { afterSwitch: () => void }
           key={`${act.pubkey}-${act.signerType}`}
           className={cn(
             'relative rounded-lg',
-            isSameAccount(act, account)
-              ? 'border border-primary'
-              : 'cursor-pointer hover:bg-muted/60'
+            isSameAccount(act, account) ? 'border border-primary' : 'clickable'
           )}
           onClick={() => {
             if (isSameAccount(act, account)) return
@@ -44,14 +42,6 @@ export default function AccountList({ afterSwitch }: { afterSwitch: () => void }
             </div>
             <div className="flex gap-2 items-center">
               <SignerTypeBadge signerType={act.signerType} />
-              <Trash2
-                size={16}
-                className="text-muted-foreground hover:text-destructive cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  removeAccount(act)
-                }}
-              />
             </div>
           </div>
           {switchingAccount && isSameAccount(act, switchingAccount) && (

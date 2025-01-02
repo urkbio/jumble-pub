@@ -4,7 +4,7 @@ import './index.css'
 import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import { PageManager } from './PageManager'
-import NoteListPage from './pages/primary/NoteListPage'
+import { FeedProvider } from './providers/FeedProvider'
 import { FollowListProvider } from './providers/FollowListProvider'
 import { NostrProvider } from './providers/NostrProvider'
 import { NoteStatsProvider } from './providers/NoteStatsProvider'
@@ -13,23 +13,21 @@ import { ScreenSizeProvider } from './providers/ScreenSizeProvider'
 
 export default function App(): JSX.Element {
   return (
-    <div className="h-screen">
-      <ThemeProvider>
-        <ScreenSizeProvider>
+    <ThemeProvider>
+      <ScreenSizeProvider>
+        <FeedProvider>
           <RelaySettingsProvider>
             <NostrProvider>
               <FollowListProvider>
                 <NoteStatsProvider>
-                  <PageManager>
-                    <NoteListPage />
-                  </PageManager>
+                  <PageManager />
                   <Toaster />
                 </NoteStatsProvider>
               </FollowListProvider>
             </NostrProvider>
           </RelaySettingsProvider>
-        </ScreenSizeProvider>
-      </ThemeProvider>
-    </div>
+        </FeedProvider>
+      </ScreenSizeProvider>
+    </ThemeProvider>
   )
 }

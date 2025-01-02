@@ -1,24 +1,38 @@
 import Sidebar from '@/components/Sidebar'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
+import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import NoteListPage from '@/pages/primary/NoteListPage'
 import HomePage from '@/pages/secondary/HomePage'
 import { cloneElement, createContext, useContext, useEffect, useState } from 'react'
+import MePage from './pages/primary/MePage'
+import NotificationListPage from './pages/primary/NotificationListPage'
 import { useScreenSize } from './providers/ScreenSizeProvider'
 import { routes } from './routes'
 
+export type TPrimaryPageName = keyof typeof PRIMARY_PAGE_MAP
+
 type TPrimaryPageContext = {
-  refresh: () => void
+  navigate: (page: TPrimaryPageName) => void
+  current: TPrimaryPageName | null
 }
 
 type TSecondaryPageContext = {
   push: (url: string) => void
   pop: () => void
+  currentIndex: number
 }
 
 type TStackItem = {
   index: number
   url: string
   component: React.ReactNode | null
+}
+
+const PRIMARY_PAGE_MAP = {
+  home: <NoteListPage />,
+  notifications: <NotificationListPage />,
+  me: <MePage />
 }
 
 const PrimaryPageContext = createContext<TPrimaryPageContext | undefined>(undefined)
@@ -41,39 +55,42 @@ export function useSecondaryPage() {
   return context
 }
 
-export function PageManager({
-  children,
-  maxStackSize = 5
-}: {
-  children: React.ReactNode
-  maxStackSize?: number
-}) {
-  const [primaryPageKey, setPrimaryPageKey] = useState<number>(0)
+export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
+  const [currentPrimaryPage, setCurrentPrimaryPage] = useState<TPrimaryPageName>('home')
   const [secondaryStack, setSecondaryStack] = useState<TStackItem[]>([])
   const { isSmallScreen } = useScreenSize()
 
   useEffect(() => {
     if (window.location.pathname !== '/') {
-      pushSecondary(window.location.pathname + window.location.search)
+      pushSecondaryPage(window.location.pathname + window.location.search)
     }
 
     const onPopState = (e: PopStateEvent) => {
       const state = e.state ?? { index: -1, url: '/' }
       setSecondaryStack((pre) => {
         const currentItem = pre[pre.length - 1]
-        const currentIndex = currentItem ? currentItem.index : -1
+        const currentIndex = currentItem ? currentItem.index : 0
         if (state.index === currentIndex) {
-          return pre
+          if (currentIndex !== 0) return pre
+
+          window.history.replaceState(null, '', '/')
+          return []
         }
+        // Go back
         if (state.index < currentIndex) {
           const newStack = pre.filter((item) => item.index <= state.index)
           const topItem = newStack[newStack.length - 1]
+          // Load the component if it's not cached
           if (topItem && !topItem.component) {
-            topItem.component = findAndCreateComponent(topItem.url)
+            topItem.component = findAndCreateComponent(topItem.url, state.index)
+          }
+          if (newStack.length === 0) {
+            window.history.replaceState(null, '', '/')
           }
           return newStack
         }
 
+        // Go forward
         const { newStack } = pushNewPageToStack(pre, state.url, maxStackSize)
         return newStack
       })
@@ -86,9 +103,14 @@ export function PageManager({
     }
   }, [])
 
-  const refreshPrimary = () => setPrimaryPageKey((prevKey) => prevKey + 1)
+  const navigatePrimaryPage = (page: TPrimaryPageName) => {
+    setCurrentPrimaryPage(page)
+    if (isSmallScreen) {
+      clearSecondaryPages()
+    }
+  }
 
-  const pushSecondary = (url: string) => {
+  const pushSecondaryPage = (url: string) => {
     setSecondaryStack((prevStack) => {
       if (isCurrentPage(prevStack, url)) return prevStack
 
@@ -100,62 +122,96 @@ export function PageManager({
     })
   }
 
-  const popSecondary = () => {
-    window.history.back()
+  const popSecondaryPage = () => {
+    window.history.go(-1)
+  }
+
+  const clearSecondaryPages = () => {
+    if (secondaryStack.length === 0) return
+    window.history.go(-secondaryStack.length)
   }
 
   if (isSmallScreen) {
     return (
-      <PrimaryPageContext.Provider value={{ refresh: refreshPrimary }}>
-        <SecondaryPageContext.Provider value={{ push: pushSecondary, pop: popSecondary }}>
-          <div className="h-full">
-            {!!secondaryStack.length &&
-              secondaryStack.map((item, index) => (
-                <div
-                  key={item.index}
-                  className="absolute top-0 left-0 w-full h-full bg-background"
-                  style={{
-                    display: index === secondaryStack.length - 1 ? 'block' : 'none'
-                  }}
-                >
-                  {item.component}
-                </div>
-              ))}
+      <PrimaryPageContext.Provider
+        value={{
+          navigate: navigatePrimaryPage,
+          current: secondaryStack.length === 0 ? currentPrimaryPage : null
+        }}
+      >
+        <SecondaryPageContext.Provider
+          value={{
+            push: pushSecondaryPage,
+            pop: popSecondaryPage,
+            currentIndex: secondaryStack.length
+              ? secondaryStack[secondaryStack.length - 1].index
+              : 0
+          }}
+        >
+          {!!secondaryStack.length &&
+            secondaryStack.map((item, index) => (
+              <div
+                key={item.index}
+                style={{
+                  display: index === secondaryStack.length - 1 ? 'block' : 'none'
+                }}
+              >
+                {item.component}
+              </div>
+            ))}
+          {Object.entries(PRIMARY_PAGE_MAP).map(([pageName, page]) => (
             <div
-              key={primaryPageKey}
-              className="absolute top-0 left-0 w-full h-full bg-background"
-              style={{ display: !secondaryStack.length ? 'block' : 'none' }}
+              key={pageName}
+              style={{
+                display:
+                  secondaryStack.length === 0 && currentPrimaryPage === pageName ? 'block' : 'none'
+              }}
             >
-              {children}
+              {page}
             </div>
-          </div>
+          ))}
         </SecondaryPageContext.Provider>
       </PrimaryPageContext.Provider>
     )
   }
 
   return (
-    <PrimaryPageContext.Provider value={{ refresh: refreshPrimary }}>
-      <SecondaryPageContext.Provider value={{ push: pushSecondary, pop: popSecondary }}>
-        <div className="flex h-full">
+    <PrimaryPageContext.Provider
+      value={{
+        navigate: navigatePrimaryPage,
+        current: currentPrimaryPage
+      }}
+    >
+      <SecondaryPageContext.Provider
+        value={{
+          push: pushSecondaryPage,
+          pop: popSecondaryPage,
+          currentIndex: secondaryStack.length ? secondaryStack[secondaryStack.length - 1].index : 0
+        }}
+      >
+        <div className="flex h-screen overflow-hidden">
           <Sidebar />
+          <Separator orientation="vertical" />
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel minSize={30}>
-              <div key={primaryPageKey} className="h-full">
-                {children}
+              <div
+                style={{
+                  display: !currentPrimaryPage || currentPrimaryPage === 'home' ? 'block' : 'none'
+                }}
+              >
+                <NoteListPage />
+              </div>
+              <div style={{ display: currentPrimaryPage === 'notifications' ? 'block' : 'none' }}>
+                <NotificationListPage />
               </div>
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel minSize={30} className="relative">
+            <ResizablePanel minSize={30}>
               {secondaryStack.length ? (
                 secondaryStack.map((item, index) => (
                   <div
                     key={item.index}
-                    className="absolute top-0 left-0 w-full h-full bg-background"
-                    style={{
-                      zIndex: index + 1,
-                      display: index === secondaryStack.length - 1 ? 'block' : 'none'
-                    }}
+                    style={{ display: index === secondaryStack.length - 1 ? 'block' : 'none' }}
                   >
                     {item.component}
                   </div>
@@ -206,26 +262,29 @@ function isCurrentPage(stack: TStackItem[], url: string) {
   return currentPage.url === url
 }
 
-function findAndCreateComponent(url: string) {
+function findAndCreateComponent(url: string, index: number) {
   const path = url.split('?')[0]
   for (const { matcher, element } of routes) {
     const match = matcher(path)
     if (!match) continue
 
     if (!element) return null
-    return cloneElement(element, match.params)
+    return cloneElement(element, { ...match.params, index } as any)
   }
   return null
 }
 
 function pushNewPageToStack(stack: TStackItem[], url: string, maxStackSize = 5) {
-  const component = findAndCreateComponent(url)
+  const currentItem = stack[stack.length - 1]
+  const currentIndex = currentItem ? currentItem.index + 1 : 0
+
+  const component = findAndCreateComponent(url, currentIndex)
   if (!component) return { newStack: stack, newItem: null }
 
-  const currentStack = stack[stack.length - 1]
-  const newItem = { component, url, index: currentStack ? currentStack.index + 1 : 0 }
+  const newItem = { component, url, index: currentItem ? currentItem.index + 1 : 0 }
   const newStack = [...stack, newItem]
   const lastCachedIndex = newStack.findIndex((stack) => stack.component)
+  // Clear the oldest cached component if there are too many cached components
   if (newStack.length - lastCachedIndex > maxStackSize) {
     newStack[lastCachedIndex].component = null
   }

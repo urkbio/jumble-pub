@@ -1,10 +1,15 @@
 import react from '@vitejs/plugin-react'
+import { execSync } from 'child_process'
 import path from 'path'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __GIT_COMMIT__: JSON.stringify(execSync('git rev-parse --short HEAD').toString().trim()),
+    __APP_VERSION__: JSON.stringify(require('./package.json').version)
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')

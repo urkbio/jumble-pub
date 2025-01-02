@@ -9,18 +9,18 @@ import { Heart, MessageCircle, Repeat } from 'lucide-react'
 import { Event, kinds, nip19, validateEvent } from 'nostr-tools'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import PullToRefresh from 'react-simple-pull-to-refresh'
 import { FormattedTimestamp } from '../FormattedTimestamp'
 import UserAvatar from '../UserAvatar'
-import PullToRefresh from 'react-simple-pull-to-refresh'
 
 const LIMIT = 50
 
 export default function NotificationList() {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
-  const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
   const [refreshCount, setRefreshCount] = useState(0)
-  const [initialized, setInitialized] = useState(false)
+  const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
+  const [refreshing, setRefreshing] = useState(true)
   const [notifications, setNotifications] = useState<Event[]>([])
   const [until, setUntil] = useState<number | undefined>(dayjs().unix())
   const bottomRef = useRef<HTMLDivElement | null>(null)
@@ -32,7 +32,9 @@ export default function NotificationList() {
     }
 
     const init = async () => {
+      setRefreshing(true)
       const relayList = await client.fetchRelayList(pubkey)
+      let eventCount = 0
       const { closer, timelineKey } = await client.subscribeTimeline(
         relayList.read.length >= 4
           ? relayList.read
@@ -44,10 +46,12 @@ export default function NotificationList() {
         },
         {
           onEvents: (events, eosed) => {
-            setNotifications(events.filter((event) => event.pubkey !== pubkey))
+            if (eventCount > events.length) return
+            eventCount = events.length
             setUntil(events.length >= LIMIT ? events[events.length - 1].created_at - 1 : undefined)
+            setNotifications(events.filter((event) => event.pubkey !== pubkey))
             if (eosed) {
-              setInitialized(true)
+              setRefreshing(false)
             }
           },
           onNew: (event) => {
@@ -67,7 +71,7 @@ export default function NotificationList() {
   }, [pubkey, refreshCount])
 
   useEffect(() => {
-    if (!initialized) return
+    if (refreshing) return
 
     const options = {
       root: null,
@@ -92,10 +96,10 @@ export default function NotificationList() {
         observerInstance.unobserve(currentBottomRef)
       }
     }
-  }, [until, initialized, timelineKey])
+  }, [until, refreshing, timelineKey])
 
   const loadMore = async () => {
-    if (!pubkey || !timelineKey || !until) return
+    if (!pubkey || !timelineKey || !until || refreshing) return
     const notifications = await client.loadMoreTimeline(timelineKey, until, LIMIT)
     if (notifications.length === 0) {
       setUntil(undefined)
@@ -111,12 +115,10 @@ export default function NotificationList() {
 
   return (
     <PullToRefresh
-      onRefresh={async () =>
-        new Promise((resolve) => {
-          setRefreshCount((pre) => pre + 1)
-          setTimeout(resolve, 1000)
-        })
-      }
+      onRefresh={async () => {
+        setRefreshCount((count) => count + 1)
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }}
       pullingContent=""
     >
       <div>
@@ -124,7 +126,11 @@ export default function NotificationList() {
           <NotificationItem key={notification.id} notification={notification} />
         ))}
         <div className="text-center text-sm text-muted-foreground">
-          {until ? <div ref={bottomRef}>{t('loading...')}</div> : t('no more notifications')}
+          {until || refreshing ? (
+            <div ref={bottomRef}>{t('loading...')}</div>
+          ) : (
+            t('no more notifications')
+          )}
         </div>
       </div>
     </PullToRefresh>

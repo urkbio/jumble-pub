@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 
 const LIMIT = 50
 
-export default function ProfileListPage() {
+export default function ProfileListPage({ index }: { index?: number }) {
   const { t } = useTranslation()
   const { searchParams } = useSearchParams()
   const { relayUrls, searchableRelayUrls } = useRelaySettings()
@@ -30,7 +30,7 @@ export default function ProfileListPage() {
     return filter.search ? searchableRelayUrls : relayUrls
   }, [relayUrls, searchableRelayUrls, filter])
   const title = useMemo(() => {
-    return filter.search ? `${t('search')}: ${filter.search}` : t('all users')
+    return filter.search ? `${t('Search')}: ${filter.search}` : t('All users')
   }, [filter])
 
   useEffect(() => {
@@ -78,8 +78,8 @@ export default function ProfileListPage() {
   }
 
   return (
-    <SecondaryPageLayout titlebarContent={title}>
-      <div className="space-y-2 max-sm:px-4">
+    <SecondaryPageLayout index={index} titlebarContent={title} displayScrollToTopButton>
+      <div className="space-y-2 px-4">
         {Array.from(pubkeySet).map((pubkey, index) => (
           <UserItem key={`${index}-${pubkey}`} pubkey={pubkey} />
         ))}

@@ -3,8 +3,9 @@ import Nip05 from '@/components/Nip05'
 import NoteList from '@/components/NoteList'
 import ProfileAbout from '@/components/ProfileAbout'
 import ProfileBanner from '@/components/ProfileBanner'
+import PubkeyCopy from '@/components/PubkeyCopy'
+import QrCodePopover from '@/components/QrCodePopover'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useFetchFollowings, useFetchProfile } from '@/hooks'
 import { useFetchRelayList } from '@/hooks/useFetchRelayList'
@@ -18,10 +19,8 @@ import { useRelaySettings } from '@/providers/RelaySettingsProvider'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
-import PubkeyCopy from './PubkeyCopy'
-import QrCodePopover from './QrCodePopover'
 
-export default function ProfilePage({ id }: { id?: string }) {
+export default function ProfilePage({ id, index }: { id?: string; index?: number }) {
   const { t } = useTranslation()
   const { profile, isFetching } = useFetchProfile(id)
   const { relayList, isFetching: isFetchingRelayInfo } = useFetchRelayList(profile?.pubkey)
@@ -46,8 +45,8 @@ export default function ProfilePage({ id }: { id?: string }) {
 
   if (!profile && isFetching) {
     return (
-      <SecondaryPageLayout>
-        <div className="max-sm:px-4">
+      <SecondaryPageLayout index={index}>
+        <div className="px-4">
           <div className="relative bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-2">
             <Skeleton className="w-full h-full object-cover rounded-lg" />
             <Skeleton className="w-24 h-24 absolute bottom-0 left-4 translate-y-1/2 border-4 border-background rounded-full" />
@@ -62,8 +61,8 @@ export default function ProfilePage({ id }: { id?: string }) {
 
   const { banner, username, nip05, about, avatar, pubkey } = profile
   return (
-    <SecondaryPageLayout titlebarContent={username}>
-      <div className="max-sm:px-4">
+    <SecondaryPageLayout index={index} titlebarContent={username} displayScrollToTopButton>
+      <div className="px-4">
         <div className="relative bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-2">
           <ProfileBanner
             banner={banner}
@@ -102,9 +101,8 @@ export default function ProfilePage({ id }: { id?: string }) {
           </SecondaryPageLink>
         </div>
       </div>
-      <Separator className="hidden sm:block mt-4 sm:my-4" />
       {!isFetchingRelayInfo && (
-        <NoteList filter={{ authors: [pubkey] }} relayUrls={relayUrls} className="max-sm:mt-2" />
+        <NoteList filter={{ authors: [pubkey] }} relayUrls={relayUrls} className="mt-2" />
       )}
     </SecondaryPageLayout>
   )

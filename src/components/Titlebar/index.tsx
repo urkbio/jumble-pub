@@ -12,7 +12,7 @@ export function Titlebar({
   return (
     <div
       className={cn(
-        'absolute top-0 w-full h-9 max-sm:h-11 z-50 bg-background/80 backdrop-blur-md flex items-center font-semibold gap-1 px-2 duration-700 transition-transform',
+        'sticky top-0 w-full z-20 bg-background/90 backdrop-blur-xl duration-700 transition-transform [&_svg]:size-4 [&_svg]:shrink-0',
         visible ? '' : '-translate-y-full',
         className
       )}

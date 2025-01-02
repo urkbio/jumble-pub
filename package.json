@@ -21,6 +21,7 @@
   "dependencies": {
     "@nextui-org/image": "^2.2.3",
     "@noble/hashes": "^1.6.1",
+    "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-dropdown-menu": "^2.1.4",
@@ -28,6 +29,7 @@
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-popover": "^1.1.4",
     "@radix-ui/react-scroll-area": "1.2.0",
+    "@radix-ui/react-select": "^2.1.4",
     "@radix-ui/react-separator": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-switch": "^1.1.2",
@@ -39,7 +41,6 @@
     "dayjs": "^1.11.13",
     "framer-motion": "^11.15.0",
     "i18next": "^24.2.0",
-    "i18next-browser-languagedetector": "^8.0.2",
     "lru-cache": "^11.0.2",
     "lucide-react": "^0.469.0",
     "nostr-tools": "^2.10.4",
@@ -53,6 +54,7 @@
     "react-string-replace": "^1.1.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "vaul": "^1.1.2",
     "yet-another-react-lightbox": "^3.21.7",
     "zod": "^3.24.1"
   },
