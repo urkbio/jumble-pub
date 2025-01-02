@@ -30,8 +30,8 @@ export default function SettingsPage({ index }: { index?: number }) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="en">{t('English')}</SelectItem>
-            <SelectItem value="zh">{t('Chinese')}</SelectItem>
+            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="zh">简体中文</SelectItem>
           </SelectContent>
         </Select>
       </div>

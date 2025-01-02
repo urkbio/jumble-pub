@@ -92,8 +92,6 @@ export default {
     'relay feeds': '服务器信息流',
     edit: '编辑',
     Languages: '语言',
-    English: '英语',
-    Chinese: '中文',
     Theme: '主题',
     System: '系统',
     Light: '浅色',

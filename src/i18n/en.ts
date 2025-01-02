@@ -93,8 +93,6 @@ export default {
     'relay feeds': 'relay feeds',
     edit: 'edit',
     Languages: 'Languages',
-    English: 'English',
-    Chinese: 'Chinese',
     Theme: 'Theme',
     System: 'System',
     Light: 'Light',
