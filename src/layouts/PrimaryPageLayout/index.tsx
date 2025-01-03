@@ -89,7 +89,7 @@ const PrimaryPageLayout = forwardRef(
         scrollBarClassName="sm:z-50"
         ref={scrollAreaRef}
         style={{
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
+          paddingBottom: isSmallScreen ? 'calc(env(safe-area-inset-bottom) + 3rem)' : ''
         }}
       >
         {titlebar && (
