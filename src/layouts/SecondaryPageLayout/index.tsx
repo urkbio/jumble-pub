@@ -71,7 +71,7 @@ export default function SecondaryPageLayout({
 
   return (
     <ScrollArea
-      className="sm:h-screen sm:overflow-auto"
+      className="sm:h-screen sm:overflow-auto pt-12 sm:pt-0"
       scrollBarClassName="sm:z-50"
       ref={scrollAreaRef}
       style={{
