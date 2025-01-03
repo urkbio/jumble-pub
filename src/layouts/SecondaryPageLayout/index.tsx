@@ -75,7 +75,7 @@ export default function SecondaryPageLayout({
       scrollBarClassName="sm:z-50"
       ref={scrollAreaRef}
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom)'
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
       }}
     >
       <SecondaryPageTitlebar

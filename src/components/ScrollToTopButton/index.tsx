@@ -25,7 +25,7 @@ export default function ScrollToTopButton({
   return (
     <div
       className={cn(
-        `sticky z-20 flex justify-end pr-3 transition-opacity duration-700 ${visible ? '' : 'opacity-0'}`,
+        `fixed sm:sticky z-20 flex justify-end w-full pr-3 transition-opacity duration-700 ${visible ? '' : 'opacity-0'}`,
         className
       )}
       style={{
