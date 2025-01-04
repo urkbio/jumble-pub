@@ -29,9 +29,9 @@ export default function WebPreview({
 
   if (isSmallScreen && image) {
     return (
-      <div className="relative border rounded-lg w-full h-44">
-        <Image src={image} className="rounded-lg object-cover w-full h-full" removeWrapper />
-        <div className="absolute bottom-0 z-10 bg-muted/70 px-2 py-1 w-full rounded-b-lg">
+      <div className="rounded-lg border mt-2">
+        <Image src={image} className="rounded-t-lg object-cover w-full h-44" removeWrapper />
+        <div className="bg-muted p-2 w-full rounded-b-lg">
           <div className="text-xs text-muted-foreground">{hostname}</div>
           <div className="font-semibold line-clamp-1">{title}</div>
         </div>

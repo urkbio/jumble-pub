@@ -1,4 +1,5 @@
 import NoteList from '@/components/NoteList'
+import { SEARCHABLE_RELAY_URLS } from '@/constants'
 import { useSearchParams } from '@/hooks'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { isWebsocketUrl, simplifyUrl } from '@/lib/url'
@@ -27,7 +28,14 @@ export default function NoteListPage({ index }: { index?: number }) {
     }
     const search = searchParams.get('s')
     if (search) {
-      return { title: `${t('Search')}: ${search}`, filter: { search }, urls: searchableRelayUrls }
+      return {
+        title: `${t('Search')}: ${search}`,
+        filter: { search },
+        urls:
+          searchableRelayUrls.length < 4
+            ? searchableRelayUrls.concat(SEARCHABLE_RELAY_URLS).slice(0, 4)
+            : searchableRelayUrls
+      }
     }
     const relayUrl = searchParams.get('relay')
     if (relayUrl && isWebsocketUrl(relayUrl)) {
@@ -38,7 +46,7 @@ export default function NoteListPage({ index }: { index?: number }) {
 
   if (filter?.search && searchableRelayUrls.length === 0) {
     return (
-      <SecondaryPageLayout index={index} titlebarContent={title} displayScrollToTopButton>
+      <SecondaryPageLayout index={index} titlebarContent={title}>
         <div className="text-center text-sm text-muted-foreground">
           {t('The relays you are connected to do not support search')}
         </div>
@@ -47,7 +55,7 @@ export default function NoteListPage({ index }: { index?: number }) {
   }
 
   return (
-    <SecondaryPageLayout index={index} titlebarContent={title}>
+    <SecondaryPageLayout index={index} titlebarContent={title} displayScrollToTopButton>
       <NoteList key={title} filter={filter} relayUrls={urls} />
     </SecondaryPageLayout>
   )

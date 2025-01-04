@@ -53,6 +53,17 @@ const PrimaryPageLayout = forwardRef(
       if (current !== pageName) return
 
       const handleScroll = () => {
+        const atBottom = isSmallScreen
+          ? window.innerHeight + window.scrollY >= document.body.offsetHeight - 20
+          : scrollAreaRef.current
+            ? scrollAreaRef.current?.clientHeight + scrollAreaRef.current?.scrollTop >=
+              scrollAreaRef.current?.scrollHeight - 20
+            : false
+        if (atBottom) {
+          setVisible(true)
+          return
+        }
+
         const scrollTop = (isSmallScreen ? window.scrollY : scrollAreaRef.current?.scrollTop) || 0
         const diff = scrollTop - lastScrollTop
         if (scrollTop <= 800) {
@@ -99,7 +110,7 @@ const PrimaryPageLayout = forwardRef(
         {displayScrollToTopButton && (
           <ScrollToTopButton
             scrollAreaRef={scrollAreaRef}
-            visible={visible && lastScrollTop > 500}
+            visible={visible && lastScrollTop > 800}
           />
         )}
         {isSmallScreen && <BottomNavigationBar visible={visible} />}

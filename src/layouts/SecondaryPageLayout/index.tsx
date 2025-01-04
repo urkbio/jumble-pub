@@ -39,9 +39,20 @@ export default function SecondaryPageLayout({
     if (currentIndex !== index) return
 
     const handleScroll = () => {
+      const atBottom = isSmallScreen
+        ? window.innerHeight + window.scrollY >= document.body.offsetHeight - 20
+        : scrollAreaRef.current
+          ? scrollAreaRef.current?.clientHeight + scrollAreaRef.current?.scrollTop >=
+            scrollAreaRef.current?.scrollHeight - 20
+          : false
+      if (atBottom) {
+        setVisible(true)
+        return
+      }
+
       const scrollTop = (isSmallScreen ? window.scrollY : scrollAreaRef.current?.scrollTop) || 0
       const diff = scrollTop - lastScrollTop
-      if (scrollTop <= 100) {
+      if (scrollTop <= 800) {
         setVisible(true)
         setLastScrollTop(scrollTop)
         return
@@ -75,7 +86,7 @@ export default function SecondaryPageLayout({
       scrollBarClassName="sm:z-50"
       ref={scrollAreaRef}
       style={{
-        paddingBottom: isSmallScreen ? 'env(safe-area-inset-bottom) + 3rem)' : ''
+        paddingBottom: isSmallScreen ? 'calc(env(safe-area-inset-bottom) + 3rem)' : ''
       }}
     >
       <SecondaryPageTitlebar
@@ -85,7 +96,7 @@ export default function SecondaryPageLayout({
       />
       <div className="pb-4 mt-2">{children}</div>
       {displayScrollToTopButton && (
-        <ScrollToTopButton scrollAreaRef={scrollAreaRef} visible={visible && lastScrollTop > 500} />
+        <ScrollToTopButton scrollAreaRef={scrollAreaRef} visible={visible && lastScrollTop > 800} />
       )}
       {isSmallScreen && <BottomNavigationBar visible={visible} />}
     </ScrollArea>
