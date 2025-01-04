@@ -47,6 +47,7 @@ export function RelaySettingsProvider({ children }: { children: React.ReactNode 
     const searchParams = new URLSearchParams(window.location.search)
     const tempRelays = searchParams
       .getAll('r')
+      .map((url) => (url.startsWith('wss://') || url.startsWith('ws://') ? url : `wss://${url}`))
       .filter((url) => isWebsocketUrl(url))
       .map((url) => normalizeUrl(url))
     if (tempRelays.length) {
