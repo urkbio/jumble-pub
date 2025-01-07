@@ -8,25 +8,25 @@ import { FeedProvider } from './providers/FeedProvider'
 import { FollowListProvider } from './providers/FollowListProvider'
 import { NostrProvider } from './providers/NostrProvider'
 import { NoteStatsProvider } from './providers/NoteStatsProvider'
-import { RelaySettingsProvider } from './providers/RelaySettingsProvider'
+import { RelaySetsProvider } from './providers/RelaySetsProvider'
 import { ScreenSizeProvider } from './providers/ScreenSizeProvider'
 
 export default function App(): JSX.Element {
   return (
     <ThemeProvider>
       <ScreenSizeProvider>
-        <FeedProvider>
-          <RelaySettingsProvider>
-            <NostrProvider>
+        <NostrProvider>
+          <RelaySetsProvider>
+            <FeedProvider>
               <FollowListProvider>
                 <NoteStatsProvider>
                   <PageManager />
                   <Toaster />
                 </NoteStatsProvider>
               </FollowListProvider>
-            </NostrProvider>
-          </RelaySettingsProvider>
-        </FeedProvider>
+            </FeedProvider>
+          </RelaySetsProvider>
+        </NostrProvider>
       </ScreenSizeProvider>
     </ThemeProvider>
   )

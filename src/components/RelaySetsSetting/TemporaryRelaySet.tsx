@@ -1,14 +1,17 @@
 import { Button } from '@/components/ui/button'
 import { useFetchRelayInfos } from '@/hooks'
-import { useRelaySettings } from '@/providers/RelaySettingsProvider'
+import { simplifyUrl } from '@/lib/url'
+import { useFeed } from '@/providers/FeedProvider'
+import { useRelaySets } from '@/providers/RelaySetsProvider'
 import client from '@/services/client.service'
 import { Save, SearchCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export default function TemporaryRelayGroup() {
+export default function TemporaryRelaySet() {
   const { t } = useTranslation()
-  const { temporaryRelayUrls, relayGroups, addRelayGroup, switchRelayGroup } = useRelaySettings()
+  const { temporaryRelayUrls, switchFeed } = useFeed()
+  const { addRelaySet } = useRelaySets()
   const [relays, setRelays] = useState<
     {
       url: string
@@ -40,15 +43,10 @@ export default function TemporaryRelayGroup() {
   }
 
   const handleSave = () => {
-    const existingTemporaryIndexes = relayGroups
-      .filter((group) => /^Temporary \d+$/.test(group.groupName))
-      .map((group) => group.groupName.split(' ')[1])
-      .map(Number)
-      .filter((index) => !isNaN(index))
-    const nextIndex = Math.max(...existingTemporaryIndexes, 0) + 1
-    const groupName = `Temporary ${nextIndex}`
-    addRelayGroup(groupName, temporaryRelayUrls)
-    switchRelayGroup(groupName)
+    const relaySetName =
+      temporaryRelayUrls.length === 1 ? simplifyUrl(temporaryRelayUrls[0]) : 'Temporary'
+    const id = addRelaySet(relaySetName, temporaryRelayUrls)
+    switchFeed('relays', { activeRelaySetId: id })
   }
 
   return (

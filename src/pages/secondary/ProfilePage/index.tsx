@@ -13,9 +13,9 @@ import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { toFollowingList } from '@/lib/link'
 import { generateImageByPubkey } from '@/lib/pubkey'
 import { SecondaryPageLink } from '@/PageManager'
+import { useFeed } from '@/providers/FeedProvider'
 import { useFollowList } from '@/providers/FollowListProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { useRelaySettings } from '@/providers/RelaySettingsProvider'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
@@ -24,9 +24,12 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
   const { t } = useTranslation()
   const { profile, isFetching } = useFetchProfile(id)
   const { relayList, isFetching: isFetchingRelayInfo } = useFetchRelayList(profile?.pubkey)
-  const { relayUrls: currentRelayUrls } = useRelaySettings()
+  const { relayUrls: currentRelayUrls } = useFeed()
   const relayUrls = useMemo(
-    () => relayList.write.slice(0, 4).concat(currentRelayUrls.slice(0, 1)),
+    () =>
+      relayList.write.length < 4
+        ? relayList.write.concat(currentRelayUrls).slice(0, 4)
+        : relayList.write.slice(0, 4),
     [relayList, currentRelayUrls]
   )
   const { pubkey: accountPubkey } = useNostr()

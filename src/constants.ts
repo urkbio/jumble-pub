@@ -1,6 +1,7 @@
 export const StorageKey = {
   THEME_SETTING: 'themeSetting',
-  RELAY_GROUPS: 'relayGroups',
+  RELAY_SETS: 'relaySets',
+  ACTIVE_RELAY_SET_ID: 'activeRelaySetId',
   ACCOUNTS: 'accounts',
   CURRENT_ACCOUNT: 'currentAccount',
   ADD_CLIENT_TAG: 'addClientTag'

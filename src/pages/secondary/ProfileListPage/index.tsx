@@ -1,7 +1,8 @@
 import UserItem from '@/components/UserItem'
-import { useSearchParams } from '@/hooks'
+import { SEARCHABLE_RELAY_URLS } from '@/constants'
+import { useFetchRelayInfos, useSearchParams } from '@/hooks'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { useRelaySettings } from '@/providers/RelaySettingsProvider'
+import { useFeed } from '@/providers/FeedProvider'
 import client from '@/services/client.service'
 import dayjs from 'dayjs'
 import { Filter } from 'nostr-tools'
@@ -13,7 +14,8 @@ const LIMIT = 50
 export default function ProfileListPage({ index }: { index?: number }) {
   const { t } = useTranslation()
   const { searchParams } = useSearchParams()
-  const { relayUrls, searchableRelayUrls } = useRelaySettings()
+  const { relayUrls } = useFeed()
+  const { searchableRelayUrls } = useFetchRelayInfos(relayUrls)
   const [until, setUntil] = useState<number>(() => dayjs().unix())
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [pubkeySet, setPubkeySet] = useState(new Set<string>())
@@ -27,7 +29,7 @@ export default function ProfileListPage({ index }: { index?: number }) {
     return f
   }, [searchParams, until])
   const urls = useMemo(() => {
-    return filter.search ? searchableRelayUrls : relayUrls
+    return filter.search ? searchableRelayUrls.concat(SEARCHABLE_RELAY_URLS).slice(0, 4) : relayUrls
   }, [relayUrls, searchableRelayUrls, filter])
   const title = useMemo(() => {
     return filter.search ? `${t('Search')}: ${filter.search}` : t('All users')

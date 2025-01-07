@@ -1,4 +1,5 @@
 import { BIG_RELAY_URLS } from '@/constants'
+import { getFollowingsFromFollowListEvent } from '@/lib/event'
 import { formatPubkey } from '@/lib/pubkey'
 import { tagNameEquals } from '@/lib/tag'
 import { isWebsocketUrl, normalizeUrl } from '@/lib/url'
@@ -100,7 +101,9 @@ class ClientService extends EventTarget {
   }
 
   async publishEvent(relayUrls: string[], event: NEvent) {
-    const result = await Promise.any(this.pool.publish(relayUrls, event))
+    const result = await Promise.any(
+      this.pool.publish(relayUrls.concat(this.defaultRelayUrls), event)
+    )
     this.dispatchEvent(new CustomEvent('eventPublished', { detail: event }))
     return result
   }
@@ -415,6 +418,11 @@ class ClientService extends EventTarget {
 
   async fetchFollowListEvent(pubkey: string) {
     return this.followListCache.fetch(pubkey)
+  }
+
+  async fetchFollowings(pubkey: string) {
+    const followListEvent = await this.fetchFollowListEvent(pubkey)
+    return followListEvent ? getFollowingsFromFollowListEvent(followListEvent) : []
   }
 
   updateFollowListCache(pubkey: string, event: NEvent) {

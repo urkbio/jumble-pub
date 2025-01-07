@@ -22,12 +22,7 @@ export default function LoginDialog({
   if (isSmallScreen) {
     return (
       <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent
-          className="max-h-[90vh]"
-          style={{
-            paddingBottom: 'env(safe-area-inset-bottom)'
-          }}
-        >
+        <DrawerContent className="max-h-[90vh]">
           <div className="flex flex-col p-4 gap-4 overflow-auto">
             <AccountManager close={() => setOpen(false)} />
           </div>

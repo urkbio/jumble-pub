@@ -3,15 +3,16 @@ import { simplifyUrl } from '@/lib/url'
 import { SecondaryPageLink } from '@/PageManager'
 import { useFeed } from '@/providers/FeedProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { useRelaySettings } from '@/providers/RelaySettingsProvider'
+import { useRelaySets } from '@/providers/RelaySetsProvider'
 import { Circle, CircleCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import RelaySetCard from '../RelaySetCard'
 
 export default function FeedSwitcher({ close }: { close?: () => void }) {
   const { t } = useTranslation()
-  const { feedType, setFeedType } = useFeed()
+  const { feedType, switchFeed, activeRelaySetId, temporaryRelayUrls } = useFeed()
   const { pubkey } = useNostr()
-  const { relayGroups, temporaryRelayUrls, switchRelayGroup } = useRelaySettings()
+  const { relaySets } = useRelaySets()
 
   return (
     <div className="space-y-4">
@@ -20,14 +21,14 @@ export default function FeedSwitcher({ close }: { close?: () => void }) {
           itemName={t('Following')}
           isActive={feedType === 'following'}
           onClick={() => {
-            setFeedType('following')
+            switchFeed('following')
             close?.()
           }}
         />
       )}
       <div className="space-y-2">
         <div className="flex justify-between px-2">
-          <div className="text-muted-foreground text-sm font-semibold">{t('relay feeds')}</div>
+          <div className="text-muted-foreground text-sm font-semibold">{t('relay sets')}</div>
           <SecondaryPageLink
             to={toRelaySettings()}
             className="text-highlight text-sm font-semibold"
@@ -42,25 +43,25 @@ export default function FeedSwitcher({ close }: { close?: () => void }) {
             itemName={
               temporaryRelayUrls.length === 1 ? simplifyUrl(temporaryRelayUrls[0]) : t('Temporary')
             }
-            isActive={feedType === 'relays'}
+            isActive={feedType === 'temporary'}
             temporary
             onClick={() => {
-              setFeedType('relays')
+              switchFeed('temporary')
               close?.()
             }}
           />
         )}
-        {relayGroups
-          .filter((group) => group.relayUrls.length > 0)
-          .map((group) => (
-            <FeedSwitcherItem
-              key={group.groupName}
-              itemName={
-                group.relayUrls.length === 1 ? simplifyUrl(group.relayUrls[0]) : group.groupName
-              }
-              isActive={feedType === 'relays' && group.isActive && temporaryRelayUrls.length === 0}
-              onClick={() => {
-                switchRelayGroup(group.groupName)
+        {relaySets
+          .filter((set) => set.relayUrls.length > 0)
+          .map((set) => (
+            <RelaySetCard
+              key={set.id}
+              relaySet={set}
+              select={feedType === 'relays' && set.id === activeRelaySetId}
+              showConnectionStatus={feedType === 'relays' && set.id === activeRelaySetId}
+              onSelectChange={(select) => {
+                if (!select) return
+                switchFeed('relays', { activeRelaySetId: set.id })
                 close?.()
               }}
             />

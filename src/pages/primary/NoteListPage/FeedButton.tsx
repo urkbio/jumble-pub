@@ -3,7 +3,7 @@ import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { simplifyUrl } from '@/lib/url'
 import { useFeed } from '@/providers/FeedProvider'
-import { useRelaySettings } from '@/providers/RelaySettingsProvider'
+import { useRelaySets } from '@/providers/RelaySetsProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { ChevronDown, Server, UsersRound } from 'lucide-react'
 import { forwardRef, HTMLAttributes, useState } from 'react'
@@ -43,21 +43,21 @@ export default function FeedButton() {
 const FeedSwitcherTrigger = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   (props, ref) => {
     const { t } = useTranslation()
-    const { feedType } = useFeed()
-    const { relayGroups, temporaryRelayUrls } = useRelaySettings()
-    const activeGroup = relayGroups.find((group) => group.isActive)
+    const { feedType, relayUrls, activeRelaySetId } = useFeed()
+    const { relaySets } = useRelaySets()
+    const activeRelaySet = activeRelaySetId
+      ? relaySets.find((set) => set.id === activeRelaySetId)
+      : undefined
     const title =
       feedType === 'following'
         ? t('Following')
-        : temporaryRelayUrls.length > 0
-          ? temporaryRelayUrls.length === 1
-            ? simplifyUrl(temporaryRelayUrls[0])
-            : t('Temporary')
-          : activeGroup
-            ? activeGroup.relayUrls.length === 1
-              ? simplifyUrl(activeGroup.relayUrls[0])
-              : activeGroup.groupName
-            : t('Choose a relay collection')
+        : relayUrls.length > 0
+          ? relayUrls.length === 1
+            ? simplifyUrl(relayUrls[0])
+            : activeRelaySet
+              ? activeRelaySet.name
+              : t('Temporary')
+          : t('Choose a relay set')
 
     return (
       <div

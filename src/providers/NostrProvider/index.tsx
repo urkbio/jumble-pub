@@ -7,7 +7,6 @@ import { ISigner, TAccount, TAccountPointer, TDraftEvent, TRelayList } from '@/t
 import dayjs from 'dayjs'
 import { Event, kinds } from 'nostr-tools'
 import { createContext, useContext, useEffect, useState } from 'react'
-import { useRelaySettings } from '../RelaySettingsProvider'
 import { BunkerSigner } from './bunker.signer'
 import { Nip07Signer } from './nip-07.signer'
 import { NsecSigner } from './nsec.signer'
@@ -47,7 +46,6 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [account, setAccount] = useState<TAccountPointer | null>(null)
   const [signer, setSigner] = useState<ISigner | null>(null)
   const [openLoginDialog, setOpenLoginDialog] = useState(false)
-  const { relayUrls: currentRelayUrls } = useRelaySettings()
   const { relayList, isFetching: isFetchingRelayList } = useFetchRelayList(account?.pubkey)
   const { followings, isFetching: isFetchingFollowings } = useFetchFollowings(account?.pubkey)
 
@@ -196,10 +194,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
   const publish = async (draftEvent: TDraftEvent, additionalRelayUrls: string[] = []) => {
     const event = await signEvent(draftEvent)
-    await client.publishEvent(
-      relayList.write.concat(additionalRelayUrls).concat(currentRelayUrls),
-      event
-    )
+    await client.publishEvent(relayList.write.concat(additionalRelayUrls), event)
     return event
   }
 

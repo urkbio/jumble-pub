@@ -4,7 +4,6 @@ import { CommandDialog, CommandInput, CommandItem, CommandList } from '@/compone
 import { useSearchProfiles } from '@/hooks'
 import { toNote, toNoteList, toProfile, toProfileList } from '@/lib/link'
 import { generateImageByPubkey } from '@/lib/pubkey'
-import { useRelaySettings } from '@/providers/RelaySettingsProvider'
 import { TProfile } from '@/types'
 import { Hash, Notebook, UserRound } from 'lucide-react'
 import { nip19 } from 'nostr-tools'
@@ -83,12 +82,6 @@ export function SearchDialog({ open, setOpen }: { open: boolean; setOpen: Dispat
 }
 
 function NormalItem({ search, onClick }: { search: string; onClick?: () => void }) {
-  const { searchableRelayUrls } = useRelaySettings()
-
-  if (searchableRelayUrls.length === 0) {
-    return null
-  }
-
   return (
     <SecondaryPageLink to={toNoteList({ search })} onClick={onClick}>
       <CommandItem>

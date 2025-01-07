@@ -26,14 +26,14 @@ export type TWebMetadata = {
   image?: string | null
 }
 
-export type TRelayGroup = {
-  groupName: string
+export type TRelaySet = {
+  id: string
+  name: string
   relayUrls: string[]
-  isActive: boolean
 }
 
 export type TConfig = {
-  relayGroups: TRelayGroup[]
+  relayGroups: TRelaySet[]
   theme: TThemeSetting
 }
 
@@ -64,6 +64,6 @@ export type TAccount = {
 
 export type TAccountPointer = Pick<TAccount, 'pubkey' | 'signerType'>
 
-export type TFeedType = 'following' | 'relays'
+export type TFeedType = 'following' | 'relays' | 'temporary'
 
 export type TLanguage = 'en' | 'zh'

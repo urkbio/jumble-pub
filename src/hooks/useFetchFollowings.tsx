@@ -1,4 +1,4 @@
-import { tagNameEquals } from '@/lib/tag'
+import { getFollowingsFromFollowListEvent } from '@/lib/event'
 import client from '@/services/client.service'
 import { Event } from 'nostr-tools'
 import { useEffect, useState } from 'react'
@@ -18,13 +18,7 @@ export function useFetchFollowings(pubkey?: string | null) {
         if (!event) return
 
         setFollowListEvent(event)
-        setFollowings(
-          event.tags
-            .filter(tagNameEquals('p'))
-            .map(([, pubkey]) => pubkey)
-            .filter(Boolean)
-            .reverse()
-        )
+        setFollowings(getFollowingsFromFollowListEvent(event))
       } finally {
         setIsFetching(false)
       }

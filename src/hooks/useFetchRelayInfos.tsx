@@ -7,6 +7,7 @@ export function useFetchRelayInfos(urls: string[]) {
   const [isFetching, setIsFetching] = useState(true)
   const [relayInfos, setRelayInfos] = useState<(TRelayInfo | undefined)[]>([])
   const [areAlgoRelays, setAreAlgoRelays] = useState(false)
+  const [searchableRelayUrls, setSearchableRelayUrls] = useState<string[]>([])
   const urlsString = JSON.stringify(urls)
 
   useEffect(() => {
@@ -22,6 +23,15 @@ export function useFetchRelayInfos(urls: string[]) {
         const relayInfos = await client.fetchRelayInfos(urls)
         setRelayInfos(relayInfos)
         setAreAlgoRelays(relayInfos.every((relayInfo) => checkAlgoRelay(relayInfo)))
+        setSearchableRelayUrls(
+          relayInfos
+            .map((relayInfo, index) => ({
+              url: urls[index],
+              searchable: relayInfo?.supported_nips?.includes(50)
+            }))
+            .filter((relayInfo) => relayInfo.searchable)
+            .map((relayInfo) => relayInfo.url)
+        )
       } catch (err) {
         console.error(err)
       } finally {
@@ -33,5 +43,5 @@ export function useFetchRelayInfos(urls: string[]) {
     fetchRelayInfos()
   }, [urlsString])
 
-  return { relayInfos, isFetching, areAlgoRelays }
+  return { relayInfos, isFetching, areAlgoRelays, searchableRelayUrls }
 }

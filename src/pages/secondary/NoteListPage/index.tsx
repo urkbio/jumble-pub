@@ -1,16 +1,17 @@
 import NoteList from '@/components/NoteList'
 import { SEARCHABLE_RELAY_URLS } from '@/constants'
-import { useSearchParams } from '@/hooks'
+import { useFetchRelayInfos, useSearchParams } from '@/hooks'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { isWebsocketUrl, simplifyUrl } from '@/lib/url'
-import { useRelaySettings } from '@/providers/RelaySettingsProvider'
+import { useFeed } from '@/providers/FeedProvider'
 import { Filter } from 'nostr-tools'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export default function NoteListPage({ index }: { index?: number }) {
   const { t } = useTranslation()
-  const { relayUrls, searchableRelayUrls } = useRelaySettings()
+  const { relayUrls } = useFeed()
+  const { searchableRelayUrls } = useFetchRelayInfos(relayUrls)
   const { searchParams } = useSearchParams()
   const relayUrlsString = JSON.stringify(relayUrls)
   const {
@@ -31,10 +32,7 @@ export default function NoteListPage({ index }: { index?: number }) {
       return {
         title: `${t('Search')}: ${search}`,
         filter: { search },
-        urls:
-          searchableRelayUrls.length < 4
-            ? searchableRelayUrls.concat(SEARCHABLE_RELAY_URLS).slice(0, 4)
-            : searchableRelayUrls
+        urls: searchableRelayUrls.concat(SEARCHABLE_RELAY_URLS).slice(0, 4)
       }
     }
     const relayUrl = searchParams.get('relay')
@@ -43,16 +41,6 @@ export default function NoteListPage({ index }: { index?: number }) {
     }
     return { urls: relayUrls }
   }, [searchParams, relayUrlsString])
-
-  if (filter?.search && searchableRelayUrls.length === 0) {
-    return (
-      <SecondaryPageLayout index={index} titlebarContent={title}>
-        <div className="text-center text-sm text-muted-foreground">
-          {t('The relays you are connected to do not support search')}
-        </div>
-      </SecondaryPageLayout>
-    )
-  }
 
   return (
     <SecondaryPageLayout index={index} titlebarContent={title} displayScrollToTopButton>

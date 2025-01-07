@@ -1,19 +1,26 @@
 import { StorageKey } from '@/constants'
 import { isSameAccount } from '@/lib/account'
-import { TAccount, TRelayGroup, TAccountPointer, TThemeSetting } from '@/types'
+import { randomString } from '@/lib/random'
+import { TAccount, TAccountPointer, TRelaySet, TThemeSetting } from '@/types'
 
-const DEFAULT_RELAY_GROUPS: TRelayGroup[] = [
+const DEFAULT_RELAY_SETS: TRelaySet[] = [
   {
-    groupName: 'Global',
-    relayUrls: ['wss://relay.damus.io/', 'wss://nos.lol/'],
-    isActive: true
+    id: randomString(),
+    name: 'Global',
+    relayUrls: ['wss://relay.damus.io/', 'wss://nos.lol/']
+  },
+  {
+    id: randomString(),
+    name: 'Algo',
+    relayUrls: ['wss://algo.utxo.one']
   }
 ]
 
 class StorageService {
   static instance: StorageService
 
-  private relayGroups: TRelayGroup[] = []
+  private relaySets: TRelaySet[] = []
+  private activeRelaySetId: string | null = null
   private themeSetting: TThemeSetting = 'system'
   private accounts: TAccount[] = []
   private currentAccount: TAccount | null = null
@@ -27,23 +34,64 @@ class StorageService {
   }
 
   init() {
-    const relayGroupsStr = window.localStorage.getItem(StorageKey.RELAY_GROUPS)
-    this.relayGroups = relayGroupsStr ? JSON.parse(relayGroupsStr) : DEFAULT_RELAY_GROUPS
     this.themeSetting =
       (window.localStorage.getItem(StorageKey.THEME_SETTING) as TThemeSetting) ?? 'system'
     const accountsStr = window.localStorage.getItem(StorageKey.ACCOUNTS)
     this.accounts = accountsStr ? JSON.parse(accountsStr) : []
     const currentAccountStr = window.localStorage.getItem(StorageKey.CURRENT_ACCOUNT)
     this.currentAccount = currentAccountStr ? JSON.parse(currentAccountStr) : null
+
+    const relaySetsStr = window.localStorage.getItem(StorageKey.RELAY_SETS)
+    if (!relaySetsStr) {
+      let relaySets: TRelaySet[] = []
+      const legacyRelayGroupsStr = window.localStorage.getItem('relayGroups')
+      if (legacyRelayGroupsStr) {
+        const legacyRelayGroups = JSON.parse(legacyRelayGroupsStr)
+        relaySets = legacyRelayGroups.map((group: any) => {
+          return {
+            id: randomString(),
+            name: group.groupName,
+            relayUrls: group.relayUrls
+          }
+        })
+      }
+      if (!relaySets.length) {
+        relaySets = DEFAULT_RELAY_SETS
+      }
+      const activeRelaySetId = relaySets[0].id
+      window.localStorage.setItem(StorageKey.RELAY_SETS, JSON.stringify(relaySets))
+      window.localStorage.setItem(StorageKey.ACTIVE_RELAY_SET_ID, activeRelaySetId)
+      this.relaySets = relaySets
+      this.activeRelaySetId = activeRelaySetId
+    } else {
+      this.relaySets = JSON.parse(relaySetsStr)
+      this.activeRelaySetId = window.localStorage.getItem(StorageKey.ACTIVE_RELAY_SET_ID) ?? null
+    }
   }
 
-  getRelayGroups() {
-    return this.relayGroups
+  getRelaySets() {
+    return this.relaySets
   }
 
-  setRelayGroups(relayGroups: TRelayGroup[]) {
-    window.localStorage.setItem(StorageKey.RELAY_GROUPS, JSON.stringify(relayGroups))
-    this.relayGroups = relayGroups
+  setRelaySets(relaySets: TRelaySet[]) {
+    this.relaySets = relaySets
+    window.localStorage.setItem(StorageKey.RELAY_SETS, JSON.stringify(this.relaySets))
+  }
+
+  getActiveRelaySetId() {
+    return this.activeRelaySetId
+  }
+
+  setActiveRelaySetId(id: string | null) {
+    this.activeRelaySetId = id
+    if (id) {
+      window.localStorage.setItem(
+        StorageKey.ACTIVE_RELAY_SET_ID,
+        JSON.stringify(this.activeRelaySetId)
+      )
+    } else {
+      window.localStorage.removeItem(StorageKey.ACTIVE_RELAY_SET_ID)
+    }
   }
 
   getThemeSetting() {

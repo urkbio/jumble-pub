@@ -64,6 +64,18 @@ export function getUsingClient(event: Event) {
   return event.tags.find(tagNameEquals('client'))?.[1]
 }
 
+export function getFollowingsFromFollowListEvent(event: Event) {
+  return Array.from(
+    new Set(
+      event.tags
+        .filter(tagNameEquals('p'))
+        .map(([, pubkey]) => pubkey)
+        .filter(Boolean)
+        .reverse()
+    )
+  )
+}
+
 export async function extractMentions(content: string, parentEvent?: Event) {
   const pubkeySet = new Set<string>()
   const relatedEventIdSet = new Set<string>()

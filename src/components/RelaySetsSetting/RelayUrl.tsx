@@ -2,31 +2,30 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useFetchRelayInfos } from '@/hooks'
 import { isWebsocketUrl, normalizeUrl } from '@/lib/url'
-import { useRelaySettings } from '@/providers/RelaySettingsProvider'
+import { useFeed } from '@/providers/FeedProvider'
+import { useRelaySets } from '@/providers/RelaySetsProvider'
 import client from '@/services/client.service'
 import { CircleX, SearchCheck } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export default function RelayUrls({ groupName }: { groupName: string }) {
+export default function RelayUrls({ relaySetId }: { relaySetId: string }) {
   const { t } = useTranslation()
-  const { relayGroups, updateRelayGroupRelayUrls } = useRelaySettings()
-  const isActive = useMemo(
-    () => relayGroups.find((group) => group.groupName === groupName)?.isActive ?? false,
-    [relayGroups, groupName]
-  )
+  const { relaySets, updateRelaySet } = useRelaySets()
+  const { activeRelaySetId } = useFeed()
   const [newRelayUrl, setNewRelayUrl] = useState('')
   const [newRelayUrlError, setNewRelayUrlError] = useState<string | null>(null)
+  const relaySet = useMemo(
+    () => relaySets.find((r) => r.id === relaySetId),
+    [relaySets, relaySetId]
+  )
   const [relays, setRelays] = useState<
     {
       url: string
       isConnected: boolean
     }[]
-  >(
-    relayGroups
-      .find((group) => group.groupName === groupName)
-      ?.relayUrls.map((url) => ({ url, isConnected: false })) ?? []
-  )
+  >(relaySet?.relayUrls.map((url) => ({ url, isConnected: false })) ?? [])
+  const isActive = relaySet?.id === activeRelaySetId
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -42,12 +41,14 @@ export default function RelayUrls({ groupName }: { groupName: string }) {
     return () => clearInterval(interval)
   }, [])
 
+  if (!relaySet) return null
+
   const removeRelayUrl = (url: string) => {
     setRelays((relays) => relays.filter((relay) => relay.url !== url))
-    updateRelayGroupRelayUrls(
-      groupName,
-      relays.map(({ url }) => url).filter((u) => u !== url)
-    )
+    updateRelaySet({
+      ...relaySet,
+      relayUrls: relays.map(({ url }) => url).filter((u) => u !== url)
+    })
   }
 
   const saveNewRelayUrl = () => {
@@ -61,7 +62,7 @@ export default function RelayUrls({ groupName }: { groupName: string }) {
     }
     setRelays((pre) => [...pre, { url: normalizedUrl, isConnected: false }])
     const newRelayUrls = [...relays.map(({ url }) => url), normalizedUrl]
-    updateRelayGroupRelayUrls(groupName, newRelayUrls)
+    updateRelaySet({ ...relaySet, relayUrls: newRelayUrls })
     setNewRelayUrl('')
   }
 

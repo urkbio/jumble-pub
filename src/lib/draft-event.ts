@@ -1,5 +1,5 @@
 import { COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
-import { TDraftEvent } from '@/types'
+import { TDraftEvent, TRelaySet } from '@/types'
 import dayjs from 'dayjs'
 import { Event, kinds } from 'nostr-tools'
 import {
@@ -78,6 +78,20 @@ export async function createShortTextNoteDraftEvent(
     kind: kinds.ShortTextNote,
     content,
     tags,
+    created_at: dayjs().unix()
+  }
+}
+
+// https://github.com/nostr-protocol/nips/blob/master/51.md
+export function createRelaySetDraftEvent(relaySet: TRelaySet): TDraftEvent {
+  return {
+    kind: kinds.Relaysets,
+    content: '',
+    tags: [
+      ['d', relaySet.id],
+      ['title', relaySet.name],
+      ...relaySet.relayUrls.map((url) => ['relay', url])
+    ],
     created_at: dayjs().unix()
   }
 }
