@@ -1,3 +1,4 @@
+import { COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
 import { useFetchEvent } from '@/hooks'
 import { toNote } from '@/lib/link'
 import { tagNameEquals } from '@/lib/tag'
@@ -5,7 +6,7 @@ import { useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
 import client from '@/services/client.service'
 import dayjs from 'dayjs'
-import { Heart, MessageCircle, Repeat } from 'lucide-react'
+import { Heart, MessageCircle, Repeat, ThumbsUp } from 'lucide-react'
 import { Event, kinds, nip19, validateEvent } from 'nostr-tools'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -41,7 +42,7 @@ export default function NotificationList() {
           : relayList.read.concat(client.getDefaultRelayUrls()).slice(0, 4),
         {
           '#p': [pubkey],
-          kinds: [kinds.ShortTextNote, kinds.Repost, kinds.Reaction],
+          kinds: [kinds.ShortTextNote, kinds.Repost, kinds.Reaction, COMMENT_EVENT_KIND],
           limit: LIMIT
         },
         {
@@ -147,6 +148,9 @@ function NotificationItem({ notification }: { notification: Event }) {
   if (notification.kind === kinds.Repost) {
     return <RepostNotification notification={notification} />
   }
+  if (notification.kind === COMMENT_EVENT_KIND) {
+    return <CommentNotification notification={notification} />
+  }
   return null
 }
 
@@ -162,7 +166,9 @@ function ReactionNotification({ notification }: { notification: Event }) {
       : undefined
   }, [notification])
   const { event } = useFetchEvent(bech32Id)
-  if (!event || !bech32Id || event.kind !== kinds.ShortTextNote) return null
+  if (!event || !bech32Id || ![kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(event.kind)) {
+    return null
+  }
 
   return (
     <div
@@ -172,6 +178,7 @@ function ReactionNotification({ notification }: { notification: Event }) {
       <div className="flex gap-2 items-center flex-1">
         <UserAvatar userId={notification.pubkey} size="small" />
         <Heart size={24} className="text-red-400" />
+        <div>{notification.content === '+' ? <ThumbsUp size={14} /> : notification.content}</div>
         <ContentPreview event={event} />
       </div>
       <div className="text-muted-foreground">
@@ -228,8 +235,37 @@ function RepostNotification({ notification }: { notification: Event }) {
   )
 }
 
+function CommentNotification({ notification }: { notification: Event }) {
+  const { push } = useSecondaryPage()
+  const rootEventId = notification.tags.find(tagNameEquals('E'))?.[1]
+  const rootPubkey = notification.tags.find(tagNameEquals('P'))?.[1]
+  const rootKind = notification.tags.find(tagNameEquals('K'))?.[1]
+  if (
+    !rootEventId ||
+    !rootPubkey ||
+    !rootKind ||
+    ![kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(parseInt(rootKind))
+  ) {
+    return null
+  }
+
+  return (
+    <div
+      className="flex gap-2 items-center cursor-pointer py-2"
+      onClick={() => push(toNote({ id: rootEventId, pubkey: rootPubkey }))}
+    >
+      <UserAvatar userId={notification.pubkey} size="small" />
+      <MessageCircle size={24} className="text-blue-400" />
+      <ContentPreview event={notification} />
+      <div className="text-muted-foreground">
+        <FormattedTimestamp timestamp={notification.created_at} short />
+      </div>
+    </div>
+  )
+}
+
 function ContentPreview({ event }: { event?: Event }) {
-  if (!event || event.kind !== kinds.ShortTextNote) return null
+  if (!event) return null
 
   return <div className="truncate flex-1 w-0">{event.content}</div>
 }

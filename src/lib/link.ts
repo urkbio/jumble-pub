@@ -1,7 +1,7 @@
 import { Event, nip19 } from 'nostr-tools'
 
 export const toHome = () => '/'
-export const toNote = (eventOrId: Event | string) => {
+export const toNote = (eventOrId: Pick<Event, 'id' | 'pubkey'> | string) => {
   if (typeof eventOrId === 'string') return `/notes/${eventOrId}`
   const nevent = nip19.neventEncode({ id: eventOrId.id, author: eventOrId.pubkey })
   return `/notes/${nevent}`

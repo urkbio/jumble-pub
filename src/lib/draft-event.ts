@@ -1,7 +1,15 @@
+import { COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
 import { TDraftEvent } from '@/types'
 import dayjs from 'dayjs'
 import { Event, kinds } from 'nostr-tools'
-import { extractHashtags, extractMentions, getEventCoordinate, isReplaceable } from './event'
+import {
+  extractCommentMentions,
+  extractHashtags,
+  extractImagesFromContent,
+  extractMentions,
+  getEventCoordinate,
+  isReplaceable
+} from './event'
 
 // https://github.com/nostr-protocol/nips/blob/master/25.md
 export function createReactionDraftEvent(event: Event): TDraftEvent {
@@ -68,6 +76,82 @@ export async function createShortTextNoteDraftEvent(
 
   return {
     kind: kinds.ShortTextNote,
+    content,
+    tags,
+    created_at: dayjs().unix()
+  }
+}
+
+export async function createPictureNoteDraftEvent(
+  content: string,
+  options: {
+    addClientTag?: boolean
+  } = {}
+): Promise<TDraftEvent> {
+  const { pubkeys, quoteEventIds } = await extractMentions(content)
+  const hashtags = extractHashtags(content)
+  const { images, contentWithoutImages } = extractImagesFromContent(content)
+  if (!images || !images.length) {
+    throw new Error('No images found in content')
+  }
+
+  const tags = images
+    .map((image) => ['imeta', `url ${image}`])
+    .concat(pubkeys.map((pubkey) => ['p', pubkey]))
+    .concat(quoteEventIds.map((eventId) => ['q', eventId]))
+    .concat(hashtags.map((hashtag) => ['t', hashtag]))
+
+  if (options.addClientTag) {
+    tags.push(['client', 'jumble'])
+  }
+
+  return {
+    kind: PICTURE_EVENT_KIND,
+    content: contentWithoutImages,
+    tags,
+    created_at: dayjs().unix()
+  }
+}
+
+export async function createCommentDraftEvent(
+  content: string,
+  parentEvent: Event,
+  options: {
+    addClientTag?: boolean
+  } = {}
+): Promise<TDraftEvent> {
+  const {
+    pubkeys,
+    quoteEventIds,
+    rootEventId,
+    rootEventKind,
+    rootEventPubkey,
+    parentEventId,
+    parentEventKind,
+    parentEventPubkey
+  } = await extractCommentMentions(content, parentEvent)
+  const hashtags = extractHashtags(content)
+
+  const tags = [
+    ['E', rootEventId],
+    ['K', rootEventKind.toString()],
+    ['P', rootEventPubkey],
+    ['e', parentEventId],
+    ['k', parentEventKind.toString()],
+    ['p', parentEventPubkey]
+  ].concat(
+    pubkeys
+      .map((pubkey) => ['p', pubkey])
+      .concat(quoteEventIds.map((eventId) => ['q', eventId]))
+      .concat(hashtags.map((hashtag) => ['t', hashtag]))
+  )
+
+  if (options.addClientTag) {
+    tags.push(['client', 'jumble'])
+  }
+
+  return {
+    kind: COMMENT_EVENT_KIND,
     content,
     tags,
     created_at: dayjs().unix()

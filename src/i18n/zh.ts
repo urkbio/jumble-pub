@@ -98,6 +98,11 @@ export default {
     Dark: '深色',
     Temporary: '临时',
     'Choose a relay collection': '选择一个服务器组',
-    'Switch account': '切换账户'
+    'Switch account': '切换账户',
+    Pictures: '图片',
+    'Picture note': '图片笔记',
+    'A special note for picture-first clients like Olas':
+      '一种可以在图片优先客户端 (如 Olas) 中显示的特殊笔记',
+    'Picture note requires images': '图片笔记需要有图片'
   }
 }

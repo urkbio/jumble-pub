@@ -1,7 +1,6 @@
-import { Image } from '@nextui-org/image'
 import { generateImageByPubkey } from '@/lib/pubkey'
-import { cn } from '@/lib/utils'
 import { useEffect, useMemo, useState } from 'react'
+import Image from '../Image'
 
 export default function ProfileBanner({
   pubkey,
@@ -27,9 +26,8 @@ export default function ProfileBanner({
     <Image
       src={bannerUrl}
       alt={`${pubkey} banner`}
-      className={cn('z-0', className)}
+      className={className}
       onError={() => setBannerUrl(defaultBanner)}
-      removeWrapper
     />
   )
 }

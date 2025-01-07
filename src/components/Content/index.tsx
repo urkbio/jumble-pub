@@ -1,4 +1,6 @@
-import { isNsfwEvent } from '@/lib/event'
+import { isNsfwEvent, isPictureEvent } from '@/lib/event'
+import { extractImetaUrlFromTag } from '@/lib/tag'
+import { isImage, isVideo } from '@/lib/url'
 import { cn } from '@/lib/utils'
 import { Event } from 'nostr-tools'
 import { memo } from 'react'
@@ -14,6 +16,7 @@ import {
 import ImageGallery from '../ImageGallery'
 import VideoPlayer from '../VideoPlayer'
 import WebPreview from '../WebPreview'
+import { URL_REGEX } from '@/constants'
 
 const Content = memo(
   ({
@@ -25,7 +28,7 @@ const Content = memo(
     className?: string
     size?: 'normal' | 'small'
   }) => {
-    const { content, images, videos, embeddedNotes, lastNonMediaUrl } = preprocess(event.content)
+    const { content, images, videos, embeddedNotes, lastNonMediaUrl } = preprocess(event)
     const isNsfw = isNsfwEvent(event)
     const nodes = embedded(content, [
       embeddedNormalUrlRenderer,
@@ -39,7 +42,7 @@ const Content = memo(
     if (images.length) {
       nodes.push(
         <ImageGallery
-          className={`w-fit ${size === 'small' ? 'mt-1' : 'mt-2'}`}
+          className={`${size === 'small' ? 'mt-1' : 'mt-2'}`}
           key={`image-gallery-${event.id}`}
           images={images}
           isNsfw={isNsfw}
@@ -95,9 +98,9 @@ const Content = memo(
 Content.displayName = 'Content'
 export default Content
 
-function preprocess(content: string) {
-  const urlRegex = /(https?:\/\/[^\s"']+)/g
-  const urls = content.match(urlRegex) || []
+function preprocess(event: Event) {
+  const content = event.content
+  const urls = content.match(URL_REGEX) || []
   let lastNonMediaUrl: string | undefined
 
   let c = content
@@ -116,6 +119,15 @@ function preprocess(content: string) {
     }
   })
 
+  if (isPictureEvent(event)) {
+    event.tags.forEach((tag) => {
+      const imageUrl = extractImetaUrlFromTag(tag)
+      if (imageUrl) {
+        images.push(imageUrl)
+      }
+    })
+  }
+
   const embeddedNotes: string[] = []
   const embeddedNoteRegex = /nostr:(note1[a-z0-9]{58}|nevent1[a-z0-9]+|naddr1[a-z0-9]+)/g
   ;(c.match(embeddedNoteRegex) || []).forEach((note) => {
@@ -123,23 +135,7 @@ function preprocess(content: string) {
     embeddedNotes.push(note)
   })
 
+  c = c.replace(/\n{3,}/g, '\n\n').trim()
+
   return { content: c, images, videos, embeddedNotes, lastNonMediaUrl }
-}
-
-function isImage(url: string) {
-  try {
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.svg']
-    return imageExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
-  } catch {
-    return false
-  }
-}
-
-function isVideo(url: string) {
-  try {
-    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov']
-    return videoExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
-  } catch {
-    return false
-  }
 }

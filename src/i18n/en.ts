@@ -99,6 +99,11 @@ export default {
     Dark: 'Dark',
     Temporary: 'Temporary',
     'Choose a relay collection': 'Choose a relay collection',
-    'Switch account': 'Switch account'
+    'Switch account': 'Switch account',
+    Pictures: 'Pictures',
+    'Picture note': 'Picture note',
+    'A special note for picture-first clients like Olas':
+      'A special note for picture-first clients like Olas',
+    'Picture note requires images': 'Picture note requires images'
   }
 }

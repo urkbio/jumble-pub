@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button'
+import { PICTURE_EVENT_KIND } from '@/constants'
 import { useFetchRelayInfos } from '@/hooks'
 import { isReplyNoteEvent } from '@/lib/event'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import client from '@/services/client.service'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
@@ -10,9 +12,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import NoteCard from '../NoteCard'
+import PictureNoteCard from '../PictureNoteCard'
+import SimpleMasonryGrid from '../SimpleMasonryGrid'
 
 const NORMAL_RELAY_LIMIT = 100
 const ALGO_RELAY_LIMIT = 500
+
+type TListMode = 'posts' | 'postsAndReplies' | 'pictures'
 
 export default function NoteList({
   relayUrls,
@@ -24,6 +30,7 @@ export default function NoteList({
   className?: string
 }) {
   const { t } = useTranslation()
+  const { isSmallScreen } = useScreenSize()
   const { signEvent, checkLogin } = useNostr()
   const { isFetching: isFetchingRelayInfo, areAlgoRelays } = useFetchRelayInfos([...relayUrls])
   const [refreshCount, setRefreshCount] = useState(0)
@@ -32,15 +39,23 @@ export default function NoteList({
   const [newEvents, setNewEvents] = useState<Event[]>([])
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [refreshing, setRefreshing] = useState(true)
-  const [displayReplies, setDisplayReplies] = useState(false)
+  const [listMode, setListMode] = useState<TListMode>('posts')
   const bottomRef = useRef<HTMLDivElement | null>(null)
+  const isPictures = useMemo(() => listMode === 'pictures', [listMode])
   const noteFilter = useMemo(() => {
+    if (isPictures) {
+      return {
+        kinds: [PICTURE_EVENT_KIND],
+        limit: areAlgoRelays ? ALGO_RELAY_LIMIT : NORMAL_RELAY_LIMIT,
+        ...filter
+      }
+    }
     return {
-      kinds: [kinds.ShortTextNote, kinds.Repost],
+      kinds: [kinds.ShortTextNote, kinds.Repost, PICTURE_EVENT_KIND],
       limit: areAlgoRelays ? ALGO_RELAY_LIMIT : NORMAL_RELAY_LIMIT,
       ...filter
     }
-  }, [JSON.stringify(filter), areAlgoRelays])
+  }, [JSON.stringify(filter), areAlgoRelays, isPictures])
 
   useEffect(() => {
     if (isFetchingRelayInfo || relayUrls.length === 0) return
@@ -151,55 +166,65 @@ export default function NoteList({
 
   return (
     <div className={cn('space-y-2 sm:space-y-2', className)}>
-      <DisplayRepliesSwitch displayReplies={displayReplies} setDisplayReplies={setDisplayReplies} />
-      <div className="space-y-2 sm:space-y-2">
-        {newEvents.filter((event) => displayReplies || !isReplyNoteEvent(event)).length > 0 && (
-          <div className="flex justify-center w-full max-sm:mt-2">
-            <Button size="lg" onClick={showNewEvents}>
-              {t('show new notes')}
-            </Button>
-          </div>
-        )}
-
-        <PullToRefresh
-          onRefresh={async () => {
-            setRefreshCount((count) => count + 1)
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-          }}
-          pullingContent=""
-        >
-          <div>
-            {events
-              .filter((event) => displayReplies || !isReplyNoteEvent(event))
-              .map((event) => (
-                <NoteCard key={event.id} className="w-full" event={event} />
+      <ListModeSwitch listMode={listMode} setListMode={setListMode} />
+      <PullToRefresh
+        onRefresh={async () => {
+          setRefreshCount((count) => count + 1)
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }}
+        pullingContent=""
+      >
+        <div className="space-y-2 sm:space-y-2">
+          {newEvents.filter((event) => listMode !== 'posts' || !isReplyNoteEvent(event)).length >
+            0 && (
+            <div className="flex justify-center w-full max-sm:mt-2">
+              <Button size="lg" onClick={showNewEvents}>
+                {t('show new notes')}
+              </Button>
+            </div>
+          )}
+          {isPictures ? (
+            <SimpleMasonryGrid
+              className="px-2 sm:px-4"
+              columnCount={isSmallScreen ? 2 : 3}
+              items={events.map((event) => (
+                <PictureNoteCard key={event.id} className="w-full" event={event} />
               ))}
+            />
+          ) : (
+            <div>
+              {events
+                .filter((event) => listMode === 'postsAndReplies' || !isReplyNoteEvent(event))
+                .map((event) => (
+                  <NoteCard key={event.id} className="w-full" event={event} />
+                ))}
+            </div>
+          )}
+          <div className="text-center text-sm text-muted-foreground">
+            {hasMore || refreshing ? (
+              <div ref={bottomRef}>{t('loading...')}</div>
+            ) : events.length ? (
+              t('no more notes')
+            ) : (
+              <div className="flex justify-center w-full max-sm:mt-2">
+                <Button size="lg" onClick={() => setRefreshCount((pre) => pre + 1)}>
+                  {t('reload notes')}
+                </Button>
+              </div>
+            )}
           </div>
-        </PullToRefresh>
-      </div>
-      <div className="text-center text-sm text-muted-foreground">
-        {hasMore || refreshing ? (
-          <div ref={bottomRef}>{t('loading...')}</div>
-        ) : events.length ? (
-          t('no more notes')
-        ) : (
-          <div className="flex justify-center w-full max-sm:mt-2">
-            <Button size="lg" onClick={() => setRefreshCount((pre) => pre + 1)}>
-              {t('reload notes')}
-            </Button>
-          </div>
-        )}
-      </div>
+        </div>
+      </PullToRefresh>
     </div>
   )
 }
 
-function DisplayRepliesSwitch({
-  displayReplies,
-  setDisplayReplies
+function ListModeSwitch({
+  listMode,
+  setListMode
 }: {
-  displayReplies: boolean
-  setDisplayReplies: (value: boolean) => void
+  listMode: TListMode
+  setListMode: (listMode: TListMode) => void
 }) {
   const { t } = useTranslation()
 
@@ -207,20 +232,26 @@ function DisplayRepliesSwitch({
     <div>
       <div className="flex">
         <div
-          className={`w-1/2 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${displayReplies ? 'text-muted-foreground' : ''}`}
-          onClick={() => setDisplayReplies(false)}
+          className={`w-1/3 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${listMode === 'posts' ? '' : 'text-muted-foreground'}`}
+          onClick={() => setListMode('posts')}
         >
           {t('Notes')}
         </div>
         <div
-          className={`w-1/2 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${displayReplies ? '' : 'text-muted-foreground'}`}
-          onClick={() => setDisplayReplies(true)}
+          className={`w-1/3 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${listMode === 'postsAndReplies' ? '' : 'text-muted-foreground'}`}
+          onClick={() => setListMode('postsAndReplies')}
         >
           {t('Notes & Replies')}
         </div>
+        <div
+          className={`w-1/3 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${listMode === 'pictures' ? '' : 'text-muted-foreground'}`}
+          onClick={() => setListMode('pictures')}
+        >
+          {t('Pictures')}
+        </div>
       </div>
       <div
-        className={`w-1/2 px-4 sm:px-6 transition-transform duration-500 ${displayReplies ? 'translate-x-full' : ''}`}
+        className={`w-1/3 px-4 sm:px-6 transition-transform duration-500 ${listMode === 'postsAndReplies' ? 'translate-x-full' : listMode === 'pictures' ? 'translate-x-[200%]' : ''} `}
       >
         <div className="w-full h-1 bg-primary rounded-full" />
       </div>

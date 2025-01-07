@@ -62,7 +62,7 @@ export default function Note({
       )}
       <Content className="mt-2" event={event} />
       {!hideStats && (
-        <NoteStats className="mt-3 sm:mt-4" event={event} fetchIfNotExisting={fetchNoteStats} />
+        <NoteStats className="mt-3" event={event} fetchIfNotExisting={fetchNoteStats} />
       )}
     </div>
   )

@@ -1,5 +1,7 @@
 import { useSecondaryPage } from '@/PageManager'
+import Nip22ReplyNoteList from '@/components/Nip22ReplyNoteList'
 import Note from '@/components/Note'
+import PictureNote from '@/components/PictureNote'
 import ReplyNoteList from '@/components/ReplyNoteList'
 import UserAvatar from '@/components/UserAvatar'
 import Username from '@/components/Username'
@@ -8,14 +10,16 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useFetchEvent } from '@/hooks'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { getParentEventId, getRootEventId } from '@/lib/event'
+import { getParentEventId, getRootEventId, isPictureEvent } from '@/lib/event'
 import { toNote } from '@/lib/link'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
 
 export default function NotePage({ id, index }: { id?: string; index?: number }) {
   const { t } = useTranslation()
+  const { isSmallScreen } = useScreenSize()
   const { event, isFetching } = useFetchEvent(id)
   const parentEventId = useMemo(() => getParentEventId(event), [event])
   const rootEventId = useMemo(() => getRootEventId(event), [event])
@@ -31,6 +35,20 @@ export default function NotePage({ id, index }: { id?: string; index?: number })
   }
   if (!event) return <NotFoundPage />
 
+  if (isPictureEvent(event) && isSmallScreen) {
+    return (
+      <SecondaryPageLayout index={index} titlebarContent={t('Note')} displayScrollToTopButton>
+        <PictureNote key={`note-${event.id}`} event={event} fetchNoteStats />
+        <Separator className="mb-2 mt-4" />
+        <Nip22ReplyNoteList
+          key={`nip22-reply-note-list-${event.id}`}
+          event={event}
+          className="px-2"
+        />
+      </SecondaryPageLayout>
+    )
+  }
+
   return (
     <SecondaryPageLayout index={index} titlebarContent={t('Note')} displayScrollToTopButton>
       <div className="px-4">
@@ -39,7 +57,15 @@ export default function NotePage({ id, index }: { id?: string; index?: number })
         <Note key={`note-${event.id}`} event={event} fetchNoteStats />
       </div>
       <Separator className="mb-2 mt-4" />
-      <ReplyNoteList key={`reply-note-list-${event.id}`} event={event} className="px-2" />
+      {isPictureEvent(event) ? (
+        <Nip22ReplyNoteList
+          key={`nip22-reply-note-list-${event.id}`}
+          event={event}
+          className="px-2"
+        />
+      ) : (
+        <ReplyNoteList key={`reply-note-list-${event.id}`} event={event} className="px-2" />
+      )}
     </SecondaryPageLayout>
   )
 }

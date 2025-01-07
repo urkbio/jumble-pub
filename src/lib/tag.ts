@@ -13,3 +13,10 @@ export function isRootETag([tagName, , , marker]: string[]) {
 export function isMentionETag([tagName, , , marker]: string[]) {
   return tagName === 'e' && marker === 'mention'
 }
+
+export function extractImetaUrlFromTag(tag: string[]) {
+  if (tag[0] !== 'imeta') return null
+  const urlItem = tag.find((item) => item.startsWith('url '))
+  const url = urlItem?.slice(4)
+  return url || null
+}

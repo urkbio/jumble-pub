@@ -18,3 +18,21 @@ export function normalizeUrl(url: string): string {
 export function simplifyUrl(url: string): string {
   return url.replace('wss://', '').replace('ws://', '').replace(/\/$/, '')
 }
+
+export function isImage(url: string) {
+  try {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.svg']
+    return imageExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
+  } catch {
+    return false
+  }
+}
+
+export function isVideo(url: string) {
+  try {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov']
+    return videoExtensions.some((ext) => new URL(url).pathname.toLowerCase().endsWith(ext))
+  } catch {
+    return false
+  }
+}
