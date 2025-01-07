@@ -8,12 +8,11 @@ import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import client from '@/services/client.service'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import NoteCard from '../NoteCard'
 import PictureNoteCard from '../PictureNoteCard'
-import SimpleMasonryGrid from '../SimpleMasonryGrid'
 
 const NORMAL_RELAY_LIMIT = 100
 const ALGO_RELAY_LIMIT = 500
@@ -185,12 +184,10 @@ export default function NoteList({
             </div>
           )}
           {isPictures ? (
-            <SimpleMasonryGrid
+            <PictureNoteCardMasonry
               className="px-2 sm:px-4"
               columnCount={isSmallScreen ? 2 : 3}
-              items={events.map((event) => (
-                <PictureNoteCard key={event.id} className="w-full" event={event} />
-              ))}
+              events={events}
             />
           ) : (
             <div>
@@ -256,6 +253,42 @@ function ListModeSwitch({
       >
         <div className="w-full h-1 bg-primary rounded-full" />
       </div>
+    </div>
+  )
+}
+
+function PictureNoteCardMasonry({
+  events,
+  columnCount,
+  className
+}: {
+  events: Event[]
+  columnCount: 2 | 3
+  className?: string
+}) {
+  const columns = useMemo(() => {
+    const newColumns: ReactNode[][] = Array.from({ length: columnCount }, () => [])
+    events.forEach((event, i) => {
+      newColumns[i % columnCount].push(
+        <PictureNoteCard key={event.id} className="w-full" event={event} />
+      )
+    })
+    return newColumns
+  }, [events])
+
+  return (
+    <div
+      className={cn(
+        'grid',
+        columnCount === 2 ? 'grid-cols-2 gap-2' : 'grid-cols-3 gap-4',
+        className
+      )}
+    >
+      {columns.map((column, i) => (
+        <div key={i} className={columnCount === 2 ? 'space-y-2' : 'space-y-4'}>
+          {column}
+        </div>
+      ))}
     </div>
   )
 }
