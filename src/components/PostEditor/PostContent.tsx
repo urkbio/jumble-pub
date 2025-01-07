@@ -9,6 +9,7 @@ import {
   createPictureNoteDraftEvent,
   createShortTextNoteDraftEvent
 } from '@/lib/draft-event'
+import { extractImagesFromContent } from '@/lib/event'
 import { useNostr } from '@/providers/NostrProvider'
 import client from '@/services/client.service'
 import { ChevronDown, LoaderCircle } from 'lucide-react'
@@ -18,7 +19,6 @@ import { useTranslation } from 'react-i18next'
 import Mentions from './Mentions'
 import Preview from './Preview'
 import Uploader from './Uploader'
-import { extractImagesFromContent } from '@/lib/event'
 
 export default function PostContent({
   defaultContent = '',
@@ -33,6 +33,7 @@ export default function PostContent({
   const { toast } = useToast()
   const { publish, checkLogin } = useNostr()
   const [content, setContent] = useState(defaultContent)
+  const [pictureInfos, setPictureInfos] = useState<{ url: string; tags: string[][] }[]>([])
   const [posting, setPosting] = useState(false)
   const [showMoreOptions, setShowMoreOptions] = useState(false)
   const [addClientTag, setAddClientTag] = useState(false)
@@ -73,10 +74,10 @@ export default function PostContent({
         }
         const draftEvent =
           isPictureNote && !parentEvent && hasImages
-            ? await createPictureNoteDraftEvent(content, { addClientTag })
+            ? await createPictureNoteDraftEvent(content, pictureInfos, { addClientTag })
             : parentEvent && parentEvent.kind !== kinds.ShortTextNote
-              ? await createCommentDraftEvent(content, parentEvent, { addClientTag })
-              : await createShortTextNoteDraftEvent(content, {
+              ? await createCommentDraftEvent(content, parentEvent, pictureInfos, { addClientTag })
+              : await createShortTextNoteDraftEvent(content, pictureInfos, {
                   parentEvent,
                   addClientTag
                 })
@@ -127,7 +128,12 @@ export default function PostContent({
       {content && <Preview content={content} />}
       <div className="flex items-center justify-between">
         <div className="flex gap-2 items-center">
-          <Uploader setContent={setContent} />
+          <Uploader
+            onUploadSuccess={({ url, tags }) => {
+              setPictureInfos((prev) => [...prev, { url, tags }])
+              setContent((prev) => `${prev}\n${url}`)
+            }}
+          />
           <Button
             variant="link"
             className="text-foreground gap-0 px-0"

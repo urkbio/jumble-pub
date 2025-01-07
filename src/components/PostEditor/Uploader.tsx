@@ -6,9 +6,9 @@ import { useRef, useState } from 'react'
 import { z } from 'zod'
 
 export default function Uploader({
-  setContent
+  onUploadSuccess
 }: {
-  setContent: React.Dispatch<React.SetStateAction<string>>
+  onUploadSuccess: ({ url, tags }: { url: string; tags: string[][] }) => void
 }) {
   const [uploading, setUploading] = useState(false)
   const { signHttpAuth } = useNostr()
@@ -42,7 +42,7 @@ export default function Uploader({
       const tags = z.array(z.array(z.string())).parse(data.nip94_event?.tags ?? [])
       const imageUrl = tags.find(([tagName]) => tagName === 'url')?.[1]
       if (imageUrl) {
-        setContent((prevContent) => `${prevContent}\n${imageUrl}`)
+        onUploadSuccess({ url: imageUrl, tags })
       } else {
         throw new Error('No image url found')
       }

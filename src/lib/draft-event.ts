@@ -47,6 +47,7 @@ export function createRepostDraftEvent(event: Event): TDraftEvent {
 
 export async function createShortTextNoteDraftEvent(
   content: string,
+  pictureInfos: { url: string; tags: string[][] }[],
   options: {
     parentEvent?: Event
     addClientTag?: boolean
@@ -68,6 +69,11 @@ export async function createShortTextNoteDraftEvent(
 
   if (parentEventId) {
     tags.push(['e', parentEventId, '', 'reply'])
+  }
+
+  const { images } = extractImagesFromContent(content)
+  if (images && images.length) {
+    tags.push(...generateImetaTags(images, pictureInfos))
   }
 
   if (options.addClientTag) {
@@ -98,6 +104,7 @@ export function createRelaySetDraftEvent(relaySet: TRelaySet): TDraftEvent {
 
 export async function createPictureNoteDraftEvent(
   content: string,
+  pictureInfos: { url: string; tags: string[][] }[],
   options: {
     addClientTag?: boolean
   } = {}
@@ -109,8 +116,7 @@ export async function createPictureNoteDraftEvent(
     throw new Error('No images found in content')
   }
 
-  const tags = images
-    .map((image) => ['imeta', `url ${image}`])
+  const tags = generateImetaTags(images, pictureInfos)
     .concat(pubkeys.map((pubkey) => ['p', pubkey]))
     .concat(quoteEventIds.map((eventId) => ['q', eventId]))
     .concat(hashtags.map((hashtag) => ['t', hashtag]))
@@ -130,6 +136,7 @@ export async function createPictureNoteDraftEvent(
 export async function createCommentDraftEvent(
   content: string,
   parentEvent: Event,
+  pictureInfos: { url: string; tags: string[][] }[],
   options: {
     addClientTag?: boolean
   } = {}
@@ -153,12 +160,15 @@ export async function createCommentDraftEvent(
     ['e', parentEventId],
     ['k', parentEventKind.toString()],
     ['p', parentEventPubkey]
-  ].concat(
-    pubkeys
-      .map((pubkey) => ['p', pubkey])
-      .concat(quoteEventIds.map((eventId) => ['q', eventId]))
-      .concat(hashtags.map((hashtag) => ['t', hashtag]))
-  )
+  ]
+    .concat(pubkeys.map((pubkey) => ['p', pubkey]))
+    .concat(quoteEventIds.map((eventId) => ['q', eventId]))
+    .concat(hashtags.map((hashtag) => ['t', hashtag]))
+
+  const { images } = extractImagesFromContent(content)
+  if (images && images.length) {
+    tags.push(...generateImetaTags(images, pictureInfos))
+  }
 
   if (options.addClientTag) {
     tags.push(['client', 'jumble'])
@@ -170,4 +180,13 @@ export async function createCommentDraftEvent(
     tags,
     created_at: dayjs().unix()
   }
+}
+
+function generateImetaTags(imageUrls: string[], pictureInfos: { url: string; tags: string[][] }[]) {
+  return imageUrls.map((imageUrl) => {
+    const pictureInfo = pictureInfos.find((info) => info.url === imageUrl)
+    return pictureInfo
+      ? ['imeta', ...pictureInfo.tags.map(([n, v]) => `${n} ${v}`)]
+      : ['imeta', `url ${imageUrl}`]
+  })
 }
