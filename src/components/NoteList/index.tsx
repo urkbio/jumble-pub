@@ -17,6 +17,7 @@ import SimpleMasonryGrid from '../SimpleMasonryGrid'
 
 const NORMAL_RELAY_LIMIT = 100
 const ALGO_RELAY_LIMIT = 500
+const PICTURE_NOTE_LIMIT = 30
 
 type TListMode = 'posts' | 'postsAndReplies' | 'pictures'
 
@@ -46,7 +47,7 @@ export default function NoteList({
     if (isPictures) {
       return {
         kinds: [PICTURE_EVENT_KIND],
-        limit: areAlgoRelays ? ALGO_RELAY_LIMIT : NORMAL_RELAY_LIMIT,
+        limit: PICTURE_NOTE_LIMIT,
         ...filter
       }
     }
