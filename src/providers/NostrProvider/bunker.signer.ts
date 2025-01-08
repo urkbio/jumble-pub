@@ -41,9 +41,10 @@ export class BunkerSigner implements ISigner {
     if (!this.signer) {
       throw new Error('Not logged in')
     }
+    const pubkey = await this.getPublicKey()
     return this.signer.signEvent({
       ...draftEvent,
-      pubkey: await this.signer.getPublicKey()
+      pubkey
     })
   }
 
