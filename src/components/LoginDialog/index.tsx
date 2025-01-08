@@ -33,7 +33,7 @@ export default function LoginDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-96">
+      <DialogContent className="w-96 max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle className="hidden" />
           <DialogDescription className="hidden" />

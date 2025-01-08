@@ -3,6 +3,7 @@ import LoginDialog from '@/components/LoginDialog'
 import LogoutDialog from '@/components/LogoutDialog'
 import PubkeyCopy from '@/components/PubkeyCopy'
 import QrCodePopover from '@/components/QrCodePopover'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { SimpleUserAvatar } from '@/components/UserAvatar'
 import { SimpleUsername } from '@/components/Username'
@@ -24,7 +25,7 @@ export default function MePage() {
 
   if (!pubkey) {
     return (
-      <PrimaryPageLayout pageName="home">
+      <PrimaryPageLayout pageName="home" titlebar={<MePageTitlebar />}>
         <div className="flex flex-col p-4 gap-4 overflow-auto">
           <AccountManager />
         </div>
@@ -33,7 +34,7 @@ export default function MePage() {
   }
 
   return (
-    <PrimaryPageLayout pageName="home">
+    <PrimaryPageLayout pageName="home" titlebar={<MePageTitlebar />}>
       <div className="flex gap-4 items-center p-4">
         <SimpleUserAvatar userId={pubkey} size="big" />
         <div className="space-y-1">
@@ -49,36 +50,37 @@ export default function MePage() {
         </div>
       </div>
       <div className="mt-4">
-        <ItemGroup>
-          <Item onClick={() => push(toProfile(pubkey))}>
-            <UserRound />
-            {t('Profile')}
-          </Item>
-        </ItemGroup>
-        <ItemGroup>
-          <Item onClick={() => push(toSettings())}>
-            <Settings />
-            {t('Settings')}
-          </Item>
-        </ItemGroup>
-        <ItemGroup>
-          <Item onClick={() => setLoginDialogOpen(true)}>
-            <ArrowDownUp /> {t('Switch account')}
-          </Item>
-          <Separator className="bg-background" />
-          <Item
-            className="text-destructive focus:text-destructive"
-            onClick={() => setLogoutDialogOpen(true)}
-            hideChevron
-          >
-            <LogOut />
-            {t('Logout')}
-          </Item>
-        </ItemGroup>
+        <Item onClick={() => push(toProfile(pubkey))}>
+          <UserRound />
+          {t('Profile')}
+        </Item>
+        <Item onClick={() => setLoginDialogOpen(true)}>
+          <ArrowDownUp /> {t('Switch account')}
+        </Item>
+        <Separator className="bg-background" />
+        <Item
+          className="text-destructive focus:text-destructive"
+          onClick={() => setLogoutDialogOpen(true)}
+          hideChevron
+        >
+          <LogOut />
+          {t('Logout')}
+        </Item>
       </div>
       <LoginDialog open={loginDialogOpen} setOpen={setLoginDialogOpen} />
       <LogoutDialog open={logoutDialogOpen} setOpen={setLogoutDialogOpen} />
     </PrimaryPageLayout>
+  )
+}
+
+function MePageTitlebar() {
+  const { push } = useSecondaryPage()
+  return (
+    <div className="flex justify-end items-center">
+      <Button variant="ghost" size="titlebar-icon" onClick={() => push(toSettings())}>
+        <Settings />
+      </Button>
+    </div>
   )
 }
 
@@ -91,7 +93,7 @@ function Item({
   return (
     <div
       className={cn(
-        'flex items-center justify-between px-4 py-2 w-full clickable rounded-lg [&_svg]:size-4 [&_svg]:shrink-0',
+        'flex clickable justify-between items-center px-4 py-2 h-[52px] rounded-lg [&_svg]:size-4 [&_svg]:shrink-0',
         className
       )}
       {...props}
@@ -100,8 +102,4 @@ function Item({
       {!hideChevron && <ChevronRight />}
     </div>
   )
-}
-
-function ItemGroup({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-lg m-4 bg-muted/40">{children}</div>
 }

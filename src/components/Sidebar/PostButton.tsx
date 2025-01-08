@@ -15,6 +15,8 @@ export default function PostButton() {
           e.stopPropagation()
           setOpen(true)
         }}
+        variant="default"
+        className="bg-primary"
       >
         <PencilLine strokeWidth={3} />
       </SidebarItem>

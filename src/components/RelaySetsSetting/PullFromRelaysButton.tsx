@@ -19,6 +19,7 @@ import { BIG_RELAY_URLS } from '@/constants'
 import { tagNameEquals } from '@/lib/tag'
 import { isWebsocketUrl, simplifyUrl } from '@/lib/url'
 import { useNostr } from '@/providers/NostrProvider'
+import { useRelaySets } from '@/providers/RelaySetsProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import client from '@/services/client.service'
 import { TRelaySet } from '@/types'
@@ -26,7 +27,6 @@ import { CloudDownload } from 'lucide-react'
 import { kinds } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import RelaySetCard from '../RelaySetCard'
-import { useRelaySets } from '@/providers/RelaySetsProvider'
 
 export default function PullFromRelaysButton() {
   const { pubkey } = useNostr()
@@ -60,7 +60,7 @@ export default function PullFromRelaysButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Select the relay sets you want to pull</DialogTitle>
           <DialogDescription className="hidden" />

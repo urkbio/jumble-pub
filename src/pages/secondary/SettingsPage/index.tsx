@@ -1,15 +1,19 @@
 import AboutInfoDialog from '@/components/AboutInfoDialog'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
+import { toRelaySettings } from '@/lib/link'
+import { cn } from '@/lib/utils'
+import { useSecondaryPage } from '@/PageManager'
 import { useTheme } from '@/providers/ThemeProvider'
 import { TLanguage } from '@/types'
 import { SelectValue } from '@radix-ui/react-select'
-import { ChevronRight, Info, Languages, SunMoon } from 'lucide-react'
-import { useState } from 'react'
+import { ChevronRight, Info, Languages, Server, SunMoon } from 'lucide-react'
+import { HTMLProps, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export default function SettingsPage({ index }: { index?: number }) {
   const { t, i18n } = useTranslation()
+  const { push } = useSecondaryPage()
   const [language, setLanguage] = useState<TLanguage>(i18n.language as TLanguage)
   const { themeSetting, setThemeSetting } = useTheme()
 
@@ -20,7 +24,7 @@ export default function SettingsPage({ index }: { index?: number }) {
 
   return (
     <SecondaryPageLayout index={index} titlebarContent={t('Settings')}>
-      <div className="flex justify-between items-center px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0">
+      <Item>
         <div className="flex items-center gap-4">
           <Languages />
           <div>{t('Languages')}</div>
@@ -34,8 +38,8 @@ export default function SettingsPage({ index }: { index?: number }) {
             <SelectItem value="zh">简体中文</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-      <div className="flex justify-between items-center px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0">
+      </Item>
+      <Item>
         <div className="flex items-center gap-4">
           <SunMoon />
           <div>{t('Theme')}</div>
@@ -50,9 +54,16 @@ export default function SettingsPage({ index }: { index?: number }) {
             <SelectItem value="dark">{t('Dark')}</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </Item>
+      <Item onClick={() => push(toRelaySettings())}>
+        <div className="flex items-center gap-4">
+          <Server />
+          <div>{t('Relays')}</div>
+        </div>
+        <ChevronRight />
+      </Item>
       <AboutInfoDialog>
-        <div className="flex clickable justify-between items-center px-4 py-2 h-[52px] rounded-lg [&_svg]:size-4 [&_svg]:shrink-0">
+        <Item>
           <div className="flex items-center gap-4">
             <Info />
             <div>{t('About')}</div>
@@ -63,8 +74,22 @@ export default function SettingsPage({ index }: { index?: number }) {
             </div>
             <ChevronRight />
           </div>
-        </div>
+        </Item>
       </AboutInfoDialog>
     </SecondaryPageLayout>
+  )
+}
+
+function Item({ children, className, ...props }: HTMLProps<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        'flex clickable justify-between items-center px-4 py-2 h-[52px] rounded-lg [&_svg]:size-4 [&_svg]:shrink-0',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
   )
 }

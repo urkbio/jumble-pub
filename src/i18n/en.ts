@@ -103,6 +103,7 @@ export default {
     'Picture note': 'Picture note',
     'A special note for picture-first clients like Olas':
       'A special note for picture-first clients like Olas',
-    'Picture note requires images': 'Picture note requires images'
+    'Picture note requires images': 'Picture note requires images',
+    Relays: 'Relays'
   }
 }
