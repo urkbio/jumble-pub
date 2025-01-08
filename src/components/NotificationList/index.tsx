@@ -108,7 +108,10 @@ export default function NotificationList() {
     }
 
     if (notifications.length > 0) {
-      setNotifications((oldNotifications) => [...oldNotifications, ...notifications])
+      setNotifications((oldNotifications) => [
+        ...oldNotifications,
+        ...notifications.filter((event) => event.pubkey !== pubkey)
+      ])
     }
 
     setUntil(notifications[notifications.length - 1].created_at - 1)

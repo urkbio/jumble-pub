@@ -22,7 +22,7 @@ export default function ParentNotePreview({
       onClick={onClick}
     >
       <div className="shrink-0">{t('reply to')}</div>
-      <UserAvatar userId={event.pubkey} size="tiny" />
+      <UserAvatar className="shrink-0" userId={event.pubkey} size="tiny" />
       <div className="truncate">{event.content}</div>
     </div>
   )

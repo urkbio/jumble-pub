@@ -52,7 +52,9 @@ export default function NotePage({ id, index }: { id?: string; index?: number })
   return (
     <SecondaryPageLayout index={index} titlebarContent={t('Note')} displayScrollToTopButton>
       <div className="px-4">
-        <ParentNote key={`root-note-${event.id}`} eventId={rootEventId} />
+        {rootEventId !== parentEventId && (
+          <ParentNote key={`root-note-${event.id}`} eventId={rootEventId} />
+        )}
         <ParentNote key={`parent-note-${event.id}`} eventId={parentEventId} />
         <Note key={`note-${event.id}`} event={event} fetchNoteStats />
       </div>
