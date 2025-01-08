@@ -24,7 +24,7 @@ export default function ProfileBanner({
 
   return (
     <Image
-      src={bannerUrl}
+      image={{ url: bannerUrl }}
       alt={`${pubkey} banner`}
       className={className}
       onError={() => setBannerUrl(defaultBanner)}

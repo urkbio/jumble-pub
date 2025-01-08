@@ -1,11 +1,18 @@
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
+import { TImageInfo } from '@/types'
 import { useState } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import Image from '../Image'
 import NsfwOverlay from '../NsfwOverlay'
 
-export function ImageCarousel({ images, isNsfw = false }: { images: string[]; isNsfw?: boolean }) {
+export function ImageCarousel({
+  images,
+  isNsfw = false
+}: {
+  images: TImageInfo[]
+  isNsfw?: boolean
+}) {
   const [index, setIndex] = useState(-1)
 
   const handlePhotoClick = (event: React.MouseEvent, current: number) => {
@@ -17,16 +24,16 @@ export function ImageCarousel({ images, isNsfw = false }: { images: string[]; is
     <>
       <Carousel className="w-full">
         <CarouselContent>
-          {images.map((url, index) => (
+          {images.map((image, index) => (
             <CarouselItem key={index}>
-              <Image src={url} onClick={(e) => handlePhotoClick(e, index)} />
+              <Image image={image} onClick={(e) => handlePhotoClick(e, index)} />
             </CarouselItem>
           ))}
         </CarouselContent>
       </Carousel>
       <Lightbox
         index={index}
-        slides={images.map((src) => ({ src }))}
+        slides={images.map(({ url }) => ({ src: url }))}
         plugins={[Zoom]}
         open={index >= 0}
         close={() => setIndex(-1)}

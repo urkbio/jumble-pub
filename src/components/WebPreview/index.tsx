@@ -30,7 +30,7 @@ export default function WebPreview({
   if (isSmallScreen && image) {
     return (
       <div className="rounded-lg border mt-2">
-        <Image src={image} className="rounded-t-lg w-full h-44" />
+        <Image image={{ url: image }} className="rounded-t-lg w-full h-44" />
         <div className="bg-muted p-2 w-full rounded-b-lg">
           <div className="text-xs text-muted-foreground">{hostname}</div>
           <div className="font-semibold line-clamp-1">{title}</div>
@@ -48,7 +48,10 @@ export default function WebPreview({
       }}
     >
       {image && (
-        <Image src={image} className={`rounded-l-lg ${size === 'normal' ? 'h-44' : 'h-24'}`} />
+        <Image
+          image={{ url: image }}
+          className={`rounded-l-lg ${size === 'normal' ? 'h-44' : 'h-24'}`}
+        />
       )}
       <div className="flex-1 w-0 p-2">
         <div className="text-xs text-muted-foreground">{hostname}</div>

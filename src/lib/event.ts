@@ -1,7 +1,7 @@
 import { COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
 import client from '@/services/client.service'
 import { Event, kinds, nip19 } from 'nostr-tools'
-import { extractImetaUrlFromTag, isReplyETag, isRootETag, tagNameEquals } from './tag'
+import { extractImageInfoFromTag, isReplyETag, isRootETag, tagNameEquals } from './tag'
 
 export function isNsfwEvent(event: Event) {
   return event.tags.some(
@@ -200,7 +200,7 @@ export function extractHashtags(content: string) {
 export function extractFirstPictureFromPictureEvent(event: Event) {
   if (!isPictureEvent(event)) return null
   for (const tag of event.tags) {
-    const url = extractImetaUrlFromTag(tag)
+    const url = extractImageInfoFromTag(tag)
     if (url) return url
   }
   return null

@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
+import { TImageInfo } from '@/types'
 import { ReactNode, useState } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
@@ -13,7 +14,7 @@ export default function ImageGallery({
   size = 'normal'
 }: {
   className?: string
-  images: string[]
+  images: TImageInfo[]
   isNsfw?: boolean
   size?: 'normal' | 'small'
 }) {
@@ -30,20 +31,20 @@ export default function ImageGallery({
   if (images.length === 1) {
     imageContent = (
       <Image
-        key={index}
+        key={0}
         className={cn('rounded-lg cursor-pointer', size === 'small' ? 'h-[15vh]' : 'h-[30vh]')}
-        src={images[0]}
+        image={images[0]}
         onClick={(e) => handlePhotoClick(e, 0)}
       />
     )
   } else if (size === 'small') {
     imageContent = (
       <div className="grid grid-cols-4 gap-2">
-        {images.map((src, i) => (
+        {images.map((image, i) => (
           <Image
             key={i}
-            className="rounded-lg cursor-pointer aspect-square"
-            src={src}
+            className="rounded-lg cursor-pointer aspect-square w-full"
+            image={image}
             onClick={(e) => handlePhotoClick(e, i)}
           />
         ))}
@@ -52,11 +53,11 @@ export default function ImageGallery({
   } else if (isSmallScreen && (images.length === 2 || images.length === 4)) {
     imageContent = (
       <div className="grid grid-cols-2 gap-2">
-        {images.map((src, i) => (
+        {images.map((image, i) => (
           <Image
             key={i}
-            className="rounded-lg cursor-pointer aspect-square"
-            src={src}
+            className="rounded-lg cursor-pointer aspect-square w-full"
+            image={image}
             onClick={(e) => handlePhotoClick(e, i)}
           />
         ))}
@@ -65,11 +66,11 @@ export default function ImageGallery({
   } else {
     imageContent = (
       <div className="grid grid-cols-3 gap-2">
-        {images.map((src, i) => (
+        {images.map((image, i) => (
           <Image
             key={i}
-            className="rounded-lg cursor-pointer aspect-square"
-            src={src}
+            className="rounded-lg cursor-pointer aspect-square w-full"
+            image={image}
             onClick={(e) => handlePhotoClick(e, i)}
           />
         ))}
@@ -83,7 +84,7 @@ export default function ImageGallery({
       <div onClick={(e) => e.stopPropagation()}>
         <Lightbox
           index={index}
-          slides={images.map((src) => ({ src }))}
+          slides={images.map(({ url }) => ({ src: url }))}
           plugins={[Zoom]}
           open={index >= 0}
           close={() => setIndex(-1)}

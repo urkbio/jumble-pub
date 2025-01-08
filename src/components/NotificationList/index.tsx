@@ -14,7 +14,7 @@ import PullToRefresh from 'react-simple-pull-to-refresh'
 import { FormattedTimestamp } from '../FormattedTimestamp'
 import UserAvatar from '../UserAvatar'
 
-const LIMIT = 50
+const LIMIT = 100
 
 export default function NotificationList() {
   const { t } = useTranslation()

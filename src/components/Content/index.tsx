@@ -1,7 +1,9 @@
+import { URL_REGEX } from '@/constants'
 import { isNsfwEvent, isPictureEvent } from '@/lib/event'
-import { extractImetaUrlFromTag } from '@/lib/tag'
+import { extractImageInfoFromTag } from '@/lib/tag'
 import { isImage, isVideo } from '@/lib/url'
 import { cn } from '@/lib/utils'
+import { TImageInfo } from '@/types'
 import { Event } from 'nostr-tools'
 import { memo } from 'react'
 import {
@@ -16,7 +18,6 @@ import {
 import ImageGallery from '../ImageGallery'
 import VideoPlayer from '../VideoPlayer'
 import WebPreview from '../WebPreview'
-import { URL_REGEX } from '@/constants'
 
 const Content = memo(
   ({
@@ -104,13 +105,13 @@ function preprocess(event: Event) {
   let lastNonMediaUrl: string | undefined
 
   let c = content
-  const images: string[] = []
+  const imageUrls: string[] = []
   const videos: string[] = []
 
   urls.forEach((url) => {
     if (isImage(url)) {
       c = c.replace(url, '').trim()
-      images.push(url)
+      imageUrls.push(url)
     } else if (isVideo(url)) {
       c = c.replace(url, '').trim()
       videos.push(url)
@@ -119,14 +120,15 @@ function preprocess(event: Event) {
     }
   })
 
-  if (isPictureEvent(event)) {
-    event.tags.forEach((tag) => {
-      const imageUrl = extractImetaUrlFromTag(tag)
-      if (imageUrl) {
-        images.push(imageUrl)
-      }
-    })
-  }
+  const imageInfos = event.tags
+    .map((tag) => extractImageInfoFromTag(tag))
+    .filter(Boolean) as TImageInfo[]
+  const images = isPictureEvent(event)
+    ? imageInfos
+    : imageUrls.map((url) => {
+        const imageInfo = imageInfos.find((info) => info.url === url)
+        return imageInfo ?? { url }
+      })
 
   const embeddedNotes: string[] = []
   const embeddedNoteRegex = /nostr:(note1[a-z0-9]{58}|nevent1[a-z0-9]+|naddr1[a-z0-9]+)/g

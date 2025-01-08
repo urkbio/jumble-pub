@@ -1,5 +1,7 @@
-import { extractImetaUrlFromTag } from '@/lib/tag'
+import { isNsfwEvent } from '@/lib/event'
+import { extractImageInfoFromTag } from '@/lib/tag'
 import { cn } from '@/lib/utils'
+import { TImageInfo } from '@/types'
 import { Event } from 'nostr-tools'
 import { memo, ReactNode } from 'react'
 import {
@@ -11,14 +13,13 @@ import {
   embeddedWebsocketUrlRenderer
 } from '../Embedded'
 import { ImageCarousel } from '../ImageCarousel'
-import { isNsfwEvent } from '@/lib/event'
 
 const PictureContent = memo(({ event, className }: { event: Event; className?: string }) => {
-  const images: string[] = []
+  const images: TImageInfo[] = []
   event.tags.forEach((tag) => {
-    const imageUrl = extractImetaUrlFromTag(tag)
-    if (imageUrl) {
-      images.push(imageUrl)
+    const imageInfo = extractImageInfoFromTag(tag)
+    if (imageInfo) {
+      images.push(imageInfo)
     }
   })
   const isNsfw = isNsfwEvent(event)

@@ -11,7 +11,10 @@ export default function NsfwOverlay({ className }: { className?: string }) {
           'absolute top-0 left-0 backdrop-blur-3xl w-full h-full cursor-pointer',
           className
         )}
-        onClick={() => setIsHidden(false)}
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsHidden(false)
+        }}
       />
     )
   )
