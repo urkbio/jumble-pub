@@ -30,12 +30,12 @@ export const useFeed = () => {
 export function FeedProvider({ children }: { children: React.ReactNode }) {
   const { pubkey } = useNostr()
   const { relaySets } = useRelaySets()
-  const [feedType, setFeedType] = useState<TFeedType>('relays')
+  const [feedType, setFeedType] = useState<TFeedType>(storage.getFeedType())
   const [relayUrls, setRelayUrls] = useState<string[]>([])
   const [temporaryRelayUrls, setTemporaryRelayUrls] = useState<string[]>([])
   const [filter, setFilter] = useState<Filter>({})
   const [isReady, setIsReady] = useState(false)
-  const [activeRelaySetId, setActiveRelaySetId] = useState<string | null>(() =>
+  const [activeRelaySetId, setActiveRelaySetId] = useState<string | null>(
     storage.getActiveRelaySetId()
   )
 
@@ -55,6 +55,9 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         return await switchFeed('temporary')
       }
 
+      if (feedType === 'following') {
+        return await switchFeed('following')
+      }
       await switchFeed('relays', { activeRelaySetId })
     }
 
@@ -95,6 +98,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         setFilter({})
         setIsReady(true)
         storage.setActiveRelaySetId(relaySet.id)
+        storage.setFeedType(feedType)
       }
       return
     }
@@ -109,6 +113,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       setRelayUrls(relayList.read.slice(0, 4))
       setFilter({ authors: followings.includes(pubkey) ? followings : [...followings, pubkey] })
       setIsReady(true)
+      storage.setFeedType(feedType)
       return
     }
     if (feedType === 'temporary') {

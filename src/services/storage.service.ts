@@ -1,7 +1,7 @@
 import { StorageKey } from '@/constants'
 import { isSameAccount } from '@/lib/account'
 import { randomString } from '@/lib/random'
-import { TAccount, TAccountPointer, TRelaySet, TThemeSetting } from '@/types'
+import { TAccount, TAccountPointer, TFeedType, TRelaySet, TThemeSetting } from '@/types'
 
 const DEFAULT_RELAY_SETS: TRelaySet[] = [
   {
@@ -21,6 +21,7 @@ class StorageService {
 
   private relaySets: TRelaySet[] = []
   private activeRelaySetId: string | null = null
+  private feedType: TFeedType = 'relays'
   private themeSetting: TThemeSetting = 'system'
   private accounts: TAccount[] = []
   private currentAccount: TAccount | null = null
@@ -40,6 +41,8 @@ class StorageService {
     this.accounts = accountsStr ? JSON.parse(accountsStr) : []
     const currentAccountStr = window.localStorage.getItem(StorageKey.CURRENT_ACCOUNT)
     this.currentAccount = currentAccountStr ? JSON.parse(currentAccountStr) : null
+    const feedTypeStr = window.localStorage.getItem(StorageKey.FEED_TYPE)
+    this.feedType = feedTypeStr ? JSON.parse(feedTypeStr) : 'relays'
 
     const relaySetsStr = window.localStorage.getItem(StorageKey.RELAY_SETS)
     if (!relaySetsStr) {
@@ -92,6 +95,15 @@ class StorageService {
     } else {
       window.localStorage.removeItem(StorageKey.ACTIVE_RELAY_SET_ID)
     }
+  }
+
+  getFeedType() {
+    return this.feedType
+  }
+
+  setFeedType(feedType: TFeedType) {
+    this.feedType = feedType
+    window.localStorage.setItem(StorageKey.FEED_TYPE, JSON.stringify(this.feedType))
   }
 
   getThemeSetting() {
