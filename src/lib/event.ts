@@ -215,3 +215,17 @@ export function extractImagesFromContent(content: string) {
   contentWithoutImages = contentWithoutImages.replace(/\n{3,}/g, '\n\n').trim()
   return { images, contentWithoutImages }
 }
+
+export function extractEmbeddedNotesFromContent(content: string) {
+  let c = content
+  const embeddedNotes: string[] = []
+  const embeddedNoteRegex = /nostr:(note1[a-z0-9]{58}|nevent1[a-z0-9]+|naddr1[a-z0-9]+)/g
+  ;(c.match(embeddedNoteRegex) || []).forEach((note) => {
+    c = c.replace(note, '').trim()
+    embeddedNotes.push(note)
+  })
+
+  c = c.replace(/\n{3,}/g, '\n\n').trim()
+
+  return { embeddedNotes, contentWithoutEmbeddedNotes: c }
+}

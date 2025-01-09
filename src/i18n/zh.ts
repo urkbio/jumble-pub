@@ -103,6 +103,7 @@ export default {
     'A special note for picture-first clients like Olas':
       '一种可以在图片优先客户端 (如 Olas) 中显示的特殊笔记',
     'Picture note requires images': '图片笔记需要有图片',
-    Relays: '服务器'
+    Relays: '服务器',
+    image: '图片'
   }
 }
