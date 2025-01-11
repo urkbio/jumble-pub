@@ -116,10 +116,12 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       return
     }
     if (feedType === 'temporary') {
-      if (!options.temporaryRelayUrls?.length) return
+      const urls = options.temporaryRelayUrls ?? temporaryRelayUrls
+      if (!urls.length) return
+
       setFeedType(feedType)
-      setTemporaryRelayUrls(options.temporaryRelayUrls)
-      setRelayUrls(options.temporaryRelayUrls)
+      setTemporaryRelayUrls(urls)
+      setRelayUrls(urls)
       setActiveRelaySetId(null)
       setFilter({})
       setIsReady(true)
