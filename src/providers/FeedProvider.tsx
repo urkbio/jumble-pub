@@ -6,6 +6,7 @@ import { Filter } from 'nostr-tools'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useNostr } from './NostrProvider'
 import { useRelaySets } from './RelaySetsProvider'
+import { BIG_RELAY_URLS } from '@/constants'
 
 type TFeedContext = {
   feedType: TFeedType
@@ -109,7 +110,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         client.fetchRelayList(pubkey),
         client.fetchFollowings(pubkey)
       ])
-      setRelayUrls(relayList.read.slice(0, 4))
+      setRelayUrls(relayList.read.concat(BIG_RELAY_URLS).slice(0, 4))
       setFilter({ authors: followings.includes(pubkey) ? followings : [...followings, pubkey] })
       setIsReady(true)
       storage.setFeedType(feedType)
