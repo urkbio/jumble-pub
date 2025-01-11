@@ -43,16 +43,15 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     const init = async () => {
       // temporary relay urls from query params
       const searchParams = new URLSearchParams(window.location.search)
-      const tempRelays = searchParams
+      const temporaryRelayUrls = searchParams
         .getAll('r')
         .map((url) =>
           !url.startsWith('ws://') && !url.startsWith('wss://') ? `wss://${url}` : url
         )
         .filter((url) => isWebsocketUrl(url))
         .map((url) => normalizeUrl(url))
-      if (tempRelays.length) {
-        setTemporaryRelayUrls(tempRelays)
-        return await switchFeed('temporary')
+      if (temporaryRelayUrls.length) {
+        return await switchFeed('temporary', { temporaryRelayUrls })
       }
 
       if (feedType === 'following') {
@@ -81,7 +80,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
 
   const switchFeed = async (
     feedType: TFeedType,
-    options: { activeRelaySetId?: string | null } = {}
+    options: { activeRelaySetId?: string | null; temporaryRelayUrls?: string[] | null } = {}
   ) => {
     setIsReady(false)
     if (feedType === 'relays') {
@@ -117,8 +116,10 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       return
     }
     if (feedType === 'temporary') {
+      if (!options.temporaryRelayUrls?.length) return
       setFeedType(feedType)
-      setRelayUrls(temporaryRelayUrls)
+      setTemporaryRelayUrls(options.temporaryRelayUrls)
+      setRelayUrls(options.temporaryRelayUrls)
       setActiveRelaySetId(null)
       setFilter({})
       setIsReady(true)
