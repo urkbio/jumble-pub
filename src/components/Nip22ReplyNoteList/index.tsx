@@ -1,5 +1,5 @@
 import { Separator } from '@/components/ui/separator'
-import { COMMENT_EVENT_KIND } from '@/constants'
+import { BIG_RELAY_URLS, COMMENT_EVENT_KIND } from '@/constants'
 import { tagNameEquals } from '@/lib/tag'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
@@ -63,7 +63,7 @@ export default function Nip22ReplyNoteList({
       try {
         const relayList = await client.fetchRelayList(event.pubkey)
         const { closer, timelineKey } = await client.subscribeTimeline(
-          relayList.read.slice(0, 5),
+          relayList.read.concat(BIG_RELAY_URLS).slice(0, 4),
           {
             '#E': [event.id],
             kinds: [COMMENT_EVENT_KIND],

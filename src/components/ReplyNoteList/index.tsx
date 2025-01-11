@@ -10,6 +10,7 @@ import { Event as NEvent, kinds } from 'nostr-tools'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ReplyNote from '../ReplyNote'
+import { BIG_RELAY_URLS } from '@/constants'
 
 const LIMIT = 100
 
@@ -56,7 +57,7 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
       try {
         const relayList = await client.fetchRelayList(event.pubkey)
         const { closer, timelineKey } = await client.subscribeTimeline(
-          relayList.read.slice(0, 5),
+          relayList.read.concat(BIG_RELAY_URLS).slice(0, 4),
           {
             '#e': [event.id],
             kinds: [kinds.ShortTextNote],
