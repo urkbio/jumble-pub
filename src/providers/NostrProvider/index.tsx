@@ -55,18 +55,9 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       const act = storage.getCurrentAccount() ?? accounts[0] // auto login the first account
       if (!act) return
 
-      setAccount({ pubkey: act.pubkey, signerType: act.signerType })
-
-      const pubkey = await loginWithAccountPointer(act)
-      // login failed, set account to null
-      if (!pubkey) {
-        setAccount(null)
-        return
-      }
+      await loginWithAccountPointer(act)
     }
-    init().catch(() => {
-      setAccount(null)
-    })
+    init()
   }, [])
 
   const login = (signer: ISigner, act: TAccount) => {
@@ -89,6 +80,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     if (!act) {
       storage.switchAccount(null)
       setAccount(null)
+      setSigner(null)
       return
     }
     await loginWithAccountPointer(act)
@@ -153,16 +145,6 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       }
     } else if (account.signerType === 'nip-07') {
       const nip07Signer = new Nip07Signer()
-      const pubkey = await nip07Signer.getPublicKey()
-      if (!pubkey) {
-        storage.removeAccount(account)
-        return null
-      }
-      if (pubkey !== account.pubkey) {
-        storage.removeAccount(account)
-        account = { ...account, pubkey }
-        storage.addAccount(account)
-      }
       return login(nip07Signer, account)
     } else if (account.signerType === 'bunker') {
       if (account.bunker && account.bunkerClientSecretKey) {
