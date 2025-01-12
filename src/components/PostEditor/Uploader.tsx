@@ -1,14 +1,17 @@
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
-import { ImageUp, LoaderCircle } from 'lucide-react'
+import { ImageUp, Loader, LoaderCircle, Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { z } from 'zod'
 
 export default function Uploader({
-  onUploadSuccess
+  onUploadSuccess,
+  variant = 'button'
 }: {
   onUploadSuccess: ({ url, tags }: { url: string; tags: string[][] }) => void
+  variant?: 'button' | 'big'
 }) {
   const [uploading, setUploading] = useState(false)
   const { signHttpAuth } = useNostr()
@@ -62,20 +65,46 @@ export default function Uploader({
   }
 
   const handleUploadClick = () => {
-    fileInputRef.current?.click()
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '' // clear the value so that the same file can be uploaded again
+      fileInputRef.current.click()
+    }
+  }
+
+  if (variant === 'button') {
+    return (
+      <>
+        <Button variant="secondary" onClick={handleUploadClick} disabled={uploading}>
+          {uploading ? <LoaderCircle className="animate-spin" /> : <ImageUp />}
+        </Button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+          accept="image/*,video/*,audio/*"
+        />
+      </>
+    )
   }
 
   return (
     <>
-      <Button variant="secondary" onClick={handleUploadClick} disabled={uploading}>
-        {uploading ? <LoaderCircle className="animate-spin" /> : <ImageUp />}
-      </Button>
+      <div
+        className={cn(
+          'flex flex-col gap-2 items-center justify-center aspect-square w-full rounded-lg border border-dashed',
+          uploading ? 'cursor-not-allowed text-muted-foreground' : 'clickable'
+        )}
+        onClick={handleUploadClick}
+      >
+        {uploading ? <Loader size={36} className="animate-spin" /> : <Plus size={36} />}
+      </div>
       <input
         type="file"
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileChange}
-        accept="image/*,video/*,audio/*"
+        accept="image/*"
       />
     </>
   )

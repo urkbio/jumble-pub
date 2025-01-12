@@ -4,12 +4,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { StorageKey } from '@/constants'
 import { useToast } from '@/hooks/use-toast'
-import {
-  createCommentDraftEvent,
-  createPictureNoteDraftEvent,
-  createShortTextNoteDraftEvent
-} from '@/lib/draft-event'
-import { extractImagesFromContent } from '@/lib/event'
+import { createCommentDraftEvent, createShortTextNoteDraftEvent } from '@/lib/draft-event'
 import { useNostr } from '@/providers/NostrProvider'
 import client from '@/services/client.service'
 import { ChevronDown, LoaderCircle } from 'lucide-react'
@@ -20,7 +15,7 @@ import Mentions from './Mentions'
 import Preview from './Preview'
 import Uploader from './Uploader'
 
-export default function PostContent({
+export default function NormalPostContent({
   defaultContent = '',
   parentEvent,
   close
@@ -37,18 +32,11 @@ export default function PostContent({
   const [posting, setPosting] = useState(false)
   const [showMoreOptions, setShowMoreOptions] = useState(false)
   const [addClientTag, setAddClientTag] = useState(false)
-  const [isPictureNote, setIsPictureNote] = useState(false)
-  const [hasImages, setHasImages] = useState(false)
   const canPost = !!content && !posting
 
   useEffect(() => {
     setAddClientTag(window.localStorage.getItem(StorageKey.ADD_CLIENT_TAG) === 'true')
   }, [])
-
-  useEffect(() => {
-    const { images } = extractImagesFromContent(content)
-    setHasImages(!!images && images.length > 0)
-  }, [content])
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value)
@@ -69,18 +57,13 @@ export default function PostContent({
           const relayList = await client.fetchRelayList(parentEvent.pubkey)
           additionalRelayUrls.push(...relayList.read.slice(0, 5))
         }
-        if (isPictureNote && !hasImages) {
-          throw new Error(t('Picture note requires images'))
-        }
         const draftEvent =
-          isPictureNote && !parentEvent && hasImages
-            ? await createPictureNoteDraftEvent(content, pictureInfos, { addClientTag })
-            : parentEvent && parentEvent.kind !== kinds.ShortTextNote
-              ? await createCommentDraftEvent(content, parentEvent, pictureInfos, { addClientTag })
-              : await createShortTextNoteDraftEvent(content, pictureInfos, {
-                  parentEvent,
-                  addClientTag
-                })
+          parentEvent && parentEvent.kind !== kinds.ShortTextNote
+            ? await createCommentDraftEvent(content, parentEvent, pictureInfos, { addClientTag })
+            : await createShortTextNoteDraftEvent(content, pictureInfos, {
+                parentEvent,
+                addClientTag
+              })
         await publish(draftEvent, additionalRelayUrls)
         setContent('')
         close()
@@ -177,21 +160,6 @@ export default function PostContent({
           <div className="text-muted-foreground text-xs">
             {t('Show others this was sent via Jumble')}
           </div>
-          {!parentEvent && (
-            <>
-              <div className="flex items-center space-x-2">
-                <Label htmlFor="picture-note">{t('Picture note')}</Label>
-                <Switch
-                  id="picture-note"
-                  checked={isPictureNote}
-                  onCheckedChange={setIsPictureNote}
-                />
-              </div>
-              <div className="text-muted-foreground text-xs">
-                {t('A special note for picture-first clients like Olas')}
-              </div>
-            </>
-          )}
         </div>
       )}
       <div className="flex gap-2 items-center justify-around sm:hidden">

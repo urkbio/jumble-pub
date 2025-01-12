@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { TImageInfo } from '@/types'
 import { ReactNode, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import Image from '../Image'
@@ -81,21 +82,27 @@ export default function ImageGallery({
   return (
     <div className={cn('relative w-fit max-w-full', className)}>
       {imageContent}
-      <div onClick={(e) => e.stopPropagation()}>
-        <Lightbox
-          index={index}
-          slides={images.map(({ url }) => ({ src: url }))}
-          plugins={[Zoom]}
-          open={index >= 0}
-          close={() => setIndex(-1)}
-          controller={{
-            closeOnBackdropClick: true,
-            closeOnPullUp: true,
-            closeOnPullDown: true
-          }}
-          styles={{ toolbar: { paddingTop: '2.25rem' } }}
-        />
-      </div>
+      {index >= 0 &&
+        createPortal(
+          <div onClick={(e) => e.stopPropagation()}>
+            <Lightbox
+              index={index}
+              slides={images.map(({ url }) => ({ src: url }))}
+              plugins={[Zoom]}
+              open={index >= 0}
+              close={() => setIndex(-1)}
+              controller={{
+                closeOnBackdropClick: true,
+                closeOnPullUp: true,
+                closeOnPullDown: true
+              }}
+              styles={{
+                toolbar: { paddingTop: '2.25rem' }
+              }}
+            />
+          </div>,
+          document.body
+        )}
       {isNsfw && <NsfwOverlay className="rounded-lg" />}
     </div>
   )

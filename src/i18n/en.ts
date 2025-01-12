@@ -105,6 +105,8 @@ export default {
       'A special note for picture-first clients like Olas',
     'Picture note requires images': 'Picture note requires images',
     Relays: 'Relays',
-    image: 'image'
+    image: 'image',
+    'Normal Post': 'Normal Post',
+    'Picture Post': 'Picture Post'
   }
 }

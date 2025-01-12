@@ -7,7 +7,7 @@ export default function PostButton() {
   const [open, setOpen] = useState(false)
 
   return (
-    <>
+    <div className="pt-4">
       <SidebarItem
         title="New post"
         description="Post"
@@ -16,11 +16,11 @@ export default function PostButton() {
           setOpen(true)
         }}
         variant="default"
-        className="bg-primary"
+        className="bg-primary xl:justify-center"
       >
         <PencilLine strokeWidth={3} />
       </SidebarItem>
       <PostEditor open={open} setOpen={setOpen} />
-    </>
+    </div>
   )
 }
