@@ -2,7 +2,7 @@ export default {
   translation: {
     'Welcome! 🥳': '来都来了',
     About: '关于',
-    'New post': '发布新笔记',
+    'New Note': '发布新笔记',
     Post: '发布笔记',
     Home: '主页',
     'Relay settings': '服务器设置',
@@ -106,7 +106,7 @@ export default {
     Relays: '服务器',
     image: '图片',
     Normal: '普通',
-    'Normal Post': '普通笔记',
-    'Picture Post': '图片笔记'
+    'Normal Note': '普通笔记',
+    'Picture Note': '图片笔记'
   }
 }

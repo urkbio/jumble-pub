@@ -40,8 +40,8 @@ export default function PostEditor({
     ) : (
       <Tabs defaultValue="normal" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="normal">{t('Normal Post')}</TabsTrigger>
-          <TabsTrigger value="picture">{t('Picture Post')}</TabsTrigger>
+          <TabsTrigger value="normal">{t('Normal Note')}</TabsTrigger>
+          <TabsTrigger value="picture">{t('Picture Note')}</TabsTrigger>
         </TabsList>
         <TabsContent value="normal">
           <NormalPostContent

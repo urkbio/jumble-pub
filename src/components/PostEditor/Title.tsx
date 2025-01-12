@@ -12,6 +12,6 @@ export default function Title({ parentEvent }: { parentEvent?: Event }) {
       <div className="flex-1 w-0 truncate">{parentEvent.content}</div>
     </div>
   ) : (
-    t('New post')
+    t('New Note')
   )
 }

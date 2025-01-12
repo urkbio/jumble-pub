@@ -2,7 +2,7 @@ export default {
   translation: {
     'Welcome! 🥳': 'Welcome! 🥳',
     About: 'About',
-    'New post': 'New post',
+    'New Note': 'New Note',
     Post: 'Post',
     Home: 'Home',
     'Relay settings': 'Relay settings',
@@ -106,7 +106,7 @@ export default {
     'Picture note requires images': 'Picture note requires images',
     Relays: 'Relays',
     image: 'image',
-    'Normal Post': 'Normal Post',
-    'Picture Post': 'Picture Post'
+    'Normal Note': 'Normal Note',
+    'Picture Note': 'Picture Note'
   }
 }
