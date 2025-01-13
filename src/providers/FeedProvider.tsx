@@ -57,6 +57,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       if (feedType === 'following') {
         return await switchFeed('following', { pubkey })
       } else {
+        console.log('activeRelaySetId', activeRelaySetId)
         await switchFeed('relays', { activeRelaySetId })
       }
     }

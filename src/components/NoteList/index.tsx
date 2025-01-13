@@ -122,7 +122,7 @@ export default function NoteList({
     const options = {
       root: null,
       rootMargin: '10px',
-      threshold: 1
+      threshold: 0.1
     }
 
     const observerInstance = new IntersectionObserver((entries) => {
@@ -142,7 +142,7 @@ export default function NoteList({
         observerInstance.unobserve(currentBottomRef)
       }
     }
-  }, [refreshing, hasMore, events, timelineKey])
+  }, [refreshing, hasMore, events, timelineKey, bottomRef])
 
   const loadMore = async () => {
     if (!timelineKey || refreshing) return

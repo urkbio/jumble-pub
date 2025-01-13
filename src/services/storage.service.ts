@@ -91,7 +91,8 @@ class StorageService {
       this.activeRelaySetId = activeRelaySetId
     } else {
       this.relaySets = JSON.parse(relaySetsStr)
-      this.activeRelaySetId = window.localStorage.getItem(StorageKey.ACTIVE_RELAY_SET_ID) ?? null
+      const activeRelaySetIdStr = window.localStorage.getItem(StorageKey.ACTIVE_RELAY_SET_ID)
+      this.activeRelaySetId = activeRelaySetIdStr ? JSON.parse(activeRelaySetIdStr) : null
     }
   }
 

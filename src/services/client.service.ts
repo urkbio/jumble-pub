@@ -4,7 +4,7 @@ import {
   getProfileFromProfileEvent,
   getRelayListFromRelayListEvent
 } from '@/lib/event'
-import { userIdToPubkey } from '@/lib/pubkey'
+import { formatPubkey, userIdToPubkey } from '@/lib/pubkey'
 import { TDraftEvent, TProfile, TRelayInfo, TRelayList } from '@/types'
 import { sha256 } from '@noble/hashes/sha2'
 import DataLoader from 'dataloader'
@@ -393,7 +393,7 @@ class ClientService extends EventTarget {
 
     try {
       const pubkey = userIdToPubkey(id)
-      return { pubkey, username: pubkey }
+      return { pubkey, username: formatPubkey(pubkey) }
     } catch {
       return undefined
     }
