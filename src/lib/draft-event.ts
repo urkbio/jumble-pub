@@ -111,12 +111,12 @@ export async function createPictureNoteDraftEvent(
 ): Promise<TDraftEvent> {
   const { pubkeys, quoteEventIds } = await extractMentions(content)
   const hashtags = extractHashtags(content)
-  const { images, contentWithoutImages } = extractImagesFromContent(content)
-  if (!images || !images.length) {
+  if (!pictureInfos.length) {
     throw new Error('No images found in content')
   }
 
-  const tags = generateImetaTags(images, pictureInfos)
+  const tags = pictureInfos
+    .map((info) => ['imeta', ...info.tags.map(([n, v]) => `${n} ${v}`)])
     .concat(pubkeys.map((pubkey) => ['p', pubkey]))
     .concat(quoteEventIds.map((eventId) => ['q', eventId]))
     .concat(hashtags.map((hashtag) => ['t', hashtag]))
@@ -127,7 +127,7 @@ export async function createPictureNoteDraftEvent(
 
   return {
     kind: PICTURE_EVENT_KIND,
-    content: contentWithoutImages,
+    content,
     tags,
     created_at: dayjs().unix()
   }
