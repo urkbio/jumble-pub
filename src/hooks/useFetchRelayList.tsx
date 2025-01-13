@@ -1,6 +1,6 @@
+import client from '@/services/client.service'
 import { TRelayList } from '@/types'
 import { useEffect, useState } from 'react'
-import client from '@/services/client.service'
 
 export function useFetchRelayList(pubkey?: string | null) {
   const [relayList, setRelayList] = useState<TRelayList>({ write: [], read: [] })

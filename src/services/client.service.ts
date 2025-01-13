@@ -606,7 +606,9 @@ class ClientService extends EventTarget {
     return pubkeys.map((pubkey) => {
       const event = eventsMap.get(pubkey)
       const relayList = { write: [], read: [] } as TRelayList
-      if (!event) return relayList
+      if (!event) {
+        return { write: BIG_RELAY_URLS, read: BIG_RELAY_URLS }
+      }
 
       event.tags.filter(tagNameEquals('r')).forEach(([, url, type]) => {
         if (!url || !isWebsocketUrl(url)) return
@@ -625,8 +627,8 @@ class ClientService extends EventTarget {
         }
       })
       return {
-        write: relayList.write.slice(0, 10),
-        read: relayList.read.slice(0, 10)
+        write: relayList.write.length ? relayList.write.slice(0, 10) : BIG_RELAY_URLS,
+        read: relayList.read.length ? relayList.read.slice(0, 10) : BIG_RELAY_URLS
       }
     })
   }

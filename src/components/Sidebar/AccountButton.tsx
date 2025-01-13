@@ -6,7 +6,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { useFetchProfile } from '@/hooks'
 import { toProfile } from '@/lib/link'
 import { formatPubkey, generateImageByPubkey } from '@/lib/pubkey'
 import { useSecondaryPage } from '@/PageManager'
@@ -30,9 +29,8 @@ export default function AccountButton() {
 
 function ProfileButton() {
   const { t } = useTranslation()
-  const { account } = useNostr()
+  const { account, profile } = useNostr()
   const pubkey = account?.pubkey
-  const { profile } = useFetchProfile(pubkey)
   const { push } = useSecondaryPage()
   const [loginDialogOpen, setLoginDialogOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)

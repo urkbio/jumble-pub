@@ -25,6 +25,7 @@ export default function RelaySetsSetting() {
   const saveRelaySet = () => {
     if (!newRelaySetName) return
     addRelaySet(newRelaySetName)
+    setNewRelaySetName('')
   }
 
   const handleNewRelaySetNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

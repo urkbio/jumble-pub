@@ -1,5 +1,6 @@
 import { COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
 import { useFetchEvent } from '@/hooks'
+import { extractEmbeddedNotesFromContent, extractImagesFromContent } from '@/lib/event'
 import { toNote } from '@/lib/link'
 import { tagNameEquals } from '@/lib/tag'
 import { useSecondaryPage } from '@/PageManager'
@@ -11,16 +12,15 @@ import { Event, kinds, nip19, validateEvent } from 'nostr-tools'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PullToRefresh from 'react-simple-pull-to-refresh'
+import { embedded, embeddedNostrNpubRenderer, embeddedNostrProfileRenderer } from '../Embedded'
 import { FormattedTimestamp } from '../FormattedTimestamp'
 import UserAvatar from '../UserAvatar'
-import { embedded, embeddedNostrNpubRenderer, embeddedNostrProfileRenderer } from '../Embedded'
-import { extractEmbeddedNotesFromContent, extractImagesFromContent } from '@/lib/event'
 
 const LIMIT = 100
 
 export default function NotificationList() {
   const { t } = useTranslation()
-  const { pubkey } = useNostr()
+  const { pubkey, relayList } = useNostr()
   const [refreshCount, setRefreshCount] = useState(0)
   const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
   const [refreshing, setRefreshing] = useState(true)
@@ -29,14 +29,13 @@ export default function NotificationList() {
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (!pubkey) {
+    if (!pubkey || !relayList) {
       setUntil(undefined)
       return
     }
 
     const init = async () => {
       setRefreshing(true)
-      const relayList = await client.fetchRelayList(pubkey)
       let eventCount = 0
       const { closer, timelineKey } = await client.subscribeTimeline(
         relayList.read.length >= 4
@@ -71,7 +70,7 @@ export default function NotificationList() {
     return () => {
       promise.then((closer) => closer?.())
     }
-  }, [pubkey, refreshCount])
+  }, [pubkey, refreshCount, relayList])
 
   useEffect(() => {
     if (refreshing) return

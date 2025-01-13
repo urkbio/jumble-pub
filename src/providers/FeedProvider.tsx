@@ -1,12 +1,11 @@
+import { BIG_RELAY_URLS } from '@/constants'
 import { isWebsocketUrl, normalizeUrl } from '@/lib/url'
-import client from '@/services/client.service'
 import storage from '@/services/storage.service'
 import { TFeedType } from '@/types'
 import { Filter } from 'nostr-tools'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useNostr } from './NostrProvider'
 import { useRelaySets } from './RelaySetsProvider'
-import { BIG_RELAY_URLS } from '@/constants'
 
 type TFeedContext = {
   feedType: TFeedType
@@ -29,7 +28,7 @@ export const useFeed = () => {
 }
 
 export function FeedProvider({ children }: { children: React.ReactNode }) {
-  const { pubkey } = useNostr()
+  const { pubkey, getRelayList, getFollowings } = useNostr()
   const { relaySets } = useRelaySets()
   const [feedType, setFeedType] = useState<TFeedType>(storage.getFeedType())
   const [relayUrls, setRelayUrls] = useState<string[]>([])
@@ -46,11 +45,8 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       const searchParams = new URLSearchParams(window.location.search)
       const temporaryRelayUrls = searchParams
         .getAll('r')
-        .map((url) =>
-          !url.startsWith('ws://') && !url.startsWith('wss://') ? `wss://${url}` : url
-        )
-        .filter((url) => isWebsocketUrl(url))
         .map((url) => normalizeUrl(url))
+        .filter((url) => isWebsocketUrl(url))
       if (temporaryRelayUrls.length) {
         return await switchFeed('temporary', { temporaryRelayUrls })
       }
@@ -65,10 +61,10 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (feedType !== 'following') return
+    if (!isReady || feedType !== 'following') return
 
     switchFeed('following')
-  }, [pubkey])
+  }, [pubkey, feedType, isReady])
 
   useEffect(() => {
     if (feedType !== 'relays') return
@@ -86,7 +82,9 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     setIsReady(false)
     if (feedType === 'relays') {
       const relaySetId = options.activeRelaySetId ?? (relaySets.length > 0 ? relaySets[0].id : null)
-      if (!relaySetId) return
+      if (!relaySetId) {
+        return setIsReady(true)
+      }
 
       const relaySet =
         relaySets.find((set) => set.id === options.activeRelaySetId) ??
@@ -96,37 +94,35 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         setRelayUrls(relaySet.relayUrls)
         setActiveRelaySetId(relaySet.id)
         setFilter({})
-        setIsReady(true)
         storage.setActiveRelaySetId(relaySet.id)
         storage.setFeedType(feedType)
       }
-      return
+      return setIsReady(true)
     }
     if (feedType === 'following') {
-      if (!pubkey) return
+      if (!pubkey) {
+        return setIsReady(true)
+      }
       setFeedType(feedType)
       setActiveRelaySetId(null)
-      const [relayList, followings] = await Promise.all([
-        client.fetchRelayList(pubkey),
-        client.fetchFollowings(pubkey)
-      ])
+      const [relayList, followings] = await Promise.all([getRelayList(), getFollowings()])
       setRelayUrls(relayList.read.concat(BIG_RELAY_URLS).slice(0, 4))
       setFilter({ authors: followings.includes(pubkey) ? followings : [...followings, pubkey] })
-      setIsReady(true)
       storage.setFeedType(feedType)
-      return
+      return setIsReady(true)
     }
     if (feedType === 'temporary') {
       const urls = options.temporaryRelayUrls ?? temporaryRelayUrls
-      if (!urls.length) return
+      if (!urls.length) {
+        return setIsReady(true)
+      }
 
       setFeedType(feedType)
       setTemporaryRelayUrls(urls)
       setRelayUrls(urls)
       setActiveRelaySetId(null)
       setFilter({})
-      setIsReady(true)
-      return
+      return setIsReady(true)
     }
     setIsReady(true)
   }

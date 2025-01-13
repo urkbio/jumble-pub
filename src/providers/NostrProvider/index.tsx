@@ -1,9 +1,9 @@
 import LoginDialog from '@/components/LoginDialog'
-import { useFetchFollowings, useToast } from '@/hooks'
-import { useFetchRelayList } from '@/hooks/useFetchRelayList'
+import { BIG_RELAY_URLS } from '@/constants'
+import { useToast } from '@/hooks'
 import client from '@/services/client.service'
 import storage from '@/services/storage.service'
-import { ISigner, TAccount, TAccountPointer, TDraftEvent, TRelayList } from '@/types'
+import { ISigner, TAccount, TAccountPointer, TDraftEvent, TProfile, TRelayList } from '@/types'
 import dayjs from 'dayjs'
 import { Event, kinds } from 'nostr-tools'
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -13,6 +13,7 @@ import { NsecSigner } from './nsec.signer'
 
 type TNostrContext = {
   pubkey: string | null
+  profile: TProfile | null
   relayList: TRelayList | null
   followings: string[] | null
   account: TAccountPointer | null
@@ -29,6 +30,10 @@ type TNostrContext = {
   signHttpAuth: (url: string, method: string) => Promise<string>
   signEvent: (draftEvent: TDraftEvent) => Promise<Event>
   checkLogin: <T>(cb?: () => T) => Promise<T | void>
+  getRelayList: () => Promise<TRelayList>
+  updateRelayList: (relayList: TRelayList) => void
+  getFollowings: () => Promise<string[]>
+  updateFollowings: (followings: string[]) => void
 }
 
 const NostrContext = createContext<TNostrContext | undefined>(undefined)
@@ -46,8 +51,9 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [account, setAccount] = useState<TAccountPointer | null>(null)
   const [signer, setSigner] = useState<ISigner | null>(null)
   const [openLoginDialog, setOpenLoginDialog] = useState(false)
-  const { relayList, isFetching: isFetchingRelayList } = useFetchRelayList(account?.pubkey)
-  const { followings, isFetching: isFetchingFollowings } = useFetchFollowings(account?.pubkey)
+  const [profile, setProfile] = useState<TProfile | null>(null)
+  const [relayList, setRelayList] = useState<TRelayList | null>(null)
+  const [followings, setFollowings] = useState<string[] | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -59,6 +65,40 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     }
     init()
   }, [])
+
+  useEffect(() => {
+    if (!account) {
+      setRelayList(null)
+      return
+    }
+
+    const storedRelayList = storage.getAccountRelayList(account.pubkey)
+    if (storedRelayList) {
+      setRelayList(storedRelayList)
+    }
+    const followings = storage.getAccountFollowings(account.pubkey)
+    if (followings) {
+      setFollowings(followings)
+    }
+    const profile = storage.getAccountProfile(account.pubkey)
+    if (profile) {
+      setProfile(profile)
+    }
+    client.fetchRelayList(account.pubkey).then((relayList) => {
+      setRelayList(relayList)
+      storage.setAccountRelayList(account.pubkey, relayList)
+    })
+    client.fetchFollowings(account.pubkey).then((followings) => {
+      setFollowings(followings)
+      storage.setAccountFollowings(account.pubkey, followings)
+    })
+    client.fetchProfile(account.pubkey).then((profile) => {
+      if (profile) {
+        setProfile(profile)
+        storage.setAccountProfile(account.pubkey, profile)
+      }
+    })
+  }, [account])
 
   const login = (signer: ISigner, act: TAccount) => {
     storage.addAccount(act)
@@ -176,7 +216,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
   const publish = async (draftEvent: TDraftEvent, additionalRelayUrls: string[] = []) => {
     const event = await signEvent(draftEvent)
-    await client.publishEvent(relayList.write.concat(additionalRelayUrls), event)
+    await client.publishEvent((relayList?.write ?? []).concat(additionalRelayUrls), event)
     return event
   }
 
@@ -200,12 +240,53 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     return setOpenLoginDialog(true)
   }
 
+  const getRelayList = async () => {
+    if (!account) {
+      return { write: BIG_RELAY_URLS, read: BIG_RELAY_URLS }
+    }
+
+    const storedRelayList = storage.getAccountRelayList(account.pubkey)
+    if (storedRelayList) {
+      return storedRelayList
+    }
+    return await client.fetchRelayList(account.pubkey)
+  }
+
+  const updateRelayList = (relayList: TRelayList) => {
+    if (!account) {
+      return
+    }
+    setRelayList(relayList)
+    storage.setAccountRelayList(account.pubkey, relayList)
+  }
+
+  const getFollowings = async () => {
+    if (!account) {
+      return []
+    }
+
+    const followings = storage.getAccountFollowings(account.pubkey)
+    if (followings) {
+      return followings
+    }
+    return await client.fetchFollowings(account.pubkey)
+  }
+
+  const updateFollowings = (followings: string[]) => {
+    if (!account) {
+      return
+    }
+    setFollowings(followings)
+    storage.setAccountFollowings(account.pubkey, followings)
+  }
+
   return (
     <NostrContext.Provider
       value={{
         pubkey: account?.pubkey ?? null,
-        relayList: isFetchingRelayList ? null : relayList,
-        followings: isFetchingFollowings ? null : followings,
+        profile,
+        relayList,
+        followings,
         account,
         accounts: storage
           .getAccounts()
@@ -218,7 +299,11 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         publish,
         signHttpAuth,
         checkLogin,
-        signEvent
+        signEvent,
+        getRelayList,
+        updateRelayList,
+        getFollowings,
+        updateFollowings
       }}
     >
       {children}

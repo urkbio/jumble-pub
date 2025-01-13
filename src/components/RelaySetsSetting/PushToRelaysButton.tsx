@@ -5,9 +5,11 @@ import { useNostr } from '@/providers/NostrProvider'
 import { useRelaySets } from '@/providers/RelaySetsProvider'
 import { CloudUpload, Loader } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRelaySetsSettingComponent } from './provider'
 
 export default function PushToRelaysButton() {
+  const { t } = useTranslation()
   const { toast } = useToast()
   const { pubkey, publish } = useNostr()
   const { relaySets } = useRelaySets()
@@ -22,8 +24,8 @@ export default function PushToRelaysButton() {
     const draftEvents = selectedRelaySets.map((relaySet) => createRelaySetDraftEvent(relaySet))
     await Promise.allSettled(draftEvents.map((event) => publish(event)))
     toast({
-      title: 'Push Successful',
-      description: 'Successfully pushed relay sets to relays'
+      title: t('Push Successful'),
+      description: t('Successfully pushed relay sets to relays')
     })
     setPushing(false)
   }
@@ -36,7 +38,7 @@ export default function PushToRelaysButton() {
       onClick={push}
     >
       <CloudUpload />
-      Push to relays
+      {t('Push to relays')}
       {pushing && <Loader className="animate-spin" />}
     </Button>
   )

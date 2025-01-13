@@ -1,7 +1,15 @@
 import { StorageKey } from '@/constants'
 import { isSameAccount } from '@/lib/account'
 import { randomString } from '@/lib/random'
-import { TAccount, TAccountPointer, TFeedType, TRelaySet, TThemeSetting } from '@/types'
+import {
+  TAccount,
+  TAccountPointer,
+  TFeedType,
+  TProfile,
+  TRelayList,
+  TRelaySet,
+  TThemeSetting
+} from '@/types'
 
 const DEFAULT_RELAY_SETS: TRelaySet[] = [
   {
@@ -25,6 +33,9 @@ class StorageService {
   private themeSetting: TThemeSetting = 'system'
   private accounts: TAccount[] = []
   private currentAccount: TAccount | null = null
+  private accountRelayListMap: Record<string, TRelayList | undefined> = {} // pubkey -> relayList
+  private accountFollowingsMap: Record<string, string[] | undefined> = {} // pubkey -> followings
+  private accountProfileMap: Record<string, TProfile> = {} // pubkey -> profile
 
   constructor() {
     if (!StorageService.instance) {
@@ -43,6 +54,12 @@ class StorageService {
     this.currentAccount = currentAccountStr ? JSON.parse(currentAccountStr) : null
     const feedTypeStr = window.localStorage.getItem(StorageKey.FEED_TYPE)
     this.feedType = feedTypeStr ? JSON.parse(feedTypeStr) : 'relays'
+    const accountRelayListMapStr = window.localStorage.getItem(StorageKey.ACCOUNT_RELAY_LIST_MAP)
+    this.accountRelayListMap = accountRelayListMapStr ? JSON.parse(accountRelayListMapStr) : {}
+    const accountFollowingsMapStr = window.localStorage.getItem(StorageKey.ACCOUNT_FOLLOWINGS_MAP)
+    this.accountFollowingsMap = accountFollowingsMapStr ? JSON.parse(accountFollowingsMapStr) : {}
+    const accountProfileMapStr = window.localStorage.getItem(StorageKey.ACCOUNT_PROFILE_MAP)
+    this.accountProfileMap = accountProfileMapStr ? JSON.parse(accountProfileMapStr) : {}
 
     const relaySetsStr = window.localStorage.getItem(StorageKey.RELAY_SETS)
     if (!relaySetsStr) {
@@ -138,7 +155,22 @@ class StorageService {
 
   removeAccount(account: TAccount) {
     this.accounts = this.accounts.filter((act) => !isSameAccount(act, account))
+    delete this.accountFollowingsMap[account.pubkey]
+    delete this.accountRelayListMap[account.pubkey]
+    delete this.accountProfileMap[account.pubkey]
     window.localStorage.setItem(StorageKey.ACCOUNTS, JSON.stringify(this.accounts))
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_FOLLOWINGS_MAP,
+      JSON.stringify(this.accountFollowingsMap)
+    )
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_RELAY_LIST_MAP,
+      JSON.stringify(this.accountRelayListMap)
+    )
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_PROFILE_MAP,
+      JSON.stringify(this.accountProfileMap)
+    )
   }
 
   switchAccount(account: TAccount | null) {
@@ -151,6 +183,42 @@ class StorageService {
     }
     this.currentAccount = act
     window.localStorage.setItem(StorageKey.CURRENT_ACCOUNT, JSON.stringify(act))
+  }
+
+  getAccountRelayList(pubkey: string) {
+    return this.accountRelayListMap[pubkey]
+  }
+
+  setAccountRelayList(pubkey: string, relayList: TRelayList) {
+    this.accountRelayListMap[pubkey] = relayList
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_RELAY_LIST_MAP,
+      JSON.stringify(this.accountRelayListMap)
+    )
+  }
+
+  getAccountFollowings(pubkey: string) {
+    return this.accountFollowingsMap[pubkey]
+  }
+
+  setAccountFollowings(pubkey: string, followings: string[]) {
+    this.accountFollowingsMap[pubkey] = followings
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_FOLLOWINGS_MAP,
+      JSON.stringify(this.accountFollowingsMap)
+    )
+  }
+
+  getAccountProfile(pubkey: string) {
+    return this.accountProfileMap[pubkey]
+  }
+
+  setAccountProfile(pubkey: string, profile: TProfile) {
+    this.accountProfileMap[pubkey] = profile
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_PROFILE_MAP,
+      JSON.stringify(this.accountProfileMap)
+    )
   }
 }
 

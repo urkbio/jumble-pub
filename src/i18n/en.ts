@@ -107,6 +107,26 @@ export default {
     Relays: 'Relays',
     image: 'image',
     'Normal Note': 'Normal Note',
-    'Picture Note': 'Picture Note'
+    'Picture Note': 'Picture Note',
+    'R & W': 'R & W',
+    Read: 'Read',
+    Write: 'Write',
+    'Push to relays': 'Push to relays',
+    'Push Successful': 'Push Successful',
+    'Successfully pushed relay sets to relays': 'Successfully pushed relay sets to relays',
+    'Pull from relays': 'Pull from relays',
+    'Select the relay sets you want to pull': 'Select the relay sets you want to pull',
+    'No relay sets found': 'No relay sets found',
+    'Pull n relay sets': 'Pull {{n}} relay sets',
+    Pull: 'Pull',
+    'Select all': 'Select all',
+    'Relay Sets': 'Relay Sets',
+    'Read & Write Relays': 'Read & Write Relays',
+    'read relays description':
+      'Read relays are used to seek events about you. Other users will publish the events they want you to see to your read relays.',
+    'write relays description':
+      'Write relays are used to publish your events. Other users will seek your events from your write relays.',
+    'read & write relays notice':
+      'The number of read and write servers should ideally be kept between 2 and 4.'
   }
 }

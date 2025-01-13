@@ -26,9 +26,11 @@ import { TRelaySet } from '@/types'
 import { CloudDownload } from 'lucide-react'
 import { kinds } from 'nostr-tools'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import RelaySetCard from '../RelaySetCard'
 
 export default function PullFromRelaysButton() {
+  const { t } = useTranslation()
   const { pubkey } = useNostr()
   const { isSmallScreen } = useScreenSize()
   const [open, setOpen] = useState(false)
@@ -36,7 +38,7 @@ export default function PullFromRelaysButton() {
   const trigger = (
     <Button variant="secondary" className="w-full" disabled={!pubkey}>
       <CloudDownload />
-      Pull from relays
+      {t('Pull from relays')}
     </Button>
   )
 
@@ -47,7 +49,7 @@ export default function PullFromRelaysButton() {
         <DrawerContent className="max-h-[90vh]">
           <div className="flex flex-col p-4 gap-4 overflow-auto">
             <DrawerHeader>
-              <DrawerTitle>Select the relay sets you want to pull</DrawerTitle>
+              <DrawerTitle>{t('Select the relay sets you want to pull')}</DrawerTitle>
               <DrawerDescription className="hidden" />
             </DrawerHeader>
             <RemoteRelaySets close={() => setOpen(false)} />
@@ -62,7 +64,7 @@ export default function PullFromRelaysButton() {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>Select the relay sets you want to pull</DialogTitle>
+          <DialogTitle>{t('Select the relay sets you want to pull')}</DialogTitle>
           <DialogDescription className="hidden" />
         </DialogHeader>
         <RemoteRelaySets close={() => setOpen(false)} />
@@ -72,6 +74,7 @@ export default function PullFromRelaysButton() {
 }
 
 function RemoteRelaySets({ close }: { close?: () => void }) {
+  const { t } = useTranslation()
   const { pubkey, relayList } = useNostr()
   const { mergeRelaySets } = useRelaySets()
   const [initialed, setInitialed] = useState(false)
@@ -117,9 +120,9 @@ function RemoteRelaySets({ close }: { close?: () => void }) {
   }, [pubkey])
 
   if (!pubkey) return null
-  if (!initialed) return <div className="text-center text-muted-foreground">Loading...</div>
+  if (!initialed) return <div className="text-center text-muted-foreground">{t('loading...')}</div>
   if (!relaySets.length) {
-    return <div className="text-center text-muted-foreground">No relay sets found</div>
+    return <div className="text-center text-muted-foreground">{t('No relay sets found')}</div>
   }
 
   return (
@@ -146,7 +149,7 @@ function RemoteRelaySets({ close }: { close?: () => void }) {
           variant="secondary"
           onClick={() => setSelectedRelaySetIds(relaySets.map((r) => r.id))}
         >
-          All
+          {t('Select all')}
         </Button>
         <Button
           className="w-full"
@@ -159,8 +162,8 @@ function RemoteRelaySets({ close }: { close?: () => void }) {
           }}
         >
           {selectedRelaySetIds.length > 0
-            ? `Pull ${selectedRelaySetIds.length} relay sets`
-            : 'Pull'}
+            ? t('Pull n relay sets', { n: selectedRelaySetIds.length })
+            : t('Pull')}
         </Button>
       </div>
     </div>

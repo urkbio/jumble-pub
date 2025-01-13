@@ -107,6 +107,26 @@ export default {
     image: '图片',
     Normal: '普通',
     'Normal Note': '普通笔记',
-    'Picture Note': '图片笔记'
+    'Picture Note': '图片笔记',
+    'R & W': '读写',
+    Read: '只读',
+    Write: '只写',
+    'Push to relays': '保存到服务器',
+    'Push Successful': '保存成功',
+    'Successfully pushed relay sets to relays': '成功保存到服务器',
+    'Pull from relays': '从服务器拉取',
+    'Select the relay sets you want to pull': '选择要拉取的服务器组',
+    'No relay sets found': '未找到服务器组',
+    'Pull n relay sets': '拉取 {{n}} 个服务器组',
+    Pull: '拉取',
+    'Select all': '全选',
+    'Relay Sets': '服务器组',
+    Mailbox: '邮箱',
+    'Read & Write Relays': '读写服务器',
+    'read relays description':
+      '读服务器用于寻找与您有关的事件。其他用户会将想要你看到的事件发布到您的读服务器。',
+    'write relays description':
+      '写服务器用于发布您的事件。其他用户会从您的写服务器寻找您发布的事件。',
+    'read & write relays notice': '读服务器和写服务器的数量都应尽量保持在 2 到 4 个之间。'
   }
 }

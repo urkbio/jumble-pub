@@ -25,7 +25,7 @@ export const useFollowList = () => {
 }
 
 export function FollowListProvider({ children }: { children: React.ReactNode }) {
-  const { pubkey: accountPubkey, publish } = useNostr()
+  const { pubkey: accountPubkey, publish, updateFollowings } = useNostr()
   const [followListEvent, setFollowListEvent] = useState<Event | undefined>(undefined)
   const [isFetching, setIsFetching] = useState(true)
   const followings = useMemo(() => {
@@ -65,6 +65,7 @@ export function FollowListProvider({ children }: { children: React.ReactNode }) 
     }
     const newFollowListEvent = await publish(newFollowListDraftEvent)
     client.updateFollowListCache(accountPubkey, newFollowListEvent)
+    updateFollowings([...followings, pubkey])
     setFollowListEvent(newFollowListEvent)
   }
 
@@ -81,6 +82,7 @@ export function FollowListProvider({ children }: { children: React.ReactNode }) 
     }
     const newFollowListEvent = await publish(newFollowListDraftEvent)
     client.updateFollowListCache(accountPubkey, newFollowListEvent)
+    updateFollowings(followings.filter((followPubkey) => followPubkey !== pubkey))
     setFollowListEvent(newFollowListEvent)
   }
 
