@@ -32,7 +32,7 @@ export default function NoteList({
   const { t } = useTranslation()
   const { isSmallScreen } = useScreenSize()
   const { signEvent, checkLogin } = useNostr()
-  const { isFetching: isFetchingRelayInfo, areAlgoRelays } = useFetchRelayInfos([...relayUrls])
+  const { areAlgoRelays } = useFetchRelayInfos([...relayUrls])
   const [refreshCount, setRefreshCount] = useState(0)
   const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
   const [events, setEvents] = useState<Event[]>([])
@@ -58,7 +58,7 @@ export default function NoteList({
   }, [JSON.stringify(filter), areAlgoRelays, isPictures])
 
   useEffect(() => {
-    if (isFetchingRelayInfo || relayUrls.length === 0) return
+    if (relayUrls.length === 0) return
 
     async function init() {
       setRefreshing(true)
@@ -108,13 +108,7 @@ export default function NoteList({
     return () => {
       promise.then((closer) => closer())
     }
-  }, [
-    JSON.stringify(relayUrls),
-    JSON.stringify(noteFilter),
-    isFetchingRelayInfo,
-    areAlgoRelays,
-    refreshCount
-  ])
+  }, [JSON.stringify(relayUrls), noteFilter, areAlgoRelays, refreshCount])
 
   useEffect(() => {
     if (refreshing) return

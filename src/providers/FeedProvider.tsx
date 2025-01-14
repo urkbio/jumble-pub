@@ -55,21 +55,15 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (feedType === 'following') {
+        if (!pubkey) return
         return await switchFeed('following', { pubkey })
       } else {
-        console.log('activeRelaySetId', activeRelaySetId)
         await switchFeed('relays', { activeRelaySetId })
       }
     }
 
     init()
-  }, [])
-
-  useEffect(() => {
-    if (pubkey && feedType === 'following') {
-      switchFeed('following', { pubkey })
-    }
-  }, [feedType, pubkey])
+  }, [pubkey])
 
   const switchFeed = async (
     feedType: TFeedType,
