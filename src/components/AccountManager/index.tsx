@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import AccountList from '../AccountList'
 import BunkerLogin from './BunkerLogin'
-import PrivateKeyLogin from './NsecLogin'
+import PrivateKeyLogin from './PrivateKeyLogin'
 import GenerateNewAccount from './GenerateNewAccount'
 
 type TAccountManagerPage = 'nsec' | 'bunker' | 'generate' | null

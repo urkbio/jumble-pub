@@ -5,14 +5,20 @@ export class NsecSigner implements ISigner {
   private privkey: Uint8Array | null = null
   private pubkey: string | null = null
 
-  login(nsec: string) {
-    const { type, data } = nip19.decode(nsec)
-    if (type !== 'nsec') {
-      throw new Error('invalid nsec')
+  login(nsecOrPrivkey: string | Uint8Array) {
+    let privkey
+    if (typeof nsecOrPrivkey === 'string') {
+      const { type, data } = nip19.decode(nsecOrPrivkey)
+      if (type !== 'nsec') {
+        throw new Error('invalid nsec')
+      }
+      privkey = data
+    } else {
+      privkey = nsecOrPrivkey
     }
 
-    this.privkey = data
-    this.pubkey = nGetPublicKey(data)
+    this.privkey = privkey
+    this.pubkey = nGetPublicKey(privkey)
     return this.pubkey
   }
 

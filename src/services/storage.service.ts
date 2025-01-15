@@ -156,6 +156,13 @@ class StorageService {
     return account?.nsec
   }
 
+  getAccountNcryptsec(pubkey: string) {
+    const account = this.accounts.find(
+      (act) => act.pubkey === pubkey && act.signerType === 'ncryptsec'
+    )
+    return account?.ncryptsec
+  }
+
   addAccount(account: TAccount) {
     if (this.accounts.find((act) => isSameAccount(act, account))) {
       return

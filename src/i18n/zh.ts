@@ -138,6 +138,11 @@ export default {
     Bio: '简介',
     'Nostr Address (NIP-05)': 'Nostr 地址 (NIP-05)',
     'Invalid NIP-05 address': '无效的 NIP-05 地址',
-    'Copy private key (nsec)': '复制私钥 (nsec)'
+    'Copy private key': '复制私钥',
+    'Enter the password to decrypt your ncryptsec': '输入密码以解密您的 ncryptsec',
+    Back: '返回',
+    'password (optional): encrypt nsec': '密码 (可选): 加密 nsec',
+    'optional: encrypt nsec': '可选: 加密 nsec',
+    password: '密码'
   }
 }

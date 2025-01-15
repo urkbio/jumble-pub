@@ -138,6 +138,10 @@ export default {
     Bio: 'Bio',
     'Nostr Address (NIP-05)': 'Nostr Address (NIP-05)',
     'Invalid NIP-05 address': 'Invalid NIP-05 address',
-    'Copy private key (nsec)': 'Copy private key (nsec)'
+    'Copy private key': 'Copy private key',
+    'Enter the password to decrypt your ncryptsec': 'Enter the password to decrypt your ncryptsec',
+    Back: 'Back',
+    'optional: encrypt nsec': 'optional: encrypt nsec',
+    password: 'password'
   }
 }

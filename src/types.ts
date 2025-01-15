@@ -53,11 +53,12 @@ export interface ISigner {
   signEvent: (draftEvent: TDraftEvent) => Promise<Event | null>
 }
 
-export type TSignerType = 'nsec' | 'nip-07' | 'bunker' | 'browser-nsec'
+export type TSignerType = 'nsec' | 'nip-07' | 'bunker' | 'browser-nsec' | 'ncryptsec'
 
 export type TAccount = {
   pubkey: string
   signerType: TSignerType
+  ncryptsec?: string
   nsec?: string
   bunker?: string
   bunkerClientSecretKey?: string

@@ -12,10 +12,13 @@ import storage from '@/services/storage.service'
 import { ISigner, TAccount, TAccountPointer, TDraftEvent, TProfile, TRelayList } from '@/types'
 import dayjs from 'dayjs'
 import { Event, kinds } from 'nostr-tools'
+import * as nip19 from 'nostr-tools/nip19'
+import * as nip49 from 'nostr-tools/nip49'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { BunkerSigner } from './bunker.signer'
 import { Nip07Signer } from './nip-07.signer'
 import { NsecSigner } from './nsec.signer'
+import { useTranslation } from 'react-i18next'
 
 type TNostrContext = {
   pubkey: string | null
@@ -26,8 +29,10 @@ type TNostrContext = {
   account: TAccountPointer | null
   accounts: TAccountPointer[]
   nsec: string | null
+  ncryptsec: string | null
   switchAccount: (account: TAccountPointer | null) => Promise<void>
-  nsecLogin: (nsec: string) => Promise<string>
+  nsecLogin: (nsec: string, password?: string) => Promise<string>
+  ncryptsecLogin: (ncryptsec: string) => Promise<string>
   nip07Login: () => Promise<string>
   bunkerLogin: (bunker: string) => Promise<string>
   removeAccount: (account: TAccountPointer) => void
@@ -56,9 +61,11 @@ export const useNostr = () => {
 }
 
 export function NostrProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation()
   const { toast } = useToast()
   const [account, setAccount] = useState<TAccountPointer | null>(null)
   const [nsec, setNsec] = useState<string | null>(null)
+  const [ncryptsec, setNcryptsec] = useState<string | null>(null)
   const [signer, setSigner] = useState<ISigner | null>(null)
   const [openLoginDialog, setOpenLoginDialog] = useState(false)
   const [profile, setProfile] = useState<TProfile | null>(null)
@@ -90,6 +97,14 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     const storedNsec = storage.getAccountNsec(account.pubkey)
     if (storedNsec) {
       setNsec(storedNsec)
+    } else {
+      setNsec(null)
+    }
+    const storedNcryptsec = storage.getAccountNcryptsec(account.pubkey)
+    if (storedNcryptsec) {
+      setNcryptsec(storedNcryptsec)
+    } else {
+      setNcryptsec(null)
     }
     const storedRelayListEvent = storage.getAccountRelayListEvent(account.pubkey)
     if (storedRelayListEvent) {
@@ -171,10 +186,29 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     await loginWithAccountPointer(act)
   }
 
-  const nsecLogin = async (nsec: string) => {
+  const nsecLogin = async (nsec: string, password?: string) => {
     const browserNsecSigner = new NsecSigner()
-    const pubkey = browserNsecSigner.login(nsec)
+    const { type, data: privkey } = nip19.decode(nsec)
+    if (type !== 'nsec') {
+      throw new Error('invalid nsec')
+    }
+    const pubkey = browserNsecSigner.login(privkey)
+    if (password) {
+      const ncryptsec = nip49.encrypt(privkey, password)
+      return login(browserNsecSigner, { pubkey, signerType: 'ncryptsec', ncryptsec })
+    }
     return login(browserNsecSigner, { pubkey, signerType: 'nsec', nsec })
+  }
+
+  const ncryptsecLogin = async (ncryptsec: string) => {
+    const password = prompt(t('Enter the password to decrypt your ncryptsec'))
+    if (!password) {
+      throw new Error('Password is required')
+    }
+    const privkey = nip49.decrypt(ncryptsec, password)
+    const browserNsecSigner = new NsecSigner()
+    const pubkey = browserNsecSigner.login(privkey)
+    return login(browserNsecSigner, { pubkey, signerType: 'ncryptsec', ncryptsec })
   }
 
   const nip07Login = async () => {
@@ -226,6 +260,17 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
           account = { ...account, signerType: 'nsec' }
           storage.addAccount(account)
         }
+        return login(browserNsecSigner, account)
+      }
+    } else if (account.signerType === 'ncryptsec') {
+      if (account.ncryptsec) {
+        const password = prompt(t('Enter the password to decrypt your ncryptsec'))
+        if (!password) {
+          return null
+        }
+        const privkey = nip49.decrypt(account.ncryptsec, password)
+        const browserNsecSigner = new NsecSigner()
+        browserNsecSigner.login(privkey)
         return login(browserNsecSigner, account)
       }
     } else if (account.signerType === 'nip-07') {
@@ -334,8 +379,10 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
           .getAccounts()
           .map((act) => ({ pubkey: act.pubkey, signerType: act.signerType })),
         nsec,
+        ncryptsec,
         switchAccount,
         nsecLogin,
+        ncryptsecLogin,
         nip07Login,
         bunkerLogin,
         removeAccount,

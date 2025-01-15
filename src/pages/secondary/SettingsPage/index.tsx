@@ -14,11 +14,12 @@ import { useTranslation } from 'react-i18next'
 
 export default function SettingsPage({ index }: { index?: number }) {
   const { t, i18n } = useTranslation()
-  const { nsec } = useNostr()
+  const { nsec, ncryptsec } = useNostr()
   const { push } = useSecondaryPage()
   const [language, setLanguage] = useState<TLanguage>(i18n.language as TLanguage)
   const { themeSetting, setThemeSetting } = useTheme()
   const [copiedNsec, setCopiedNsec] = useState(false)
+  const [copiedNcryptsec, setCopiedNcryptsec] = useState(false)
 
   const handleLanguageChange = (value: TLanguage) => {
     i18n.changeLanguage(value)
@@ -75,9 +76,24 @@ export default function SettingsPage({ index }: { index?: number }) {
         >
           <div className="flex items-center gap-4">
             <KeyRound />
-            <div>{t('Copy private key (nsec)')}</div>
+            <div>{t('Copy private key')} (nsec)</div>
           </div>
           {copiedNsec ? <Check /> : <Copy />}
+        </SettingItem>
+      )}
+      {!!ncryptsec && (
+        <SettingItem
+          onClick={() => {
+            navigator.clipboard.writeText(ncryptsec)
+            setCopiedNcryptsec(true)
+            setTimeout(() => setCopiedNcryptsec(false), 2000)
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <KeyRound />
+            <div>{t('Copy private key')} (ncryptsec)</div>
+          </div>
+          {copiedNcryptsec ? <Check /> : <Copy />}
         </SettingItem>
       )}
       <AboutInfoDialog>
