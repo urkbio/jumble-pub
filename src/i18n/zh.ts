@@ -143,6 +143,9 @@ export default {
     Back: '返回',
     'password (optional): encrypt nsec': '密码 (可选): 加密 nsec',
     'optional: encrypt nsec': '可选: 加密 nsec',
-    password: '密码'
+    password: '密码',
+    'Save to': '保存到',
+    'Enter a name for the new relay set': '输入新服务器组的名称',
+    'Save to a new relay set': '保存到新服务器组'
   }
 }

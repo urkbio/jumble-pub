@@ -142,6 +142,9 @@ export default {
     'Enter the password to decrypt your ncryptsec': 'Enter the password to decrypt your ncryptsec',
     Back: 'Back',
     'optional: encrypt nsec': 'optional: encrypt nsec',
-    password: 'password'
+    password: 'password',
+    'Save to': 'Save to',
+    'Enter a name for the new relay set': 'Enter a name for the new relay set',
+    'Save to a new relay set': 'Save to a new relay set'
   }
 }

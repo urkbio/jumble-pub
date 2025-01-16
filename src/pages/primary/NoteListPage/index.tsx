@@ -5,6 +5,9 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import FeedButton from './FeedButton'
 import SearchButton from './SearchButton'
+import SaveRelayDropdownMenu from '@/components/SaveRelayDropdownMenu'
+import { Button } from '@/components/ui/button'
+import { ListPlus } from 'lucide-react'
 
 export default function NoteListPage() {
   const { t } = useTranslation()
@@ -21,7 +24,9 @@ export default function NoteListPage() {
     <PrimaryPageLayout
       pageName="home"
       ref={layoutRef}
-      titlebar={<NoteListPageTitlebar />}
+      titlebar={
+        <NoteListPageTitlebar temporaryRelayUrls={feedType === 'temporary' ? relayUrls : []} />
+      }
       displayScrollToTopButton
     >
       {isReady ? (
@@ -33,11 +38,20 @@ export default function NoteListPage() {
   )
 }
 
-function NoteListPageTitlebar() {
+function NoteListPageTitlebar({ temporaryRelayUrls = [] }: { temporaryRelayUrls?: string[] }) {
   return (
     <div className="flex gap-1 items-center h-full justify-between">
       <FeedButton />
-      <SearchButton />
+      <div>
+        <SearchButton />
+        {temporaryRelayUrls.length > 0 && (
+          <SaveRelayDropdownMenu urls={temporaryRelayUrls} asChild>
+            <Button variant="ghost" size="titlebar-icon">
+              <ListPlus />
+            </Button>
+          </SaveRelayDropdownMenu>
+        )}
+      </div>
     </div>
   )
 }
