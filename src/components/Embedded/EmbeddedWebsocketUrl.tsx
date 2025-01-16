@@ -19,7 +19,7 @@ export function EmbeddedWebsocketUrl({ url }: { url: string }) {
 }
 
 export const embeddedWebsocketUrlRenderer: TEmbeddedRenderer = {
-  regex: /(wss?:\/\/[^\s]+)/g,
+  regex: /(wss?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_,:!~*]+)/gu,
   render: (url: string, index: number) => {
     return <EmbeddedWebsocketUrl key={`websocket-url-${index}-${url}`} url={url} />
   }
