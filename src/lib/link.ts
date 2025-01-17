@@ -32,7 +32,9 @@ export const toOthersRelaySettings = (pubkey: string) => {
   const npub = nip19.npubEncode(pubkey)
   return `/users/${npub}/relays`
 }
-export const toRelaySettings = () => '/relay-settings'
+export const toRelaySettings = (tag?: 'mailbox' | 'relay-sets') => {
+  return '/relay-settings' + (tag === 'relay-sets' ? '#relay-sets' : '')
+}
 export const toSettings = () => '/settings'
 export const toProfileEditor = () => '/profile-editor'
 export const toRelay = (url: string) => `/relays/${encodeURIComponent(url)}`
