@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Select,
   SelectContent,
@@ -7,9 +6,9 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { TMailboxRelay, TMailboxRelayScope } from '@/types'
-import { CircleX, Server } from 'lucide-react'
-import { useMemo } from 'react'
+import { CircleX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import RelayIcon from '../RelayIcon'
 
 export default function MailboxRelay({
   mailboxRelay,
@@ -21,20 +20,11 @@ export default function MailboxRelay({
   removeMailboxRelay: (url: string) => void
 }) {
   const { t } = useTranslation()
-  const relayIcon = useMemo(() => {
-    const url = new URL(mailboxRelay.url)
-    return `${url.protocol === 'wss:' ? 'https:' : 'http:'}//${url.host}/favicon.ico`
-  }, [mailboxRelay.url])
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2 flex-1 w-0">
-        <Avatar className="w-6 h-6">
-          <AvatarImage src={relayIcon} />
-          <AvatarFallback>
-            <Server size={14} />
-          </AvatarFallback>
-        </Avatar>
+        <RelayIcon url={mailboxRelay.url} />
         <div className="truncate">{mailboxRelay.url}</div>
       </div>
       <div className="flex items-center gap-4">

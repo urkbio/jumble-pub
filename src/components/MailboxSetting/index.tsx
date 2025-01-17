@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { relayListToMailboxRelay } from '@/lib/relay'
 import { normalizeUrl } from '@/lib/url'
 import { useNostr } from '@/providers/NostrProvider'
 import { TMailboxRelay, TMailboxRelayScope } from '@/types'
@@ -17,16 +18,7 @@ export default function MailboxSetting() {
   useEffect(() => {
     if (!relayList) return
 
-    const mailboxRelays: TMailboxRelay[] = relayList.read.map((url) => ({ url, scope: 'read' }))
-    relayList.write.forEach((url) => {
-      const item = mailboxRelays.find((r) => r.url === url)
-      if (item) {
-        item.scope = 'both'
-      } else {
-        mailboxRelays.push({ url, scope: 'write' })
-      }
-    })
-    setRelays(mailboxRelays)
+    setRelays(relayListToMailboxRelay(relayList))
   }, [relayList])
 
   if (!pubkey) {

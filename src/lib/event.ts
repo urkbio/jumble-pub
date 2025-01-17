@@ -90,10 +90,10 @@ export function getRelayListFromRelayListEvent(event?: Event) {
 
     const normalizedUrl = normalizeUrl(url)
     switch (type) {
-      case 'w':
+      case 'write':
         relayList.write.push(normalizedUrl)
         break
-      case 'r':
+      case 'read':
         relayList.read.push(normalizedUrl)
         break
       default:
@@ -102,8 +102,8 @@ export function getRelayListFromRelayListEvent(event?: Event) {
     }
   })
   return {
-    write: relayList.write.length ? relayList.write.slice(0, 10) : BIG_RELAY_URLS,
-    read: relayList.read.length ? relayList.read.slice(0, 10) : BIG_RELAY_URLS
+    write: relayList.write.length ? relayList.write : BIG_RELAY_URLS,
+    read: relayList.read.length ? relayList.read : BIG_RELAY_URLS
   }
 }
 

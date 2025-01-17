@@ -48,6 +48,7 @@ export default {
     'switch to system theme': 'switch to system theme',
     Note: 'Note',
     "username's following": "{{username}}'s following",
+    "username's used relays": "{{username}}'s used relays",
     Login: 'Login',
     'Follows you': 'Follows you',
     'Relay Settings': 'Relay Settings',

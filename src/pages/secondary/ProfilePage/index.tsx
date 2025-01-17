@@ -11,7 +11,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useFetchFollowings, useFetchProfile } from '@/hooks'
 import { useFetchRelayList } from '@/hooks/useFetchRelayList'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { toFollowingList, toProfileEditor } from '@/lib/link'
+import {
+  toFollowingList,
+  toOthersRelaySettings,
+  toProfileEditor,
+  toRelaySettings
+} from '@/lib/link'
 import { generateImageByPubkey } from '@/lib/pubkey'
 import { SecondaryPageLink, useSecondaryPage } from '@/PageManager'
 import { useFeed } from '@/providers/FeedProvider'
@@ -45,6 +50,10 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
   const defaultImage = useMemo(
     () => (profile?.pubkey ? generateImageByPubkey(profile?.pubkey) : ''),
     [profile]
+  )
+  const relayCount = useMemo(
+    () => new Set(relayList.write.concat(relayList.read)).size,
+    [relayList]
   )
   const isSelf = accountPubkey === profile?.pubkey
 
@@ -107,13 +116,22 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
             <QrCodePopover pubkey={pubkey} />
           </div>
           <ProfileAbout about={about} className="text-wrap break-words whitespace-pre-wrap mt-2" />
-          <SecondaryPageLink
-            to={toFollowingList(pubkey)}
-            className="mt-2 flex gap-1 hover:underline text-sm w-fit"
-          >
-            {isSelf ? selfFollowings.length : followings.length}
-            <div className="text-muted-foreground">{t('Following')}</div>
-          </SecondaryPageLink>
+          <div className="flex gap-4 items-center mt-2 text-sm">
+            <SecondaryPageLink
+              to={toFollowingList(pubkey)}
+              className="flex gap-1 hover:underline w-fit"
+            >
+              {isSelf ? selfFollowings.length : followings.length}
+              <div className="text-muted-foreground">{t('Following')}</div>
+            </SecondaryPageLink>
+            <SecondaryPageLink
+              to={isSelf ? toRelaySettings() : toOthersRelaySettings(pubkey)}
+              className="flex gap-1 hover:underline w-fit"
+            >
+              {relayCount}
+              <div className="text-muted-foreground">{t('Relays')}</div>
+            </SecondaryPageLink>
+          </div>
         </div>
       </div>
       {!isFetchingRelayInfo && (

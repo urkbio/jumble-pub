@@ -48,6 +48,7 @@ export default {
     'switch to system theme': '切换到系统主题',
     Note: '笔记',
     "username's following": '{{username}} 的关注',
+    "username's used relays": '{{username}} 使用的服务器',
     Login: '登录',
     'Follows you': '关注了你',
     'Relay Settings': '服务器设置',

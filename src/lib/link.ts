@@ -37,6 +37,10 @@ export const toFollowingList = (pubkey: string) => {
   const npub = nip19.npubEncode(pubkey)
   return `/users/${npub}/following`
 }
+export const toOthersRelaySettings = (pubkey: string) => {
+  const npub = nip19.npubEncode(pubkey)
+  return `/users/${npub}/relays`
+}
 export const toRelaySettings = () => '/relay-settings'
 export const toSettings = () => '/settings'
 export const toProfileEditor = () => '/profile-editor'
