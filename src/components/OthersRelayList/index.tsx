@@ -1,7 +1,8 @@
 import { useSecondaryPage } from '@/PageManager'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useFetchRelayList } from '@/hooks/useFetchRelayList'
-import { toNoteList } from '@/lib/link'
+import { toRelay } from '@/lib/link'
 import { userIdToPubkey } from '@/lib/pubkey'
 import { relayListToMailboxRelay } from '@/lib/relay'
 import { simplifyUrl } from '@/lib/url'
@@ -11,7 +12,6 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import RelayIcon from '../RelayIcon'
 import SaveRelayDropdownMenu from '../SaveRelayDropdownMenu'
-import { Badge } from '../ui/badge'
 
 export default function OthersRelayList({ userId }: { userId: string }) {
   const { t } = useTranslation()
@@ -41,7 +41,7 @@ function RelayItem({ relay }: { relay: TMailboxRelay }) {
     <div className="flex items-center gap-2 justify-between">
       <div
         className="flex items-center gap-2 cursor-pointer flex-1 w-0"
-        onClick={() => push(toNoteList({ relay: url }))}
+        onClick={() => push(toRelay(url))}
       >
         <RelayIcon url={url} />
         <div className="truncate">{simplifyUrl(url)}</div>
@@ -52,7 +52,7 @@ function RelayItem({ relay }: { relay: TMailboxRelay }) {
         ) : scope === 'write' ? (
           <Badge className="bg-green-400 hover:bg-green-400/80">{t('Write')}</Badge>
         ) : null}
-        <Button variant="ghost" size="icon" onClick={() => push(toNoteList({ relay: url }))}>
+        <Button variant="ghost" size="icon" onClick={() => push(toRelay(url))}>
           <Telescope />
         </Button>
         <SaveRelayDropdownMenu urls={[url]}>

@@ -1,12 +1,8 @@
 import NoteList from '@/components/NoteList'
-import SaveRelayDropdownMenu from '@/components/SaveRelayDropdownMenu'
-import { Button } from '@/components/ui/button'
 import { SEARCHABLE_RELAY_URLS } from '@/constants'
 import { useFetchRelayInfos, useSearchParams } from '@/hooks'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { isWebsocketUrl, simplifyUrl } from '@/lib/url'
 import { useFeed } from '@/providers/FeedProvider'
-import { ListPlus } from 'lucide-react'
 import { Filter } from 'nostr-tools'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -16,17 +12,14 @@ export default function NoteListPage({ index }: { index?: number }) {
   const { relayUrls } = useFeed()
   const { searchableRelayUrls } = useFetchRelayInfos(relayUrls)
   const { searchParams } = useSearchParams()
-  const relayUrlsString = JSON.stringify(relayUrls)
   const {
     title = '',
     filter,
-    urls,
-    type
+    urls
   } = useMemo<{
     title?: string
     filter?: Filter
     urls: string[]
-    type?: 'search' | 'hashtag' | 'relay'
   }>(() => {
     const hashtag = searchParams.get('t')
     if (hashtag) {
@@ -46,28 +39,11 @@ export default function NoteListPage({ index }: { index?: number }) {
         type: 'search'
       }
     }
-    const relayUrl = searchParams.get('relay')
-    if (relayUrl && isWebsocketUrl(relayUrl)) {
-      return { title: simplifyUrl(relayUrl), urls: [relayUrl], type: 'relay' }
-    }
     return { urls: relayUrls }
-  }, [searchParams, relayUrlsString])
+  }, [searchParams, JSON.stringify(relayUrls)])
 
   return (
-    <SecondaryPageLayout
-      index={index}
-      title={title}
-      controls={
-        type === 'relay' && (
-          <SaveRelayDropdownMenu urls={urls} asChild>
-            <Button variant="ghost" size="titlebar-icon">
-              <ListPlus />
-            </Button>
-          </SaveRelayDropdownMenu>
-        )
-      }
-      displayScrollToTopButton
-    >
+    <SecondaryPageLayout index={index} title={title} displayScrollToTopButton>
       <NoteList key={title} filter={filter} relayUrls={urls} />
     </SecondaryPageLayout>
   )

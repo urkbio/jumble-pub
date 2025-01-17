@@ -6,20 +6,11 @@ export const toNote = (eventOrId: Pick<Event, 'id' | 'pubkey'> | string) => {
   const nevent = nip19.neventEncode({ id: eventOrId.id, author: eventOrId.pubkey })
   return `/notes/${nevent}`
 }
-export const toNoteList = ({
-  hashtag,
-  search,
-  relay
-}: {
-  hashtag?: string
-  search?: string
-  relay?: string
-}) => {
+export const toNoteList = ({ hashtag, search }: { hashtag?: string; search?: string }) => {
   const path = '/notes'
   const query = new URLSearchParams()
   if (hashtag) query.set('t', hashtag.toLowerCase())
   if (search) query.set('s', search)
-  if (relay) query.set('relay', relay)
   return `${path}?${query.toString()}`
 }
 export const toProfile = (pubkeyOrNpub: string) => {
@@ -44,6 +35,7 @@ export const toOthersRelaySettings = (pubkey: string) => {
 export const toRelaySettings = () => '/relay-settings'
 export const toSettings = () => '/settings'
 export const toProfileEditor = () => '/profile-editor'
+export const toRelay = (url: string) => `/relays/${encodeURIComponent(url)}`
 
 export const toNoStrudelProfile = (id: string) => `https://nostrudel.ninja/#/u/${id}`
 export const toNoStrudelNote = (id: string) => `https://nostrudel.ninja/#/n/${id}`

@@ -17,8 +17,19 @@ export type TRelayList = {
 }
 
 export type TRelayInfo = {
+  name?: string
+  description?: string
+  icon?: string
+  pubkey?: string
+  contact?: string
   supported_nips?: number[]
   software?: string
+  version?: string
+  tags?: string[]
+  limitation?: {
+    auth_required?: boolean
+    payment_required?: boolean
+  }
 }
 
 export type TWebMetadata = {

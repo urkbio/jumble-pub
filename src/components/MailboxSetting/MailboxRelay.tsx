@@ -1,3 +1,4 @@
+import { useSecondaryPage } from '@/PageManager'
 import {
   Select,
   SelectContent,
@@ -5,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { toRelay } from '@/lib/link'
 import { TMailboxRelay, TMailboxRelayScope } from '@/types'
 import { CircleX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -20,10 +22,14 @@ export default function MailboxRelay({
   removeMailboxRelay: (url: string) => void
 }) {
   const { t } = useTranslation()
+  const { push } = useSecondaryPage()
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 flex-1 w-0">
+      <div
+        className="flex items-center gap-2 flex-1 w-0 cursor-pointer"
+        onClick={() => push(toRelay(mailboxRelay.url))}
+      >
         <RelayIcon url={mailboxRelay.url} />
         <div className="truncate">{mailboxRelay.url}</div>
       </div>
