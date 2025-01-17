@@ -19,8 +19,8 @@ export default function RelayInfo({ url }: { url: string }) {
     <div className="px-4 space-y-4 mb-2">
       <div className="space-y-2">
         <div className="flex gap-2 items-center">
-          <RelayIcon url={url} />
-          {relayInfo.name && <div className="text-xl font-semibold">{relayInfo.name}</div>}
+          <RelayIcon url={url} className="w-8 h-8" />
+          {relayInfo.name && <div className="text-2xl font-semibold">{relayInfo.name}</div>}
         </div>
         <RelayBadges relayInfo={relayInfo} />
         {!!relayInfo.tags?.length &&

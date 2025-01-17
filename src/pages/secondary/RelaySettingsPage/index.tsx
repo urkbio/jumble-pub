@@ -9,16 +9,16 @@ export default function RelaySettingsPage({ index }: { index?: number }) {
 
   return (
     <SecondaryPageLayout index={index} title={t('Relay settings')}>
-      <Tabs defaultValue="relay-sets" className="px-4 space-y-4">
+      <Tabs defaultValue="mailbox" className="px-4 space-y-4">
         <TabsList>
-          <TabsTrigger value="relay-sets">{t('Relay Sets')}</TabsTrigger>
           <TabsTrigger value="mailbox">{t('Read & Write Relays')}</TabsTrigger>
+          <TabsTrigger value="relay-sets">{t('Relay Sets')}</TabsTrigger>
         </TabsList>
-        <TabsContent value="relay-sets">
-          <RelaySetsSetting />
-        </TabsContent>
         <TabsContent value="mailbox">
           <MailboxSetting />
+        </TabsContent>
+        <TabsContent value="relay-sets">
+          <RelaySetsSetting />
         </TabsContent>
       </Tabs>
     </SecondaryPageLayout>
