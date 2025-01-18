@@ -20,8 +20,13 @@ export default function RelayInfo({ url }: { url: string }) {
           {relayInfo.name && <div className="text-2xl font-semibold">{relayInfo.name}</div>}
         </div>
         <RelayBadges relayInfo={relayInfo} />
-        {!!relayInfo.tags?.length &&
-          relayInfo.tags.map((tag) => <Badge variant="secondary">{tag}</Badge>)}
+        {!!relayInfo.tags?.length && (
+          <div className="flex gap-2">
+            {relayInfo.tags.map((tag) => (
+              <Badge variant="secondary">{tag}</Badge>
+            ))}
+          </div>
+        )}
         {relayInfo.description && (
           <div className="text-wrap break-words whitespace-pre-wrap mt-2">
             {relayInfo.description}

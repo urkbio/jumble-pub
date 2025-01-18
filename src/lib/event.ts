@@ -81,10 +81,10 @@ export function getFollowingsFromFollowListEvent(event: Event) {
 
 export function getRelayListFromRelayListEvent(event?: Event) {
   if (!event) {
-    return { write: BIG_RELAY_URLS, read: BIG_RELAY_URLS }
+    return { write: BIG_RELAY_URLS, read: BIG_RELAY_URLS, originalRelays: [] }
   }
 
-  const relayList = { write: [], read: [] } as TRelayList
+  const relayList = { write: [], read: [], originalRelays: [] } as TRelayList
   event.tags.filter(tagNameEquals('r')).forEach(([, url, type]) => {
     if (!url || !isWebsocketUrl(url)) return
 
@@ -92,18 +92,22 @@ export function getRelayListFromRelayListEvent(event?: Event) {
     switch (type) {
       case 'write':
         relayList.write.push(normalizedUrl)
+        relayList.originalRelays.push({ url: normalizedUrl, scope: 'write' })
         break
       case 'read':
         relayList.read.push(normalizedUrl)
+        relayList.originalRelays.push({ url: normalizedUrl, scope: 'read' })
         break
       default:
         relayList.write.push(normalizedUrl)
         relayList.read.push(normalizedUrl)
+        relayList.originalRelays.push({ url: normalizedUrl, scope: 'both' })
     }
   })
   return {
     write: relayList.write.length ? relayList.write : BIG_RELAY_URLS,
-    read: relayList.read.length ? relayList.read : BIG_RELAY_URLS
+    read: relayList.read.length ? relayList.read : BIG_RELAY_URLS,
+    originalRelays: relayList.originalRelays
   }
 }
 

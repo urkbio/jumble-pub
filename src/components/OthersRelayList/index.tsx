@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { useFetchRelayList } from '@/hooks'
 import { toRelay } from '@/lib/link'
 import { userIdToPubkey } from '@/lib/pubkey'
-import { relayListToMailboxRelay } from '@/lib/relay'
 import { simplifyUrl } from '@/lib/url'
 import { TMailboxRelay } from '@/types'
 import { ListPlus, Telescope } from 'lucide-react'
@@ -17,7 +16,6 @@ export default function OthersRelayList({ userId }: { userId: string }) {
   const { t } = useTranslation()
   const pubkey = useMemo(() => userIdToPubkey(userId), [userId])
   const { relayList, isFetching } = useFetchRelayList(pubkey)
-  const mailboxRelays = useMemo(() => relayListToMailboxRelay(relayList), [relayList])
 
   if (isFetching) {
     return <div className="text-center text-sm text-muted-foreground">{t('loading...')}</div>
@@ -25,7 +23,7 @@ export default function OthersRelayList({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-2">
-      {mailboxRelays.map((relay, index) => (
+      {relayList.originalRelays.map((relay, index) => (
         <RelayItem key={`read-${relay.url}-${index}`} relay={relay} />
       ))}
     </div>

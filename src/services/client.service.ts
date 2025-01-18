@@ -422,7 +422,11 @@ class ClientService extends EventTarget {
   async fetchRelayList(pubkey: string): Promise<TRelayList> {
     const event = await this.relayListEventDataLoader.load(pubkey)
     if (!event) {
-      return { write: BIG_RELAY_URLS, read: BIG_RELAY_URLS }
+      return {
+        write: BIG_RELAY_URLS,
+        read: BIG_RELAY_URLS,
+        originalRelays: []
+      }
     }
     return getRelayListFromRelayListEvent(event)
   }

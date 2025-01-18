@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { relayListToMailboxRelay } from '@/lib/relay'
 import { normalizeUrl } from '@/lib/url'
 import { useNostr } from '@/providers/NostrProvider'
 import { TMailboxRelay, TMailboxRelayScope } from '@/types'
@@ -18,7 +17,7 @@ export default function MailboxSetting() {
   useEffect(() => {
     if (!relayList) return
 
-    setRelays(relayListToMailboxRelay(relayList))
+    setRelays(relayList.originalRelays)
   }, [relayList])
 
   if (!pubkey) {

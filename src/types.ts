@@ -10,10 +10,15 @@ export type TProfile = {
   about?: string
   created_at?: number
 }
-
+export type TMailboxRelayScope = 'read' | 'write' | 'both'
+export type TMailboxRelay = {
+  url: string
+  scope: TMailboxRelayScope
+}
 export type TRelayList = {
   write: string[]
   read: string[]
+  originalRelays: TMailboxRelay[]
 }
 
 export type TRelayInfo = {
@@ -82,9 +87,3 @@ export type TFeedType = 'following' | 'relays' | 'temporary'
 export type TLanguage = 'en' | 'zh'
 
 export type TImageInfo = { url: string; blurHash?: string; dim?: { width: number; height: number } }
-
-export type TMailboxRelayScope = 'read' | 'write' | 'both'
-export type TMailboxRelay = {
-  url: string
-  scope: TMailboxRelayScope
-}
