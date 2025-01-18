@@ -125,7 +125,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
               <div className="text-muted-foreground">{t('Following')}</div>
             </SecondaryPageLink>
             <SecondaryPageLink
-              to={isSelf ? toRelaySettings() : toOthersRelaySettings(pubkey)}
+              to={isSelf ? toRelaySettings('mailbox') : toOthersRelaySettings(pubkey)}
               className="flex gap-1 hover:underline w-fit"
             >
               {relayCount}

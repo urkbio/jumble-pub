@@ -31,7 +31,7 @@ export default function FeedSwitcher({ close }: { close?: () => void }) {
         <div className="flex justify-between px-2">
           <div className="text-muted-foreground text-sm font-semibold">{t('relay sets')}</div>
           <SecondaryPageLink
-            to={toRelaySettings('relay-sets')}
+            to={toRelaySettings()}
             className="text-highlight text-sm font-semibold"
             onClick={() => close?.()}
           >

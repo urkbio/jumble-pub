@@ -33,7 +33,7 @@ export const toOthersRelaySettings = (pubkey: string) => {
   return `/users/${npub}/relays`
 }
 export const toRelaySettings = (tag?: 'mailbox' | 'relay-sets') => {
-  return '/relay-settings' + (tag === 'relay-sets' ? '#relay-sets' : '')
+  return '/relay-settings' + (tag ? '#' + tag : '')
 }
 export const toSettings = () => '/settings'
 export const toProfileEditor = () => '/profile-editor'
