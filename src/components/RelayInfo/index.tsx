@@ -39,14 +39,14 @@ export default function RelayInfo({ url }: { url: string }) {
             <div className="text-sm font-semibold text-muted-foreground">Operator</div>
             <div className="flex gap-2 items-center">
               <UserAvatar userId={relayInfo.pubkey} size="small" />
-              <Username userId={relayInfo.pubkey} className="font-semibold whitespace-nowrap" />
+              <Username userId={relayInfo.pubkey} className="font-semibold" />
             </div>
           </div>
         )}
         {relayInfo.contact && (
           <div className="space-y-2 flex-1">
             <div className="text-sm font-semibold text-muted-foreground">Contact</div>
-            <div className="flex gap-2 items-center font-semibold whitespace-nowrap">
+            <div className="flex gap-2 items-center font-semibold">
               <Mail />
               {relayInfo.contact}
             </div>
@@ -55,7 +55,7 @@ export default function RelayInfo({ url }: { url: string }) {
         {relayInfo.software && (
           <div className="space-y-2 flex-1">
             <div className="text-sm font-semibold text-muted-foreground">Software</div>
-            <div className="flex gap-2 items-center font-semibold whitespace-nowrap">
+            <div className="flex gap-2 items-center font-semibold">
               <SquareCode />
               {formatSoftware(relayInfo.software)}
             </div>
@@ -64,7 +64,7 @@ export default function RelayInfo({ url }: { url: string }) {
         {relayInfo.version && (
           <div className="space-y-2 flex-1">
             <div className="text-sm font-semibold text-muted-foreground">Version</div>
-            <div className="flex gap-2 items-center font-semibold whitespace-nowrap">
+            <div className="flex gap-2 items-center font-semibold">
               <GitBranch />
               {relayInfo.version}
             </div>

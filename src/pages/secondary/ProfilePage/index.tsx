@@ -51,10 +51,6 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
     () => (profile?.pubkey ? generateImageByPubkey(profile?.pubkey) : ''),
     [profile]
   )
-  const relayCount = useMemo(
-    () => new Set(relayList.write.concat(relayList.read)).size,
-    [relayList]
-  )
   const isSelf = accountPubkey === profile?.pubkey
 
   if (!profile && isFetching) {
@@ -128,7 +124,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
               to={isSelf ? toRelaySettings('mailbox') : toOthersRelaySettings(pubkey)}
               className="flex gap-1 hover:underline w-fit"
             >
-              {relayCount}
+              {relayList.originalRelays.length}
               <div className="text-muted-foreground">{t('Relays')}</div>
             </SecondaryPageLink>
           </div>
