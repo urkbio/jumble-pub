@@ -125,7 +125,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       if (!relayListEvent) {
         if (storedRelayListEvent) return
 
-        setRelayList({ write: BIG_RELAY_URLS, read: BIG_RELAY_URLS })
+        setRelayList({ write: BIG_RELAY_URLS, read: BIG_RELAY_URLS, originalRelays: [] })
         return
       }
       const isNew = storage.setAccountRelayListEvent(relayListEvent)
