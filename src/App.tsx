@@ -17,14 +17,14 @@ export default function App(): JSX.Element {
       <ScreenSizeProvider>
         <NostrProvider>
           <RelaySetsProvider>
-            <FeedProvider>
-              <FollowListProvider>
+            <FollowListProvider>
+              <FeedProvider>
                 <NoteStatsProvider>
                   <PageManager />
                   <Toaster />
                 </NoteStatsProvider>
-              </FollowListProvider>
-            </FeedProvider>
+              </FeedProvider>
+            </FollowListProvider>
           </RelaySetsProvider>
         </NostrProvider>
       </ScreenSizeProvider>

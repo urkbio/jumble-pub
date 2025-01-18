@@ -28,7 +28,7 @@ class StorageService {
   private currentAccount: TAccount | null = null
   private accountRelayListEventMap: Record<string, Event | undefined> = {} // pubkey -> relayListEvent
   private accountFollowListEventMap: Record<string, Event | undefined> = {} // pubkey -> followListEvent
-  private accountProfileEventMap: Record<string, Event> = {} // pubkey -> profileEvent
+  private accountProfileEventMap: Record<string, Event | undefined> = {} // pubkey -> profileEvent
 
   constructor() {
     if (!StorageService.instance) {
