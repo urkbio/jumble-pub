@@ -1,7 +1,7 @@
 import { useSecondaryPage } from '@/PageManager'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useFetchRelayList } from '@/hooks/useFetchRelayList'
+import { useFetchRelayList } from '@/hooks'
 import { toRelay } from '@/lib/link'
 import { userIdToPubkey } from '@/lib/pubkey'
 import { relayListToMailboxRelay } from '@/lib/relay'

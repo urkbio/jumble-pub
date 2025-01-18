@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge'
-import { useFetchRelayInfos } from '@/hooks'
+import { useFetchRelayInfo } from '@/hooks'
 import { TRelayInfo } from '@/types'
 import { GitBranch, Mail, SquareCode } from 'lucide-react'
 import RelayIcon from '../RelayIcon'
@@ -7,10 +7,7 @@ import UserAvatar from '../UserAvatar'
 import Username from '../Username'
 
 export default function RelayInfo({ url }: { url: string }) {
-  const {
-    relayInfos: [relayInfo],
-    isFetching
-  } = useFetchRelayInfos([url])
+  const { relayInfo, isFetching } = useFetchRelayInfo(url)
   if (isFetching || !relayInfo) {
     return null
   }
@@ -89,6 +86,9 @@ function RelayBadges({ relayInfo }: { relayInfo: TRelayInfo }) {
       )}
       {relayInfo.limitation?.payment_required && (
         <Badge className="bg-orange-400 hover:bg-orange-400/80">Payment</Badge>
+      )}
+      {relayInfo.supported_nips?.includes(29) && (
+        <Badge className="bg-blue-400 hover:bg-blue-400/80">Groups</Badge>
       )}
     </div>
   )

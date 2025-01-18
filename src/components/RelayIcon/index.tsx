@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useFetchRelayInfo } from '@/hooks'
 import { Server } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -11,14 +12,18 @@ export default function RelayIcon({
   className?: string
   iconSize?: number
 }) {
-  const icon = useMemo(() => {
+  const { relayInfo } = useFetchRelayInfo(url)
+  const iconUrl = useMemo(() => {
+    if (relayInfo?.icon) {
+      return relayInfo.icon
+    }
     const u = new URL(url)
     return `${u.protocol === 'wss:' ? 'https:' : 'http:'}//${u.host}/favicon.ico`
-  }, [url])
+  }, [url, relayInfo])
 
   return (
     <Avatar className={className}>
-      <AvatarImage src={icon} />
+      <AvatarImage src={iconUrl} />
       <AvatarFallback>
         <Server size={iconSize} />
       </AvatarFallback>
