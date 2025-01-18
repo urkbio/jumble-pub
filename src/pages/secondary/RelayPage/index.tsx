@@ -4,7 +4,7 @@ import SaveRelayDropdownMenu from '@/components/SaveRelayDropdownMenu'
 import { Button } from '@/components/ui/button'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { normalizeUrl, simplifyUrl } from '@/lib/url'
-import { Check, Copy, ListPlus } from 'lucide-react'
+import { Check, Copy } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import NotFoundPage from '../NotFoundPage'
 
@@ -42,11 +42,7 @@ function RelayPageControls({ url }: { url: string }) {
       <Button variant="ghost" size="titlebar-icon" onClick={handleCopy}>
         {copied ? <Check /> : <Copy />}
       </Button>
-      <SaveRelayDropdownMenu urls={[url]} asChild>
-        <Button variant="ghost" size="titlebar-icon">
-          <ListPlus />
-        </Button>
-      </SaveRelayDropdownMenu>
+      <SaveRelayDropdownMenu urls={[url]} atTitlebar />
     </>
   )
 }

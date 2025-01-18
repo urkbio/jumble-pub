@@ -1,13 +1,11 @@
 import NoteList from '@/components/NoteList'
+import SaveRelayDropdownMenu from '@/components/SaveRelayDropdownMenu'
 import PrimaryPageLayout from '@/layouts/PrimaryPageLayout'
 import { useFeed } from '@/providers/FeedProvider'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import FeedButton from './FeedButton'
 import SearchButton from './SearchButton'
-import SaveRelayDropdownMenu from '@/components/SaveRelayDropdownMenu'
-import { Button } from '@/components/ui/button'
-import { ListPlus } from 'lucide-react'
 
 export default function NoteListPage() {
   const { t } = useTranslation()
@@ -45,11 +43,7 @@ function NoteListPageTitlebar({ temporaryRelayUrls = [] }: { temporaryRelayUrls?
       <div>
         <SearchButton />
         {temporaryRelayUrls.length > 0 && (
-          <SaveRelayDropdownMenu urls={temporaryRelayUrls} asChild>
-            <Button variant="ghost" size="titlebar-icon">
-              <ListPlus />
-            </Button>
-          </SaveRelayDropdownMenu>
+          <SaveRelayDropdownMenu urls={temporaryRelayUrls} atTitlebar />
         )}
       </div>
     </div>

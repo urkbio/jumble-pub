@@ -1,8 +1,7 @@
-import { Button } from '@/components/ui/button'
 import { useFetchRelayInfos } from '@/hooks'
 import { useFeed } from '@/providers/FeedProvider'
 import client from '@/services/client.service'
-import { ListPlus, SearchCheck } from 'lucide-react'
+import { SearchCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SaveRelayDropdownMenu from '../SaveRelayDropdownMenu'
@@ -64,11 +63,7 @@ export default function TemporaryRelaySet() {
           </div>
         ))}
       </div>
-      <SaveRelayDropdownMenu urls={temporaryRelayUrls} asChild>
-        <Button title="save" size="icon" variant="ghost">
-          <ListPlus />
-        </Button>
-      </SaveRelayDropdownMenu>
+      <SaveRelayDropdownMenu urls={temporaryRelayUrls} />
     </div>
   )
 }

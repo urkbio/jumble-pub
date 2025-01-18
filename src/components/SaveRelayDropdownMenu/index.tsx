@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,25 +10,32 @@ import {
 import { normalizeUrl } from '@/lib/url'
 import { useRelaySets } from '@/providers/RelaySetsProvider'
 import { TRelaySet } from '@/types'
-import { Check, FolderPlus, Plus } from 'lucide-react'
-import { ReactNode, useMemo } from 'react'
+import { Check, FolderPlus, Plus, Star } from 'lucide-react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export default function SaveRelayDropdownMenu({
-  children,
   urls,
-  asChild = false
+  atTitlebar = false
 }: {
-  children: ReactNode
   urls: string[]
-  asChild?: boolean
+  atTitlebar?: boolean
 }) {
   const { t } = useTranslation()
   const { relaySets } = useRelaySets()
   const normalizedUrls = useMemo(() => urls.map((url) => normalizeUrl(url)), [urls])
+  const alreadySaved = useMemo(
+    () => relaySets.some((set) => normalizedUrls.every((url) => set.relayUrls.includes(url))),
+    [relaySets, normalizedUrls]
+  )
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild={asChild}>{children}</DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size={atTitlebar ? 'titlebar-icon' : 'icon'}>
+          <Star className={alreadySaved ? 'fill-primary stroke-primary' : ''} />
+        </Button>
+      </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>{t('Save to')} ...</DropdownMenuLabel>
         <DropdownMenuSeparator />

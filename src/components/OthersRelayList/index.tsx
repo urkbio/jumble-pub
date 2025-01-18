@@ -1,12 +1,10 @@
 import { useSecondaryPage } from '@/PageManager'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { useFetchRelayInfo, useFetchRelayList } from '@/hooks'
 import { toRelay } from '@/lib/link'
 import { userIdToPubkey } from '@/lib/pubkey'
 import { simplifyUrl } from '@/lib/url'
 import { TMailboxRelay } from '@/types'
-import { ListPlus } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import RelayIcon from '../RelayIcon'
@@ -57,11 +55,7 @@ function RelayItem({ relay }: { relay: TMailboxRelay }) {
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-        <SaveRelayDropdownMenu urls={[url]}>
-          <Button variant="ghost" size="icon">
-            <ListPlus />
-          </Button>
-        </SaveRelayDropdownMenu>
+        <SaveRelayDropdownMenu urls={[url]} />
       </div>
     </div>
   )
