@@ -1,5 +1,6 @@
 import { TImageInfo } from '@/types'
 import { isBlurhashValid } from 'blurhash'
+import { isValidPubkey } from './pubkey'
 
 export function tagNameEquals(tagName: string) {
   return (tag: string[]) => tag[0] === tagName
@@ -49,7 +50,7 @@ export function extractPubkeysFromEventTags(tags: string[][]) {
       tags
         .filter(tagNameEquals('p'))
         .map(([, pubkey]) => pubkey)
-        .filter(Boolean)
+        .filter((pubkey) => !!pubkey && isValidPubkey(pubkey))
         .reverse()
     )
   )
