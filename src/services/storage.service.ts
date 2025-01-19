@@ -29,6 +29,10 @@ class StorageService {
   private accountRelayListEventMap: Record<string, Event | undefined> = {} // pubkey -> relayListEvent
   private accountFollowListEventMap: Record<string, Event | undefined> = {} // pubkey -> followListEvent
   private accountMuteListEventMap: Record<string, Event | undefined> = {} // pubkey -> muteListEvent
+  private accountMuteDecryptedTagsMap: Record<
+    string,
+    { id: string; tags: string[][] } | undefined
+  > = {} // pubkey -> { id, tags }
   private accountProfileEventMap: Record<string, Event | undefined> = {} // pubkey -> profileEvent
 
   constructor() {
@@ -66,6 +70,12 @@ class StorageService {
     )
     this.accountMuteListEventMap = accountMuteListEventMapStr
       ? JSON.parse(accountMuteListEventMapStr)
+      : {}
+    const accountMuteDecryptedTagsMapStr = window.localStorage.getItem(
+      StorageKey.ACCOUNT_MUTE_DECRYPTED_TAGS_MAP
+    )
+    this.accountMuteDecryptedTagsMap = accountMuteDecryptedTagsMapStr
+      ? JSON.parse(accountMuteDecryptedTagsMapStr)
       : {}
     const accountProfileEventMapStr = window.localStorage.getItem(
       StorageKey.ACCOUNT_PROFILE_EVENT_MAP
@@ -184,6 +194,7 @@ class StorageService {
     delete this.accountFollowListEventMap[account.pubkey]
     delete this.accountRelayListEventMap[account.pubkey]
     delete this.accountMuteListEventMap[account.pubkey]
+    delete this.accountMuteDecryptedTagsMap[account.pubkey]
     delete this.accountProfileEventMap[account.pubkey]
     window.localStorage.setItem(StorageKey.ACCOUNTS, JSON.stringify(this.accounts))
     window.localStorage.setItem(
@@ -193,6 +204,10 @@ class StorageService {
     window.localStorage.setItem(
       StorageKey.ACCOUNT_MUTE_LIST_EVENT_MAP,
       JSON.stringify(this.accountMuteListEventMap)
+    )
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_MUTE_DECRYPTED_TAGS_MAP,
+      JSON.stringify(this.accountMuteDecryptedTagsMap)
     )
     window.localStorage.setItem(
       StorageKey.ACCOUNT_RELAY_LIST_EVENT_MAP,
@@ -274,6 +289,22 @@ class StorageService {
       JSON.stringify(this.accountMuteListEventMap)
     )
     return true
+  }
+
+  getAccountMuteDecryptedTags(muteListEvent: Event) {
+    const stored = this.accountMuteDecryptedTagsMap[muteListEvent.pubkey]
+    if (stored && stored.id === muteListEvent.id) {
+      return stored.tags
+    }
+    return null
+  }
+
+  setAccountMuteDecryptedTags(muteListEvent: Event, tags: string[][]) {
+    this.accountMuteDecryptedTagsMap[muteListEvent.pubkey] = { id: muteListEvent.id, tags }
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_MUTE_DECRYPTED_TAGS_MAP,
+      JSON.stringify(this.accountMuteDecryptedTagsMap)
+    )
   }
 
   getAccountProfileEvent(pubkey: string) {
