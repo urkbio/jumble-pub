@@ -49,6 +49,7 @@ export default {
     Note: 'Note',
     "username's following": "{{username}}'s following",
     "username's used relays": "{{username}}'s used relays",
+    "username's muted": "{{username}}'s muted",
     Login: 'Login',
     'Follows you': 'Follows you',
     'Relay Settings': 'Relay Settings',
@@ -146,6 +147,12 @@ export default {
     password: 'password',
     'Save to': 'Save to',
     'Enter a name for the new relay set': 'Enter a name for the new relay set',
-    'Save to a new relay set': 'Save to a new relay set'
+    'Save to a new relay set': 'Save to a new relay set',
+    Mute: 'Mute',
+    Muted: 'Muted',
+    Unmute: 'Unmute',
+    'mute author': 'mute author',
+    'mute user': 'mute user',
+    'unmute user': 'unmute user'
   }
 }

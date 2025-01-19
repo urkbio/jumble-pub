@@ -202,6 +202,15 @@ export function createFollowListDraftEvent(tags: string[][], content?: string): 
   }
 }
 
+export function createMuteListDraftEvent(tags: string[][], content?: string): TDraftEvent {
+  return {
+    kind: kinds.Mutelist,
+    content: content ?? '',
+    created_at: dayjs().unix(),
+    tags
+  }
+}
+
 export function createProfileDraftEvent(content: string, tags: string[][] = []): TDraftEvent {
   return {
     kind: kinds.Metadata,

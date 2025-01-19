@@ -37,6 +37,8 @@ type TNostrContext = {
   publish: (draftEvent: TDraftEvent, additionalRelayUrls?: string[]) => Promise<Event>
   signHttpAuth: (url: string, method: string) => Promise<string>
   signEvent: (draftEvent: TDraftEvent) => Promise<Event>
+  nip04Encrypt: (pubkey: string, plainText: string) => Promise<string>
+  nip04Decrypt: (pubkey: string, cipherText: string) => Promise<string>
   checkLogin: <T>(cb?: () => T) => Promise<T | void>
   getRelayList: (pubkey: string) => Promise<TRelayList>
   updateRelayListEvent: (relayListEvent: Event) => void
@@ -299,6 +301,14 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     return 'Nostr ' + btoa(JSON.stringify(event))
   }
 
+  const nip04Encrypt = async (pubkey: string, plainText: string) => {
+    return signer?.nip04Encrypt(pubkey, plainText) ?? ''
+  }
+
+  const nip04Decrypt = async (pubkey: string, cipherText: string) => {
+    return signer?.nip04Decrypt(pubkey, cipherText) ?? ''
+  }
+
   const checkLogin = async <T,>(cb?: () => T): Promise<T | void> => {
     if (signer) {
       return cb && cb()
@@ -349,6 +359,8 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         removeAccount,
         publish,
         signHttpAuth,
+        nip04Encrypt,
+        nip04Decrypt,
         checkLogin,
         signEvent,
         getRelayList,

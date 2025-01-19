@@ -1,10 +1,7 @@
 import { BIG_RELAY_URLS } from '@/constants'
-import {
-  getFollowingsFromFollowListEvent,
-  getProfileFromProfileEvent,
-  getRelayListFromRelayListEvent
-} from '@/lib/event'
+import { getProfileFromProfileEvent, getRelayListFromRelayListEvent } from '@/lib/event'
 import { formatPubkey, userIdToPubkey } from '@/lib/pubkey'
+import { extractPubkeysFromEventTags } from '@/lib/tag'
 import { TDraftEvent, TProfile, TRelayInfo, TRelayList } from '@/types'
 import { sha256 } from '@noble/hashes/sha2'
 import DataLoader from 'dataloader'
@@ -437,7 +434,7 @@ class ClientService extends EventTarget {
 
   async fetchFollowings(pubkey: string) {
     const followListEvent = await this.fetchFollowListEvent(pubkey)
-    return followListEvent ? getFollowingsFromFollowListEvent(followListEvent) : []
+    return followListEvent ? extractPubkeysFromEventTags(followListEvent.tags) : []
   }
 
   updateFollowListCache(pubkey: string, event: NEvent) {

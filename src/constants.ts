@@ -7,6 +7,7 @@ export const StorageKey = {
   CURRENT_ACCOUNT: 'currentAccount',
   ACCOUNT_RELAY_LIST_EVENT_MAP: 'accountRelayListEventMap',
   ACCOUNT_FOLLOW_LIST_EVENT_MAP: 'accountFollowListEventMap',
+  ACCOUNT_MUTE_LIST_EVENT_MAP: 'accountMuteListEventMap',
   ACCOUNT_PROFILE_EVENT_MAP: 'accountProfileEventMap',
   ADD_CLIENT_TAG: 'addClientTag'
 }

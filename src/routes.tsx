@@ -2,6 +2,7 @@ import { match } from 'path-to-regexp'
 import { isValidElement } from 'react'
 import FollowingListPage from './pages/secondary/FollowingListPage'
 import HomePage from './pages/secondary/HomePage'
+import MuteListPage from './pages/secondary/MuteListPage'
 import NoteListPage from './pages/secondary/NoteListPage'
 import NotePage from './pages/secondary/NotePage'
 import OthersRelaySettingsPage from './pages/secondary/OthersRelaySettingsPage'
@@ -23,7 +24,8 @@ const ROUTES = [
   { path: '/relay-settings', element: <RelaySettingsPage /> },
   { path: '/settings', element: <SettingsPage /> },
   { path: '/profile-editor', element: <ProfileEditorPage /> },
-  { path: '/relays/:url', element: <RelayPage /> }
+  { path: '/relays/:url', element: <RelayPage /> },
+  { path: '/mutes', element: <MuteListPage /> }
 ]
 
 export const routes = ROUTES.map(({ path, element }) => ({

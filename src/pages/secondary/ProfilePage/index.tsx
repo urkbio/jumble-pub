@@ -13,6 +13,7 @@ import { useFetchRelayList } from '@/hooks/useFetchRelayList'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import {
   toFollowingList,
+  toMuteList,
   toOthersRelaySettings,
   toProfileEditor,
   toRelaySettings
@@ -21,10 +22,12 @@ import { generateImageByPubkey } from '@/lib/pubkey'
 import { SecondaryPageLink, useSecondaryPage } from '@/PageManager'
 import { useFeed } from '@/providers/FeedProvider'
 import { useFollowList } from '@/providers/FollowListProvider'
+import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
+import ProfileOptions from '@/components/ProfileOptions'
 
 export default function ProfilePage({ id, index }: { id?: string; index?: number }) {
   const { t } = useTranslation()
@@ -41,6 +44,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
   )
   const { pubkey: accountPubkey } = useNostr()
   const { followings: selfFollowings } = useFollowList()
+  const { mutePubkeys } = useMuteList()
   const { followings } = useFetchFollowings(profile?.pubkey)
   const isFollowingYou = useMemo(() => {
     return (
@@ -103,6 +107,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
           ) : (
             <FollowButton pubkey={pubkey} />
           )}
+          <ProfileOptions pubkey={pubkey} />
         </div>
         <div className="pt-2">
           <div className="text-xl font-semibold">{username}</div>
@@ -127,11 +132,22 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
               {relayList.originalRelays.length}
               <div className="text-muted-foreground">{t('Relays')}</div>
             </SecondaryPageLink>
+            {isSelf && (
+              <SecondaryPageLink to={toMuteList()} className="flex gap-1 hover:underline w-fit">
+                {mutePubkeys.length}
+                <div className="text-muted-foreground">{t('Muted')}</div>
+              </SecondaryPageLink>
+            )}
           </div>
         </div>
       </div>
       {!isFetchingRelayInfo && (
-        <NoteList filter={{ authors: [pubkey] }} relayUrls={relayUrls} className="mt-2" />
+        <NoteList
+          filter={{ authors: [pubkey] }}
+          relayUrls={relayUrls}
+          className="mt-2"
+          filterMutedNotes={false}
+        />
       )}
     </SecondaryPageLayout>
   )

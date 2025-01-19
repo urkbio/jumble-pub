@@ -62,11 +62,17 @@ export type TDraftEvent = Pick<Event, 'content' | 'created_at' | 'kind' | 'tags'
 export type TNip07 = {
   getPublicKey: () => Promise<string | null>
   signEvent: (draftEvent: TDraftEvent) => Promise<Event | null>
+  nip04?: {
+    encrypt?: (pubkey: string, plainText: string) => Promise<string>
+    decrypt?: (pubkey: string, cipherText: string) => Promise<string>
+  }
 }
 
 export interface ISigner {
   getPublicKey: () => Promise<string | null>
   signEvent: (draftEvent: TDraftEvent) => Promise<Event | null>
+  nip04Encrypt: (pubkey: string, plainText: string) => Promise<string>
+  nip04Decrypt: (pubkey: string, cipherText: string) => Promise<string>
 }
 
 export type TSignerType = 'nsec' | 'nip-07' | 'bunker' | 'browser-nsec' | 'ncryptsec'

@@ -49,6 +49,7 @@ export default {
     Note: '笔记',
     "username's following": '{{username}} 的关注',
     "username's used relays": '{{username}} 使用的服务器',
+    "username's muted": '{{username}} 屏蔽的用户',
     Login: '登录',
     'Follows you': '关注了你',
     'Relay Settings': '服务器设置',
@@ -147,6 +148,12 @@ export default {
     password: '密码',
     'Save to': '保存到',
     'Enter a name for the new relay set': '输入新服务器组的名称',
-    'Save to a new relay set': '保存到新服务器组'
+    'Save to a new relay set': '保存到新服务器组',
+    Mute: '屏蔽',
+    Muted: '已屏蔽',
+    Unmute: '取消屏蔽',
+    'mute author': '屏蔽作者',
+    'mute user': '屏蔽用户',
+    'unmute user': '取消屏蔽用户'
   }
 }

@@ -67,18 +67,6 @@ export function getUsingClient(event: Event) {
   return event.tags.find(tagNameEquals('client'))?.[1]
 }
 
-export function getFollowingsFromFollowListEvent(event: Event) {
-  return Array.from(
-    new Set(
-      event.tags
-        .filter(tagNameEquals('p'))
-        .map(([, pubkey]) => pubkey)
-        .filter(Boolean)
-        .reverse()
-    )
-  )
-}
-
 export function getRelayListFromRelayListEvent(event?: Event) {
   if (!event) {
     return { write: BIG_RELAY_URLS, read: BIG_RELAY_URLS, originalRelays: [] }
@@ -291,4 +279,8 @@ export function extractEmbeddedNotesFromContent(content: string) {
   c = c.replace(/\n{3,}/g, '\n\n').trim()
 
   return { embeddedNotes, contentWithoutEmbeddedNotes: c }
+}
+
+export function getLatestEvent(events: Event[]) {
+  return events.sort((a, b) => b.created_at - a.created_at)[0]
 }

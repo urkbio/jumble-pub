@@ -1,5 +1,5 @@
 import { createFollowListDraftEvent } from '@/lib/draft-event'
-import { getFollowingsFromFollowListEvent } from '@/lib/event'
+import { extractPubkeysFromEventTags } from '@/lib/tag'
 import client from '@/services/client.service'
 import storage from '@/services/storage.service'
 import { Event } from 'nostr-tools'
@@ -30,7 +30,7 @@ export function FollowListProvider({ children }: { children: React.ReactNode }) 
   const [followListEvent, setFollowListEvent] = useState<Event | undefined>(undefined)
   const [isFetching, setIsFetching] = useState(true)
   const followings = useMemo(
-    () => (followListEvent ? getFollowingsFromFollowListEvent(followListEvent) : []),
+    () => (followListEvent ? extractPubkeysFromEventTags(followListEvent.tags) : []),
     [followListEvent]
   )
 
@@ -87,7 +87,7 @@ export function FollowListProvider({ children }: { children: React.ReactNode }) 
   const getFollowings = async (pubkey: string) => {
     const followListEvent = storage.getAccountFollowListEvent(pubkey)
     if (followListEvent) {
-      return getFollowingsFromFollowListEvent(followListEvent)
+      return extractPubkeysFromEventTags(followListEvent.tags)
     }
     return await client.fetchFollowings(pubkey)
   }

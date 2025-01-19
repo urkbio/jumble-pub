@@ -42,3 +42,23 @@ export function extractImageInfoFromTag(tag: string[]): TImageInfo | null {
   }
   return image
 }
+
+export function extractPubkeysFromEventTags(tags: string[][]) {
+  return Array.from(
+    new Set(
+      tags
+        .filter(tagNameEquals('p'))
+        .map(([, pubkey]) => pubkey)
+        .filter(Boolean)
+        .reverse()
+    )
+  )
+}
+
+export function isSameTag(tag1: string[], tag2: string[]) {
+  if (tag1.length !== tag2.length) return false
+  for (let i = 0; i < tag1.length; i++) {
+    if (tag1[i] !== tag2[i]) return false
+  }
+  return true
+}

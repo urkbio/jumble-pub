@@ -23,4 +23,24 @@ export class Nip07Signer implements ISigner {
   async signEvent(draftEvent: TDraftEvent) {
     return await this.signer.signEvent(draftEvent)
   }
+
+  async nip04Encrypt(pubkey: string, plainText: string) {
+    if (!this.signer) {
+      throw new Error('Not logged in')
+    }
+    if (!this.signer.nip04?.encrypt) {
+      throw new Error('The extension you are using does not support nip04 encryption')
+    }
+    return await this.signer.nip04.encrypt(pubkey, plainText)
+  }
+
+  async nip04Decrypt(pubkey: string, cipherText: string) {
+    if (!this.signer) {
+      throw new Error('Not logged in')
+    }
+    if (!this.signer.nip04?.decrypt) {
+      throw new Error('The extension you are using does not support nip04 decryption')
+    }
+    return await this.signer.nip04.decrypt(pubkey, cipherText)
+  }
 }

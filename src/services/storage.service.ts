@@ -28,6 +28,7 @@ class StorageService {
   private currentAccount: TAccount | null = null
   private accountRelayListEventMap: Record<string, Event | undefined> = {} // pubkey -> relayListEvent
   private accountFollowListEventMap: Record<string, Event | undefined> = {} // pubkey -> followListEvent
+  private accountMuteListEventMap: Record<string, Event | undefined> = {} // pubkey -> muteListEvent
   private accountProfileEventMap: Record<string, Event | undefined> = {} // pubkey -> profileEvent
 
   constructor() {
@@ -59,6 +60,12 @@ class StorageService {
     )
     this.accountFollowListEventMap = accountFollowListEventMapStr
       ? JSON.parse(accountFollowListEventMapStr)
+      : {}
+    const accountMuteListEventMapStr = window.localStorage.getItem(
+      StorageKey.ACCOUNT_MUTE_LIST_EVENT_MAP
+    )
+    this.accountMuteListEventMap = accountMuteListEventMapStr
+      ? JSON.parse(accountMuteListEventMapStr)
       : {}
     const accountProfileEventMapStr = window.localStorage.getItem(
       StorageKey.ACCOUNT_PROFILE_EVENT_MAP
@@ -176,11 +183,16 @@ class StorageService {
     this.accounts = this.accounts.filter((act) => !isSameAccount(act, account))
     delete this.accountFollowListEventMap[account.pubkey]
     delete this.accountRelayListEventMap[account.pubkey]
+    delete this.accountMuteListEventMap[account.pubkey]
     delete this.accountProfileEventMap[account.pubkey]
     window.localStorage.setItem(StorageKey.ACCOUNTS, JSON.stringify(this.accounts))
     window.localStorage.setItem(
       StorageKey.ACCOUNT_FOLLOW_LIST_EVENT_MAP,
       JSON.stringify(this.accountFollowListEventMap)
+    )
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_MUTE_LIST_EVENT_MAP,
+      JSON.stringify(this.accountMuteListEventMap)
     )
     window.localStorage.setItem(
       StorageKey.ACCOUNT_RELAY_LIST_EVENT_MAP,
@@ -240,6 +252,26 @@ class StorageService {
     window.localStorage.setItem(
       StorageKey.ACCOUNT_FOLLOW_LIST_EVENT_MAP,
       JSON.stringify(this.accountFollowListEventMap)
+    )
+    return true
+  }
+
+  getAccountMuteListEvent(pubkey: string) {
+    return this.accountMuteListEventMap[pubkey]
+  }
+
+  setAccountMuteListEvent(muteListEvent: Event) {
+    const pubkey = muteListEvent.pubkey
+    if (
+      this.accountMuteListEventMap[pubkey] &&
+      this.accountMuteListEventMap[pubkey].created_at > muteListEvent.created_at
+    ) {
+      return false
+    }
+    this.accountMuteListEventMap[pubkey] = muteListEvent
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_MUTE_LIST_EVENT_MAP,
+      JSON.stringify(this.accountMuteListEventMap)
     )
     return true
   }

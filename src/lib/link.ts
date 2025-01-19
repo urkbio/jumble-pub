@@ -38,6 +38,7 @@ export const toRelaySettings = (tag?: 'mailbox' | 'relay-sets') => {
 export const toSettings = () => '/settings'
 export const toProfileEditor = () => '/profile-editor'
 export const toRelay = (url: string) => `/relays/${encodeURIComponent(url)}`
+export const toMuteList = () => '/mutes'
 
 export const toNoStrudelProfile = (id: string) => `https://nostrudel.ninja/#/u/${id}`
 export const toNoStrudelNote = (id: string) => `https://nostrudel.ninja/#/n/${id}`
