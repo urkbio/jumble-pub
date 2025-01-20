@@ -7,6 +7,8 @@ import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import client from '@/services/client.service'
+import storage from '@/services/storage.service'
+import { TNoteListMode } from '@/types'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
@@ -18,8 +20,6 @@ import PictureNoteCard from '../PictureNoteCard'
 const NORMAL_RELAY_LIMIT = 100
 const ALGO_RELAY_LIMIT = 500
 const PICTURE_NOTE_LIMIT = 30
-
-type TListMode = 'posts' | 'postsAndReplies' | 'pictures'
 
 export default function NoteList({
   relayUrls,
@@ -43,7 +43,7 @@ export default function NoteList({
   const [newEvents, setNewEvents] = useState<Event[]>([])
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [refreshing, setRefreshing] = useState(true)
-  const [listMode, setListMode] = useState<TListMode>('posts')
+  const [listMode, setListMode] = useState<TNoteListMode>(() => storage.getNoteListMode())
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const isPictures = useMemo(() => listMode === 'pictures', [listMode])
   const noteFilter = useMemo(() => {
@@ -171,7 +171,13 @@ export default function NoteList({
 
   return (
     <div className={cn('space-y-2 sm:space-y-2', className)}>
-      <ListModeSwitch listMode={listMode} setListMode={setListMode} />
+      <ListModeSwitch
+        listMode={listMode}
+        setListMode={(listMode) => {
+          setListMode(listMode)
+          storage.setNoteListMode(listMode)
+        }}
+      />
       <PullToRefresh
         onRefresh={async () => {
           setRefreshCount((count) => count + 1)
@@ -223,8 +229,8 @@ function ListModeSwitch({
   listMode,
   setListMode
 }: {
-  listMode: TListMode
-  setListMode: (listMode: TListMode) => void
+  listMode: TNoteListMode
+  setListMode: (listMode: TNoteListMode) => void
 }) {
   const { t } = useTranslation()
 

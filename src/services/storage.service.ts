@@ -1,7 +1,14 @@
 import { StorageKey } from '@/constants'
 import { isSameAccount } from '@/lib/account'
 import { randomString } from '@/lib/random'
-import { TAccount, TAccountPointer, TFeedType, TRelaySet, TThemeSetting } from '@/types'
+import {
+  TAccount,
+  TAccountPointer,
+  TFeedType,
+  TNoteListMode,
+  TRelaySet,
+  TThemeSetting
+} from '@/types'
 import { Event } from 'nostr-tools'
 
 const DEFAULT_RELAY_SETS: TRelaySet[] = [
@@ -26,6 +33,7 @@ class StorageService {
   private themeSetting: TThemeSetting = 'system'
   private accounts: TAccount[] = []
   private currentAccount: TAccount | null = null
+  private noteListMode: TNoteListMode = 'posts'
   private accountRelayListEventMap: Record<string, Event | undefined> = {} // pubkey -> relayListEvent
   private accountFollowListEventMap: Record<string, Event | undefined> = {} // pubkey -> followListEvent
   private accountMuteListEventMap: Record<string, Event | undefined> = {} // pubkey -> muteListEvent
@@ -52,6 +60,11 @@ class StorageService {
     this.currentAccount = currentAccountStr ? JSON.parse(currentAccountStr) : null
     const feedTypeStr = window.localStorage.getItem(StorageKey.FEED_TYPE)
     this.feedType = feedTypeStr ? JSON.parse(feedTypeStr) : 'relays'
+    const noteListModeStr = window.localStorage.getItem(StorageKey.NOTE_LIST_MODE)
+    this.noteListMode =
+      noteListModeStr && ['posts', 'postsAndReplies', 'pictures'].includes(noteListModeStr)
+        ? (noteListModeStr as TNoteListMode)
+        : 'posts'
 
     const accountRelayListEventMapStr = window.localStorage.getItem(
       StorageKey.ACCOUNT_RELAY_LIST_EVENT_MAP
@@ -154,6 +167,15 @@ class StorageService {
   setThemeSetting(themeSetting: TThemeSetting) {
     window.localStorage.setItem(StorageKey.THEME_SETTING, themeSetting)
     this.themeSetting = themeSetting
+  }
+
+  getNoteListMode() {
+    return this.noteListMode
+  }
+
+  setNoteListMode(mode: TNoteListMode) {
+    window.localStorage.setItem(StorageKey.NOTE_LIST_MODE, mode)
+    this.noteListMode = mode
   }
 
   getAccounts() {

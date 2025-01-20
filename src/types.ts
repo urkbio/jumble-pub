@@ -93,3 +93,5 @@ export type TFeedType = 'following' | 'relays' | 'temporary'
 export type TLanguage = 'en' | 'zh'
 
 export type TImageInfo = { url: string; blurHash?: string; dim?: { width: number; height: number } }
+
+export type TNoteListMode = 'posts' | 'postsAndReplies' | 'pictures'
