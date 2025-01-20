@@ -70,7 +70,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
 
   useEffect(() => {
     if (window.location.pathname !== '/') {
-      pushSecondaryPage(window.location.pathname + window.location.search)
+      pushSecondaryPage(window.location.pathname + window.location.search + window.location.hash)
     }
 
     const onPopState = (e: PopStateEvent) => {
