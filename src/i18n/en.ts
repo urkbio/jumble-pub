@@ -159,6 +159,7 @@ export default {
     Append: 'Append',
     'Select relays to append': 'Select relays to append',
     'calculating...': 'calculating...',
-    'Calculate optimal read relays': 'Calculate optimal read relays'
+    'Calculate optimal read relays': 'Calculate optimal read relays',
+    'Login to set': 'Login to set'
   }
 }

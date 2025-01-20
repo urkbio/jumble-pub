@@ -11,7 +11,7 @@ import SaveButton from './SaveButton'
 
 export default function MailboxSetting() {
   const { t } = useTranslation()
-  const { pubkey, relayList } = useNostr()
+  const { pubkey, relayList, checkLogin } = useNostr()
   const [relays, setRelays] = useState<TMailboxRelay[]>([])
   const [hasChange, setHasChange] = useState(false)
 
@@ -22,7 +22,13 @@ export default function MailboxSetting() {
   }, [relayList])
 
   if (!pubkey) {
-    return <Button size="lg">Login to set</Button>
+    return (
+      <div className="flex flex-col w-full items-center">
+        <Button size="lg" onClick={() => checkLogin()}>
+          {t('Login to set')}
+        </Button>
+      </div>
+    )
   }
 
   if (!relayList) {

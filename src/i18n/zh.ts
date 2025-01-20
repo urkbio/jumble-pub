@@ -160,6 +160,7 @@ export default {
     Append: '追加',
     'Select relays to append': '选择要追加的服务器',
     'calculating...': '计算中...',
-    'Calculate optimal read relays': '计算最佳读服务器'
+    'Calculate optimal read relays': '计算最佳读服务器',
+    'Login to set': '登录后设置'
   }
 }
