@@ -54,7 +54,8 @@ class ClientService extends EventTarget {
   private relayListEventDataLoader = new DataLoader<string, NEvent | undefined>(
     this.relayListEventBatchLoadFn.bind(this),
     {
-      cacheMap: new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 })
+      cacheMap: new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 }),
+      maxBatchSize: 10
     }
   )
   private relayInfoDataLoader = new DataLoader<string, TRelayInfo | undefined>(async (urls) => {
@@ -444,6 +445,58 @@ class ClientService extends EventTarget {
   async fetchRelayInfos(urls: string[]) {
     const infos = await this.relayInfoDataLoader.loadMany(urls)
     return infos.map((info) => (info ? (info instanceof Error ? undefined : info) : undefined))
+  }
+
+  async calculateOptimalReadRelays(pubkey: string) {
+    const followings = await this.fetchFollowings(pubkey)
+    const [selfRelayListEvent, ...relayListEvents] = await this.relayListEventDataLoader.loadMany([
+      pubkey,
+      ...followings
+    ])
+    const selfReadRelays =
+      selfRelayListEvent && !(selfRelayListEvent instanceof Error)
+        ? getRelayListFromRelayListEvent(selfRelayListEvent).read
+        : []
+    const pubkeyRelayListMap = new Map<string, string[]>()
+    relayListEvents.forEach((evt) => {
+      if (evt && !(evt instanceof Error)) {
+        pubkeyRelayListMap.set(evt.pubkey, getRelayListFromRelayListEvent(evt).write)
+      }
+    })
+
+    let uncoveredPubkeys = [...followings]
+    const readRelays: { url: string; pubkeys: string[] }[] = []
+    while (uncoveredPubkeys.length) {
+      const relayMap = new Map<string, string[]>()
+      uncoveredPubkeys.forEach((pubkey) => {
+        const relays = pubkeyRelayListMap.get(pubkey)
+        if (relays) {
+          relays.forEach((url) => {
+            relayMap.set(url, (relayMap.get(url) || []).concat(pubkey))
+          })
+        }
+      })
+      let maxCoveredRelay: { url: string; pubkeys: string[] } | undefined
+      for (const [url, pubkeys] of relayMap.entries()) {
+        if (!maxCoveredRelay) {
+          maxCoveredRelay = { url, pubkeys }
+        } else if (pubkeys.length > maxCoveredRelay.pubkeys.length) {
+          maxCoveredRelay = { url, pubkeys }
+        } else if (
+          pubkeys.length === maxCoveredRelay.pubkeys.length &&
+          selfReadRelays.includes(url)
+        ) {
+          maxCoveredRelay = { url, pubkeys }
+        }
+      }
+      if (!maxCoveredRelay) break
+
+      readRelays.push(maxCoveredRelay)
+      uncoveredPubkeys = uncoveredPubkeys.filter(
+        (pubkey) => !maxCoveredRelay!.pubkeys.includes(pubkey)
+      )
+    }
+    return readRelays
   }
 
   private async fetchEventById(relayUrls: string[], id: string): Promise<NEvent | undefined> {

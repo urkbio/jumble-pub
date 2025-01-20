@@ -12,6 +12,7 @@ export default {
     Profile: 'Profile',
     Logout: 'Logout',
     Following: 'Following',
+    followings: 'followings',
     reposted: 'reposted',
     'just now': 'just now',
     'n minutes ago': '{{n}} minutes ago',
@@ -153,6 +154,11 @@ export default {
     Unmute: 'Unmute',
     'mute author': 'mute author',
     'mute user': 'mute user',
-    'unmute user': 'unmute user'
+    'unmute user': 'unmute user',
+    'Append n relays': 'Append {{n}} relays',
+    Append: 'Append',
+    'Select relays to append': 'Select relays to append',
+    'calculating...': 'calculating...',
+    'Calculate optimal read relays': 'Calculate optimal read relays'
   }
 }

@@ -12,6 +12,7 @@ export default {
     Profile: '个人资料',
     Logout: '退出登录',
     Following: '关注',
+    followings: '关注',
     reposted: '转发',
     'just now': '刚刚',
     'n minutes ago': '{{n}} 分钟前',
@@ -154,6 +155,11 @@ export default {
     Unmute: '取消屏蔽',
     'mute author': '屏蔽作者',
     'mute user': '屏蔽用户',
-    'unmute user': '取消屏蔽用户'
+    'unmute user': '取消屏蔽用户',
+    'Append n relays': '追加 {{n}} 个服务器',
+    Append: '追加',
+    'Select relays to append': '选择要追加的服务器',
+    'calculating...': '计算中...',
+    'Calculate optimal read relays': '计算最佳读服务器'
   }
 }
