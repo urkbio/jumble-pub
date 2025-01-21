@@ -192,6 +192,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const nip07Login = async () => {
     try {
       const nip07Signer = new Nip07Signer()
+      await nip07Signer.init()
       const pubkey = await nip07Signer.getPublicKey()
       if (!pubkey) {
         throw new Error('You did not allow to access your pubkey')
@@ -253,6 +254,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       }
     } else if (account.signerType === 'nip-07') {
       const nip07Signer = new Nip07Signer()
+      await nip07Signer.init()
       return login(nip07Signer, account)
     } else if (account.signerType === 'bunker') {
       if (account.bunker && account.bunkerClientSecretKey) {
