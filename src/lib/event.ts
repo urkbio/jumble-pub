@@ -17,17 +17,20 @@ export function isReplyNoteEvent(event: Event) {
   if (event.kind !== kinds.ShortTextNote) return false
 
   let hasETag = false
-  let hasMarker = false
+  let hasMentionMarker = false
   for (const [tagName, , , marker] of event.tags) {
     if (tagName !== 'e') continue
     hasETag = true
 
     if (!marker) continue
-    hasMarker = true
+    if (marker === 'mention') {
+      hasMentionMarker = true
+      continue
+    }
 
     if (['root', 'reply'].includes(marker)) return true
   }
-  return hasETag && !hasMarker
+  return hasETag && !hasMentionMarker
 }
 
 export function isCommentEvent(event: Event) {
@@ -39,11 +42,13 @@ export function isPictureEvent(event: Event) {
 }
 
 export function getParentEventId(event?: Event) {
-  return event?.tags.find(isReplyETag)?.[1]
+  if (!event || !isReplyNoteEvent(event)) return undefined
+  return event.tags.find(isReplyETag)?.[1] ?? event.tags.find(tagNameEquals('e'))?.[1]
 }
 
 export function getRootEventId(event?: Event) {
-  return event?.tags.find(isRootETag)?.[1]
+  if (!event || !isReplyNoteEvent(event)) return undefined
+  return event.tags.find(isRootETag)?.[1]
 }
 
 export function isReplaceable(kind: number) {

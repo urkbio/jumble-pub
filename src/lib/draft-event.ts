@@ -60,7 +60,7 @@ export async function createShortTextNoteDraftEvent(
   const tags = pubkeys
     .map((pubkey) => ['p', pubkey])
     .concat(otherRelatedEventIds.map((eventId) => ['e', eventId]))
-    .concat(quoteEventIds.map((eventId) => ['q', eventId]))
+    .concat(quoteEventIds.map((eventId) => ['q', eventId, '', 'mention']))
     .concat(hashtags.map((hashtag) => ['t', hashtag]))
 
   if (rootEventId) {
