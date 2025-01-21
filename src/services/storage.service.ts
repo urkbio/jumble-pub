@@ -14,8 +14,8 @@ import { Event } from 'nostr-tools'
 const DEFAULT_RELAY_SETS: TRelaySet[] = [
   {
     id: randomString(),
-    name: 'Short Notes',
-    relayUrls: ['wss://140.f7z.io/']
+    name: 'Global',
+    relayUrls: ['wss://relay.damus.io/', 'wss://nos.lol/']
   },
   {
     id: randomString(),
@@ -24,8 +24,13 @@ const DEFAULT_RELAY_SETS: TRelaySet[] = [
   },
   {
     id: randomString(),
-    name: 'Global',
-    relayUrls: ['wss://relay.damus.io/', 'wss://nos.lol/']
+    name: 'Short Notes',
+    relayUrls: ['wss://140.f7z.io/']
+  },
+  {
+    id: randomString(),
+    name: 'News',
+    relayUrls: ['wss://news.utxo.one/']
   },
   {
     id: randomString(),
