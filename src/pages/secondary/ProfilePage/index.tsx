@@ -73,7 +73,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
   }
   if (!profile) return <NotFoundPage />
 
-  const { banner, username, nip05, about, avatar, pubkey } = profile
+  const { banner, username, about, avatar, pubkey } = profile
   return (
     <SecondaryPageLayout index={index} title={username} displayScrollToTopButton>
       <div className="px-4">
@@ -111,7 +111,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
         </div>
         <div className="pt-2">
           <div className="text-xl font-semibold">{username}</div>
-          {nip05 && <Nip05 nip05={nip05} pubkey={pubkey} />}
+          <Nip05 pubkey={pubkey} />
           <div className="flex gap-1 mt-1">
             <PubkeyCopy pubkey={pubkey} />
             <QrCodePopover pubkey={pubkey} />

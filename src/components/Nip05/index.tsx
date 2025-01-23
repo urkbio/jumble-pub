@@ -1,8 +1,12 @@
+import { useFetchProfile } from '@/hooks'
 import { useFetchNip05 } from '@/hooks/useFetchNip05'
 import { BadgeAlert, BadgeCheck } from 'lucide-react'
 
-export default function Nip05({ nip05, pubkey }: { nip05?: string; pubkey: string }) {
-  const { nip05IsVerified, nip05Name, nip05Domain } = useFetchNip05(nip05, pubkey)
+export default function Nip05({ pubkey }: { pubkey: string }) {
+  const { profile } = useFetchProfile(pubkey)
+  const { nip05IsVerified, nip05Name, nip05Domain } = useFetchNip05(profile?.nip05, pubkey)
+
+  if (!profile?.nip05) return null
 
   return (
     nip05Name &&
