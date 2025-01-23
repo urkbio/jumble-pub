@@ -81,8 +81,12 @@ function ParentNote({ eventId }: { eventId?: string }) {
         className="flex space-x-1 p-1 items-center clickable text-sm text-muted-foreground hover:text-foreground"
         onClick={() => push(toNote(event))}
       >
-        <UserAvatar userId={event.pubkey} size="tiny" />
-        <Username userId={event.pubkey} className="font-semibold" skeletonClassName="h-4" />
+        <UserAvatar userId={event.pubkey} size="tiny" className="shrink-0" />
+        <Username
+          userId={event.pubkey}
+          className="font-semibold"
+          skeletonClassName="h-4 shrink-0"
+        />
         <div className="truncate">{event.content}</div>
       </Card>
       <div className="ml-5 w-px h-2 bg-border" />
