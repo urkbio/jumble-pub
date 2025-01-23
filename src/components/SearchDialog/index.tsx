@@ -76,7 +76,7 @@ export function SearchDialog({ open, setOpen }: { open: boolean; setOpen: Dispat
   return (
     <CommandDialog open={open} onOpenChange={setOpen} classNames={{ content: 'max-sm:top-0' }}>
       <CommandInput value={input} onValueChange={setInput} />
-      <CommandList>{list}</CommandList>
+      <CommandList scrollAreaClassName="max-h-[80vh]">{list}</CommandList>
     </CommandDialog>
   )
 }

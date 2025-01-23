@@ -1,10 +1,4 @@
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList
-} from '@/components/ui/command'
+import { Command, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Textarea } from '@/components/ui/textarea'
 import { useSearchProfiles } from '@/hooks'
 import { pubkeyToNpub } from '@/lib/pubkey'
@@ -159,31 +153,29 @@ export default function TextareaWithMentions({
       <Command
         ref={dropdownRef}
         className={cn(
-          'sm:fixed hidden translate-y-2 h-auto max-h-44 w-full sm:w-[462px] z-10 overflow-auto border border-popover shadow'
+          'sm:fixed hidden translate-y-2 h-auto w-full sm:w-[462px] z-10 border border-popover shadow'
         )}
         shouldFilter={false}
       >
         <div className="hidden">
           <CommandInput ref={inputRef} value={commandValue} />
         </div>
-        <CommandList>
-          <CommandGroup>
-            {profiles.map((p) => {
-              return (
-                <CommandItem
-                  key={p.pubkey}
-                  value={`nostr:${pubkeyToNpub(p.pubkey)}`}
-                  onSelect={onCommandSelect}
-                >
-                  <div className="flex gap-2 items-center pointer-events-none">
-                    <SimpleUserAvatar userId={p.pubkey} />
-                    <SimpleUsername userId={p.pubkey} className="font-semibold" />
-                    <Nip05 pubkey={p.pubkey} />
-                  </div>
-                </CommandItem>
-              )
-            })}
-          </CommandGroup>
+        <CommandList scrollAreaClassName="h-44">
+          {profiles.map((p) => {
+            return (
+              <CommandItem
+                key={p.pubkey}
+                value={`nostr:${pubkeyToNpub(p.pubkey)}`}
+                onSelect={onCommandSelect}
+              >
+                <div className="flex gap-2 items-center pointer-events-none truncate">
+                  <SimpleUserAvatar userId={p.pubkey} />
+                  <SimpleUsername userId={p.pubkey} className="font-semibold truncate" />
+                  <Nip05 pubkey={p.pubkey} />
+                </div>
+              </CommandItem>
+            )
+          })}
         </CommandList>
       </Command>
     </div>
