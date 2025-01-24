@@ -47,7 +47,7 @@ export default function SecondaryPageLayout({
             controls={controls}
             hideBackButton={hideBackButton}
           />
-          <div className="pb-4 mt-2">{children}</div>
+          {children}
           {displayScrollToTopButton && <ScrollToTopButton />}
           <BottomNavigationBar />
         </div>
@@ -63,7 +63,7 @@ export default function SecondaryPageLayout({
         ref={scrollAreaRef}
       >
         <SecondaryPageTitlebar title={title} controls={controls} hideBackButton={hideBackButton} />
-        <div className="pb-4 mt-2">{children}</div>
+        {children}
       </ScrollArea>
       {displayScrollToTopButton && <ScrollToTopButton scrollAreaRef={scrollAreaRef} />}
     </DeepBrowsingProvider>
