@@ -3,6 +3,7 @@ import { PICTURE_EVENT_KIND } from '@/constants'
 import { isReplyNoteEvent } from '@/lib/event'
 import { checkAlgoRelay } from '@/lib/relay'
 import { cn } from '@/lib/utils'
+import { useDeepBrowsing } from '@/providers/DeepBrowsingProvider'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
@@ -236,9 +237,15 @@ function ListModeSwitch({
   setListMode: (listMode: TNoteListMode) => void
 }) {
   const { t } = useTranslation()
+  const { deepBrowsing } = useDeepBrowsing()
 
   return (
-    <div>
+    <div
+      className={cn(
+        'sticky top-12 bg-background z-10 duration-700 transition-transform',
+        deepBrowsing ? '-translate-y-[calc(100%+12rem)]' : ''
+      )}
+    >
       <div className="flex">
         <div
           className={`w-1/3 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${listMode === 'posts' ? '' : 'text-muted-foreground'}`}
