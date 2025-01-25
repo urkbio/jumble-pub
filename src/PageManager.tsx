@@ -74,12 +74,15 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
       setSecondaryStack((prevStack) => {
         if (isCurrentPage(prevStack, url)) return prevStack
 
-        const { newStack } = pushNewPageToStack(
+        const { newStack, newItem } = pushNewPageToStack(
           prevStack,
           url,
           maxStackSize,
           window.history.state?.index
         )
+        if (newItem) {
+          window.history.replaceState({ index: newItem.index, url }, '', url)
+        }
         return newStack
       })
     }

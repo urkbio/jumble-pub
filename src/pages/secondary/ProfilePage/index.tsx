@@ -3,6 +3,7 @@ import Nip05 from '@/components/Nip05'
 import NoteList from '@/components/NoteList'
 import ProfileAbout from '@/components/ProfileAbout'
 import ProfileBanner from '@/components/ProfileBanner'
+import ProfileOptions from '@/components/ProfileOptions'
 import PubkeyCopy from '@/components/PubkeyCopy'
 import QrCodePopover from '@/components/QrCodePopover'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -27,7 +28,6 @@ import { useNostr } from '@/providers/NostrProvider'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
-import ProfileOptions from '@/components/ProfileOptions'
 
 export default function ProfilePage({ id, index }: { id?: string; index?: number }) {
   const { t } = useTranslation()
@@ -39,7 +39,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
     () =>
       relayList.write.length < 4
         ? relayList.write.concat(currentRelayUrls).slice(0, 4)
-        : relayList.write.slice(0, 4),
+        : relayList.write.slice(0, 8),
     [relayList, currentRelayUrls]
   )
   const { pubkey: accountPubkey } = useNostr()
