@@ -60,6 +60,7 @@ export default function NoteList({
       ...filter
     }
   }, [JSON.stringify(filter), isPictures])
+  const topRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (relayUrls.length === 0) return
@@ -174,14 +175,16 @@ export default function NoteList({
   }
 
   return (
-    <div className={cn('space-y-2 sm:space-y-2', className)}>
+    <div className={className}>
       <ListModeSwitch
         listMode={listMode}
         setListMode={(listMode) => {
           setListMode(listMode)
+          topRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' })
           storage.setNoteListMode(listMode)
         }}
       />
+      <div ref={topRef} />
       <PullToRefresh
         onRefresh={async () => {
           setRefreshCount((count) => count + 1)
