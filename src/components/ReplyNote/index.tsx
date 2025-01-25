@@ -1,3 +1,5 @@
+import { useSecondaryPage } from '@/PageManager'
+import { toNote } from '@/lib/link'
 import { Event } from 'nostr-tools'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -21,11 +23,13 @@ export default function ReplyNote({
   highlight?: boolean
 }) {
   const { t } = useTranslation()
+  const { push } = useSecondaryPage()
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false)
 
   return (
     <div
-      className={`flex space-x-2 items-start rounded-lg p-2 transition-colors duration-500 ${highlight ? 'bg-highlight/50' : ''}`}
+      className={`flex space-x-2 items-start rounded-lg p-2 transition-colors duration-500 clickable ${highlight ? 'bg-highlight/50' : ''}`}
+      onClick={() => push(toNote(event.id))}
     >
       <UserAvatar userId={event.pubkey} size="small" className="shrink-0" />
       <div className="w-full overflow-hidden space-y-1">
@@ -35,7 +39,13 @@ export default function ReplyNote({
           skeletonClassName="h-3"
         />
         {parentEvent && (
-          <ParentNotePreview event={parentEvent} onClick={() => onClickParent(parentEvent.id)} />
+          <ParentNotePreview
+            event={parentEvent}
+            onClick={(e) => {
+              e.stopPropagation()
+              onClickParent(parentEvent.id)
+            }}
+          />
         )}
         <Content event={event} size="small" />
         <div className="flex gap-2 text-xs">
@@ -44,7 +54,10 @@ export default function ReplyNote({
           </div>
           <div
             className="text-muted-foreground hover:text-primary cursor-pointer"
-            onClick={() => setIsPostDialogOpen(true)}
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsPostDialogOpen(true)
+            }}
           >
             {t('reply')}
           </div>
