@@ -17,12 +17,15 @@ export function SearchDialog({ open, setOpen }: { open: boolean; setOpen: Dispat
   const [debouncedInput, setDebouncedInput] = useState(input)
   const { profiles } = useSearchProfiles(debouncedInput, 10)
   const normalizedUrl = useMemo(() => {
+    if (['w', 'ws', 'ws:', 'ws:/', 'wss', 'wss:', 'wss:/'].includes(input)) {
+      return undefined
+    }
     try {
-      return normalizeUrl(debouncedInput)
+      return normalizeUrl(input)
     } catch {
       return undefined
     }
-  }, [debouncedInput])
+  }, [input])
 
   const list = useMemo(() => {
     const search = input.trim()
@@ -55,9 +58,9 @@ export function SearchDialog({ open, setOpen }: { open: boolean; setOpen: Dispat
 
     return (
       <>
-        {!!normalizedUrl && <RelayItem url={normalizedUrl} onClick={() => setOpen(false)} />}
         <NormalItem search={search} onClick={() => setOpen(false)} />
         <HashtagItem search={search} onClick={() => setOpen(false)} />
+        {!!normalizedUrl && <RelayItem url={normalizedUrl} onClick={() => setOpen(false)} />}
         {profiles.map((profile) => (
           <ProfileItem key={profile.pubkey} profile={profile} onClick={() => setOpen(false)} />
         ))}

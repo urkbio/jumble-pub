@@ -194,7 +194,7 @@ export default function NoteList({
       >
         <div className="space-y-2 sm:space-y-2">
           {newEvents.filter(eventFilter).length > 0 && (
-            <div className="flex justify-center w-full max-sm:mt-2">
+            <div className="flex justify-center w-full mt-2">
               <Button size="lg" onClick={showNewEvents}>
                 {t('show new notes')}
               </Button>
@@ -219,7 +219,7 @@ export default function NoteList({
             ) : events.length ? (
               t('no more notes')
             ) : (
-              <div className="flex justify-center w-full max-sm:mt-2">
+              <div className="flex justify-center w-full mt-2">
                 <Button size="lg" onClick={() => setRefreshCount((pre) => pre + 1)}>
                   {t('reload notes')}
                 </Button>
