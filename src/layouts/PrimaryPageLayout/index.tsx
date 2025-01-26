@@ -30,11 +30,10 @@ const PrimaryPageLayout = forwardRef(
       ref,
       () => ({
         scrollToTop: () => {
-          if (isSmallScreen) {
-            window.scrollTo({ top: 0 })
-            return
+          if (scrollAreaRef.current) {
+            return scrollAreaRef.current.scrollTo({ top: 0, behavior: 'smooth' })
           }
-          scrollAreaRef.current?.scrollTo({ top: 0 })
+          window.scrollTo({ top: 0, behavior: 'smooth' })
         }
       }),
       []

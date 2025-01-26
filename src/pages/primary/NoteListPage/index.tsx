@@ -4,16 +4,18 @@ import { Button } from '@/components/ui/button'
 import PrimaryPageLayout from '@/layouts/PrimaryPageLayout'
 import { useFeed } from '@/providers/FeedProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { useEffect, useRef } from 'react'
+import { TPageRef } from '@/types'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import FeedButton from './FeedButton'
 import SearchButton from './SearchButton'
 
-export default function NoteListPage() {
+const NoteListPage = forwardRef((_, ref) => {
   const { t } = useTranslation()
-  const layoutRef = useRef<{ scrollToTop: () => void }>(null)
+  const layoutRef = useRef<TPageRef>(null)
   const { pubkey, checkLogin } = useNostr()
   const { feedType, relayUrls, isReady, filter } = useFeed()
+  useImperativeHandle(ref, () => layoutRef.current)
 
   useEffect(() => {
     if (layoutRef.current) {
@@ -46,7 +48,9 @@ export default function NoteListPage() {
       {content}
     </PrimaryPageLayout>
   )
-}
+})
+NoteListPage.displayName = 'NoteListPage'
+export default NoteListPage
 
 function NoteListPageTitlebar({ temporaryRelayUrls = [] }: { temporaryRelayUrls?: string[] }) {
   return (

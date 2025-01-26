@@ -6,11 +6,11 @@ import { useFetchProfile } from '@/hooks'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
 
-export default function MuteListPage({ index }: { index?: number }) {
+const MuteListPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
   const { profile } = useNostr()
   const { mutePubkeys } = useMuteList()
@@ -55,6 +55,7 @@ export default function MuteListPage({ index }: { index?: number }) {
 
   return (
     <SecondaryPageLayout
+      ref={ref}
       index={index}
       title={t("username's muted", { username: profile.username })}
       displayScrollToTopButton
@@ -67,7 +68,9 @@ export default function MuteListPage({ index }: { index?: number }) {
       </div>
     </SecondaryPageLayout>
   )
-}
+})
+MuteListPage.displayName = 'MuteListPage'
+export default MuteListPage
 
 function UserItem({ pubkey }: { pubkey: string }) {
   const { profile } = useFetchProfile(pubkey)

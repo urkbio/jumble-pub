@@ -6,41 +6,78 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSecondaryPage } from '@/PageManager'
 import { DeepBrowsingProvider } from '@/providers/DeepBrowsingProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
-export default function SecondaryPageLayout({
-  children,
-  index,
-  title,
-  controls,
-  hideBackButton = false,
-  displayScrollToTopButton = false
-}: {
-  children?: React.ReactNode
-  index?: number
-  title?: React.ReactNode
-  controls?: React.ReactNode
-  hideBackButton?: boolean
-  displayScrollToTopButton?: boolean
-}): JSX.Element {
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const { isSmallScreen } = useScreenSize()
-  const { currentIndex } = useSecondaryPage()
+const SecondaryPageLayout = forwardRef(
+  (
+    {
+      children,
+      index,
+      title,
+      controls,
+      hideBackButton = false,
+      displayScrollToTopButton = false
+    }: {
+      children?: React.ReactNode
+      index?: number
+      title?: React.ReactNode
+      controls?: React.ReactNode
+      hideBackButton?: boolean
+      displayScrollToTopButton?: boolean
+    },
+    ref
+  ) => {
+    const scrollAreaRef = useRef<HTMLDivElement>(null)
+    const { isSmallScreen } = useScreenSize()
+    const { currentIndex } = useSecondaryPage()
 
-  useEffect(() => {
+    useImperativeHandle(
+      ref,
+      () => ({
+        scrollToTop: () => {
+          if (scrollAreaRef.current) {
+            return scrollAreaRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+      }),
+      []
+    )
+
+    useEffect(() => {
+      if (isSmallScreen) {
+        window.scrollTo({ top: 0 })
+        return
+      }
+    }, [])
+
     if (isSmallScreen) {
-      window.scrollTo({ top: 0 })
-      return
+      return (
+        <DeepBrowsingProvider active={currentIndex === index}>
+          <div
+            style={{
+              paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
+            }}
+          >
+            <SecondaryPageTitlebar
+              title={title}
+              controls={controls}
+              hideBackButton={hideBackButton}
+            />
+            {children}
+            {displayScrollToTopButton && <ScrollToTopButton />}
+            <BottomNavigationBar />
+          </div>
+        </DeepBrowsingProvider>
+      )
     }
-  }, [])
 
-  if (isSmallScreen) {
     return (
-      <DeepBrowsingProvider active={currentIndex === index}>
-        <div
-          style={{
-            paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
-          }}
+      <DeepBrowsingProvider active={currentIndex === index} scrollAreaRef={scrollAreaRef}>
+        <ScrollArea
+          className="h-screen overflow-auto"
+          scrollBarClassName="sm:z-50"
+          ref={scrollAreaRef}
         >
           <SecondaryPageTitlebar
             title={title}
@@ -48,27 +85,14 @@ export default function SecondaryPageLayout({
             hideBackButton={hideBackButton}
           />
           {children}
-          {displayScrollToTopButton && <ScrollToTopButton />}
-          <BottomNavigationBar />
-        </div>
+        </ScrollArea>
+        {displayScrollToTopButton && <ScrollToTopButton scrollAreaRef={scrollAreaRef} />}
       </DeepBrowsingProvider>
     )
   }
-
-  return (
-    <DeepBrowsingProvider active={currentIndex === index} scrollAreaRef={scrollAreaRef}>
-      <ScrollArea
-        className="h-screen overflow-auto"
-        scrollBarClassName="sm:z-50"
-        ref={scrollAreaRef}
-      >
-        <SecondaryPageTitlebar title={title} controls={controls} hideBackButton={hideBackButton} />
-        {children}
-      </ScrollArea>
-      {displayScrollToTopButton && <ScrollToTopButton scrollAreaRef={scrollAreaRef} />}
-    </DeepBrowsingProvider>
-  )
-}
+)
+SecondaryPageLayout.displayName = 'SecondaryPageLayout'
+export default SecondaryPageLayout
 
 export function SecondaryPageTitlebar({
   title,

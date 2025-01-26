@@ -4,7 +4,17 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import NoteListPage from '@/pages/primary/NoteListPage'
 import HomePage from '@/pages/secondary/HomePage'
-import { cloneElement, createContext, ReactNode, useContext, useEffect, useState } from 'react'
+import { TPageRef } from '@/types'
+import {
+  cloneElement,
+  createContext,
+  createRef,
+  ReactNode,
+  RefObject,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 import MePage from './pages/primary/MePage'
 import NotificationListPage from './pages/primary/NotificationListPage'
 import { useScreenSize } from './providers/ScreenSizeProvider'
@@ -26,13 +36,20 @@ type TSecondaryPageContext = {
 type TStackItem = {
   index: number
   url: string
-  component: React.ReactNode | null
+  component: React.ReactElement | null
+  ref: RefObject<TPageRef> | null
+}
+
+const PRIMARY_PAGE_REF_MAP = {
+  home: createRef<TPageRef>(),
+  notifications: createRef<TPageRef>(),
+  me: createRef<TPageRef>()
 }
 
 const PRIMARY_PAGE_MAP = {
-  home: <NoteListPage />,
-  notifications: <NotificationListPage />,
-  me: <MePage />
+  home: <NoteListPage ref={PRIMARY_PAGE_REF_MAP.home} />,
+  notifications: <NotificationListPage ref={PRIMARY_PAGE_REF_MAP.notifications} />,
+  me: <MePage ref={PRIMARY_PAGE_REF_MAP.me} />
 }
 
 const PrimaryPageContext = createContext<TPrimaryPageContext | undefined>(undefined)
@@ -111,13 +128,22 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
         const topItem = newStack[newStack.length - 1] as TStackItem | undefined
         if (!topItem) {
           // Create a new stack item if it's not exist (e.g. when the user refreshes the page, the stack will be empty)
-          const newComponent = findAndCreateComponent(state.url, state.index)
-          if (newComponent) {
-            newStack.push({ index: state.index, url: state.url, component: newComponent })
+          const { component, ref } = findAndCreateComponent(state.url, state.index)
+          if (component) {
+            newStack.push({
+              index: state.index,
+              url: state.url,
+              component,
+              ref
+            })
           }
         } else if (!topItem.component) {
           // Load the component if it's not cached
-          topItem.component = findAndCreateComponent(topItem.url, state.index)
+          const { component, ref } = findAndCreateComponent(topItem.url, state.index)
+          if (component) {
+            topItem.component = component
+            topItem.ref = ref
+          }
         }
         if (newStack.length === 0) {
           window.history.replaceState(null, '', '/')
@@ -139,6 +165,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
       setPrimaryPages((prev) => [...prev, { name: page, element: PRIMARY_PAGE_MAP[page] }])
     }
     setCurrentPrimaryPage(page)
+    PRIMARY_PAGE_REF_MAP[page].current?.scrollToTop()
     if (isSmallScreen) {
       clearSecondaryPages()
     }
@@ -146,7 +173,13 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
 
   const pushSecondaryPage = (url: string, index?: number) => {
     setSecondaryStack((prevStack) => {
-      if (isCurrentPage(prevStack, url)) return prevStack
+      if (isCurrentPage(prevStack, url)) {
+        const currentItem = prevStack[prevStack.length - 1]
+        if (currentItem?.ref?.current) {
+          currentItem.ref.current.scrollToTop()
+        }
+        return prevStack
+      }
 
       const { newStack, newItem } = pushNewPageToStack(prevStack, url, maxStackSize, index)
       if (newItem) {
@@ -302,10 +335,11 @@ function findAndCreateComponent(url: string, index: number) {
     const match = matcher(path)
     if (!match) continue
 
-    if (!element) return null
-    return cloneElement(element, { ...match.params, index } as any)
+    if (!element) return {}
+    const ref = createRef<TPageRef>()
+    return { component: cloneElement(element, { ...match.params, index, ref } as any), ref }
   }
-  return null
+  return {}
 }
 
 function pushNewPageToStack(
@@ -317,10 +351,10 @@ function pushNewPageToStack(
   const currentItem = stack[stack.length - 1]
   const currentIndex = specificIndex ?? (currentItem ? currentItem.index + 1 : 0)
 
-  const component = findAndCreateComponent(url, currentIndex)
+  const { component, ref } = findAndCreateComponent(url, currentIndex)
   if (!component) return { newStack: stack, newItem: null }
 
-  const newItem = { component, url, index: currentIndex }
+  const newItem = { component, ref, url, index: currentIndex }
   const newStack = [...stack, newItem]
   const lastCachedIndex = newStack.findIndex((stack) => stack.component)
   // Clear the oldest cached component if there are too many cached components

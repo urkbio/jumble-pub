@@ -25,11 +25,11 @@ import { useFeed } from '@/providers/FeedProvider'
 import { useFollowList } from '@/providers/FollowListProvider'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { useMemo } from 'react'
+import { forwardRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
 
-export default function ProfilePage({ id, index }: { id?: string; index?: number }) {
+const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, ref) => {
   const { t } = useTranslation()
   const { push } = useSecondaryPage()
   const { profile, isFetching } = useFetchProfile(id)
@@ -59,7 +59,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
 
   if (!profile && isFetching) {
     return (
-      <SecondaryPageLayout index={index}>
+      <SecondaryPageLayout index={index} ref={ref}>
         <div className="px-4">
           <div className="relative bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-2">
             <Skeleton className="w-full h-full object-cover rounded-lg" />
@@ -75,7 +75,7 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
 
   const { banner, username, about, avatar, pubkey } = profile
   return (
-    <SecondaryPageLayout index={index} title={username} displayScrollToTopButton>
+    <SecondaryPageLayout index={index} title={username} displayScrollToTopButton ref={ref}>
       <div className="px-4">
         <div className="relative bg-cover bg-center w-full aspect-[21/9] rounded-lg mb-2">
           <ProfileBanner
@@ -151,4 +151,6 @@ export default function ProfilePage({ id, index }: { id?: string; index?: number
       )}
     </SecondaryPageLayout>
   )
-}
+})
+ProfilePage.displayName = 'ProfilePage'
+export default ProfilePage
