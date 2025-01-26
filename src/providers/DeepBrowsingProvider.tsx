@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 
 type TDeepBrowsingContext = {
   deepBrowsing: boolean
@@ -25,9 +25,12 @@ export function DeepBrowsingProvider({
   scrollAreaRef?: React.RefObject<HTMLDivElement>
 }) {
   const [deepBrowsing, setDeepBrowsing] = useState(false)
-  const [lastScrollTop, setLastScrollTop] = useState(0)
+  const lastScrollTopRef = useRef(
+    (!scrollAreaRef ? window.scrollY : scrollAreaRef.current?.scrollTop) || 0
+  )
 
   useEffect(() => {
+    setDeepBrowsing(false)
     if (!active) return
 
     const handleScroll = () => {
@@ -43,19 +46,17 @@ export function DeepBrowsingProvider({
       }
 
       const scrollTop = (!scrollAreaRef ? window.scrollY : scrollAreaRef.current?.scrollTop) || 0
-      const diff = scrollTop - lastScrollTop
+      const diff = scrollTop - lastScrollTopRef.current
+      lastScrollTopRef.current = scrollTop
       if (scrollTop <= 800) {
         setDeepBrowsing(false)
-        setLastScrollTop(scrollTop)
         return
       }
 
       if (diff > 20) {
         setDeepBrowsing(true)
-        setLastScrollTop(scrollTop)
       } else if (diff < -20) {
         setDeepBrowsing(false)
-        setLastScrollTop(scrollTop)
       }
     }
 
@@ -70,10 +71,10 @@ export function DeepBrowsingProvider({
     return () => {
       scrollAreaRef.current?.removeEventListener('scroll', handleScroll)
     }
-  }, [lastScrollTop, active])
+  }, [active])
 
   return (
-    <DeepBrowsingContext.Provider value={{ deepBrowsing, lastScrollTop }}>
+    <DeepBrowsingContext.Provider value={{ deepBrowsing, lastScrollTop: lastScrollTopRef.current }}>
       {children}
     </DeepBrowsingContext.Provider>
   )

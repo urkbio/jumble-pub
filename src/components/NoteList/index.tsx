@@ -240,13 +240,13 @@ function ListModeSwitch({
   setListMode: (listMode: TNoteListMode) => void
 }) {
   const { t } = useTranslation()
-  const { deepBrowsing } = useDeepBrowsing()
+  const { deepBrowsing, lastScrollTop } = useDeepBrowsing()
 
   return (
     <div
       className={cn(
         'sticky top-12 bg-background z-10 duration-700 transition-transform',
-        deepBrowsing ? '-translate-y-[calc(100%+12rem)]' : ''
+        deepBrowsing && lastScrollTop > 800 ? '-translate-y-[calc(100%+12rem)]' : ''
       )}
     >
       <div className="flex">
