@@ -16,7 +16,7 @@ export default function PostButton() {
           setOpen(true)
         }}
         variant="default"
-        className="bg-primary xl:justify-center"
+        className="bg-primary xl:justify-center gap-2"
       >
         <PencilLine strokeWidth={3} />
       </SidebarItem>
