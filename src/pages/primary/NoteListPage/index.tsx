@@ -1,7 +1,9 @@
 import NoteList from '@/components/NoteList'
 import SaveRelayDropdownMenu from '@/components/SaveRelayDropdownMenu'
+import { Button } from '@/components/ui/button'
 import PrimaryPageLayout from '@/layouts/PrimaryPageLayout'
 import { useFeed } from '@/providers/FeedProvider'
+import { useNostr } from '@/providers/NostrProvider'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import FeedButton from './FeedButton'
@@ -10,6 +12,7 @@ import SearchButton from './SearchButton'
 export default function NoteListPage() {
   const { t } = useTranslation()
   const layoutRef = useRef<{ scrollToTop: () => void }>(null)
+  const { pubkey, checkLogin } = useNostr()
   const { feedType, relayUrls, isReady, filter } = useFeed()
 
   useEffect(() => {
@@ -17,6 +20,19 @@ export default function NoteListPage() {
       layoutRef.current.scrollToTop()
     }
   }, [JSON.stringify(relayUrls), feedType])
+
+  let content = <div className="text-center text-sm text-muted-foreground">{t('loading...')}</div>
+  if (feedType === 'following' && !pubkey) {
+    content = (
+      <div className="flex justify-center w-full">
+        <Button size="lg" onClick={() => checkLogin()}>
+          {t('Please login to view following feed')}
+        </Button>
+      </div>
+    )
+  } else if (isReady) {
+    content = <NoteList relayUrls={relayUrls} filter={filter} />
+  }
 
   return (
     <PrimaryPageLayout
@@ -27,11 +43,7 @@ export default function NoteListPage() {
       }
       displayScrollToTopButton
     >
-      {isReady ? (
-        <NoteList relayUrls={relayUrls} filter={filter} />
-      ) : (
-        <div className="text-center text-sm text-muted-foreground">{t('loading...')}</div>
-      )}
+      {content}
     </PrimaryPageLayout>
   )
 }
