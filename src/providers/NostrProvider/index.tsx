@@ -69,6 +69,10 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const init = async () => {
+      if (hasNostrLoginHash()) {
+        return await loginByNostrLoginHash()
+      }
+
       const accounts = storage.getAccounts()
       const act = storage.getCurrentAccount() ?? accounts[0] // auto login the first account
       if (!act) return
@@ -76,6 +80,18 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       await loginWithAccountPointer(act)
     }
     init()
+
+    const handleHashChange = () => {
+      if (hasNostrLoginHash()) {
+        loginByNostrLoginHash()
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
+    }
   }, [])
 
   useEffect(() => {
@@ -137,6 +153,24 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       setProfile(getProfileFromProfileEvent(profileEvent))
     })
   }, [account])
+
+  const hasNostrLoginHash = () => {
+    return window.location.hash && window.location.hash.startsWith('#nostr-login')
+  }
+
+  const loginByNostrLoginHash = async () => {
+    const credential = window.location.hash.replace('#nostr-login=', '')
+    const urlWithoutHash = window.location.href.split('#')[0]
+    history.replaceState(null, '', urlWithoutHash)
+
+    if (credential.startsWith('bunker://')) {
+      return await bunkerLogin(credential)
+    } else if (credential.startsWith('ncryptsec')) {
+      return await ncryptsecLogin(credential)
+    } else if (credential.startsWith('nsec')) {
+      return await nsecLogin(credential)
+    }
+  }
 
   const login = (signer: ISigner, act: TAccount) => {
     storage.addAccount(act)
