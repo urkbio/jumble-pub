@@ -86,14 +86,14 @@ function AccountManagerNav({
           }}
           className="w-full mt-4"
         >
-          {t('Signup with Nstart wizard')}
+          {t('Sign up')}
         </Button>
         <Button
           variant="link"
           onClick={() => setPage('generate')}
           className="w-full text-muted-foreground py-0 h-fit mt-1"
         >
-          {t('or generate your private key here')}
+          {t('or simply generate a private key')}
         </Button>
       </div>
       {accounts.length > 0 && (

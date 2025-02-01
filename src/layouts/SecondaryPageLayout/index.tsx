@@ -76,7 +76,7 @@ const SecondaryPageLayout = forwardRef(
       <DeepBrowsingProvider active={currentIndex === index} scrollAreaRef={scrollAreaRef}>
         <ScrollArea
           className="h-screen overflow-auto"
-          scrollBarClassName="sm:z-50"
+          scrollBarClassName="z-20 pt-12"
           ref={scrollAreaRef}
         >
           <SecondaryPageTitlebar
