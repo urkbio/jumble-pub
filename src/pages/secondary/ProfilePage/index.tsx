@@ -25,10 +25,10 @@ import { useFeed } from '@/providers/FeedProvider'
 import { useFollowList } from '@/providers/FollowListProvider'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
+import { Link } from 'lucide-react'
 import { forwardRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
-import { Globe, Link } from 'lucide-react'
 
 const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, ref) => {
   const { t } = useTranslation()
