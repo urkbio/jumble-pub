@@ -28,6 +28,7 @@ import { useNostr } from '@/providers/NostrProvider'
 import { forwardRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
+import { Globe, Link } from 'lucide-react'
 
 const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, ref) => {
   const { t } = useTranslation()
@@ -73,7 +74,7 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
   }
   if (!profile) return <NotFoundPage />
 
-  const { banner, username, about, avatar, pubkey } = profile
+  const { banner, username, about, avatar, pubkey, website } = profile
   return (
     <SecondaryPageLayout index={index} title={username} displayScrollToTopButton ref={ref}>
       <div className="px-4">
@@ -117,6 +118,14 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
             <QrCodePopover pubkey={pubkey} />
           </div>
           <ProfileAbout about={about} className="text-wrap break-words whitespace-pre-wrap mt-2" />
+          {website && (
+            <div className="flex gap-1 items-center text-primary mt-2">
+              <Link size={14} />
+              <a href={website} target="_blank" className="hover:underline">
+                {website}
+              </a>
+            </div>
+          )}
           <div className="flex gap-4 items-center mt-2 text-sm">
             <SecondaryPageLink
               to={toFollowingList(pubkey)}
