@@ -152,6 +152,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       setProfileEvent(profileEvent)
       setProfile(getProfileFromProfileEvent(profileEvent))
     })
+    client.initUserIndexFromFollowings(account.pubkey)
   }, [account])
 
   const hasNostrLoginHash = () => {
