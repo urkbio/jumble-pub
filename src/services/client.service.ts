@@ -79,7 +79,7 @@ class ClientService extends EventTarget {
   })
 
   private userIndex = new FlexSearch.Index({
-    tokenize: 'full'
+    tokenize: 'forward'
   })
 
   constructor() {
@@ -504,8 +504,8 @@ class ClientService extends EventTarget {
     return readRelays
   }
 
-  async searchProfilesFromIndex(query: string) {
-    const result = await this.userIndex.searchAsync(query, { limit: 100 })
+  async searchProfilesFromIndex(query: string, limit: number = 100) {
+    const result = await this.userIndex.searchAsync(query, { limit })
     return Promise.all(result.map((pubkey) => this.fetchProfile(pubkey as string))).then(
       (profiles) => profiles.filter(Boolean) as TProfile[]
     )
