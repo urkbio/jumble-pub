@@ -505,7 +505,7 @@ class ClientService extends EventTarget {
   }
 
   async searchProfilesFromIndex(query: string) {
-    const result = await this.userIndex.searchAsync(query, { limit: 10 })
+    const result = await this.userIndex.searchAsync(query, { limit: 100 })
     return Promise.all(result.map((pubkey) => this.fetchProfile(pubkey as string))).then(
       (profiles) => profiles.filter(Boolean) as TProfile[]
     )
