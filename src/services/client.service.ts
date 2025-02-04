@@ -415,6 +415,7 @@ class ClientService extends EventTarget {
 
     const profileEvents = events.sort((a, b) => b.created_at - a.created_at)
     profileEvents.forEach((profile) => this.profileEventDataloader.prime(profile.pubkey, profile))
+    await Promise.all(profileEvents.map((profile) => this.addUsernameToIndex(profile)))
     return profileEvents.map((profileEvent) => getProfileFromProfileEvent(profileEvent))
   }
 
@@ -612,23 +613,26 @@ class ClientService extends EventTarget {
     }
 
     if (profileEvent) {
-      this.addUsernameToIndex(profileEvent)
+      await this.addUsernameToIndex(profileEvent)
     }
 
     return profileEvent
   }
 
-  private addUsernameToIndex(profileEvent: NEvent) {
+  private async addUsernameToIndex(profileEvent: NEvent) {
     try {
       const profileObj = JSON.parse(profileEvent.content)
       const text = [
         profileObj.display_name?.trim() ?? '',
         profileObj.name?.trim() ?? '',
-        profileObj.nip05?.split('@')[0]?.trim() ?? ''
+        profileObj.nip05
+          ?.split('@')
+          .map((s: string) => s.trim())
+          .join(' ') ?? ''
       ].join(' ')
       if (!text) return
 
-      this.userIndex.add(profileEvent.pubkey, text)
+      await this.userIndex.addAsync(profileEvent.pubkey, text)
     } catch {
       return
     }
