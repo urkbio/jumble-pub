@@ -1,7 +1,7 @@
 import client from '@/services/client.service'
 import { Event, kinds, verifyEvent } from 'nostr-tools'
 import { useMemo } from 'react'
-import ShortTextNoteCard from './ShortTextNoteCard'
+import NormalNoteCard from './NormalNoteCard'
 
 export default function RepostNoteCard({ event, className }: { event: Event; className?: string }) {
   const targetEvent = useMemo(() => {
@@ -19,5 +19,5 @@ export default function RepostNoteCard({ event, className }: { event: Event; cla
   }, [event])
   if (!targetEvent) return null
 
-  return <ShortTextNoteCard className={className} reposter={event.pubkey} event={targetEvent} />
+  return <NormalNoteCard className={className} reposter={event.pubkey} event={targetEvent} />
 }
