@@ -105,9 +105,26 @@ class ClientService extends EventTarget {
     return this.defaultRelayUrls
   }
 
-  async publishEvent(relayUrls: string[], event: NEvent) {
+  async publishEvent(
+    relayUrls: string[],
+    event: NEvent,
+    {
+      signer
+    }: {
+      signer?: (evt: TDraftEvent) => Promise<VerifiedEvent>
+    } = {}
+  ) {
     const result = await Promise.any(
-      this.pool.publish(relayUrls.concat(this.defaultRelayUrls), event)
+      relayUrls.map(async (url) => {
+        const relay = await this.pool.ensureRelay(url)
+        return relay.publish(event).catch((error) => {
+          if (error instanceof Error && error.message.startsWith('auth-required:') && signer) {
+            relay.auth((authEvt: EventTemplate) => signer(authEvt)).then(() => relay.publish(event))
+          } else {
+            throw error
+          }
+        })
+      })
     )
     this.dispatchEvent(new CustomEvent('eventPublished', { detail: event }))
     return result
