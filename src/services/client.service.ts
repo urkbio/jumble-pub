@@ -204,6 +204,9 @@ class ClientService extends EventTarget {
       function startSub() {
         startedCount++
         return relay.subscribe([since ? { ...filter, since } : filter], {
+          receivedEvent: (relay, id) => {
+            that.trackEventSeenOn(id, relay)
+          },
           alreadyHaveEvent: (id: string) => {
             const have = _knownIds.has(id)
             if (have) {
@@ -214,7 +217,6 @@ class ClientService extends EventTarget {
           },
           onevent: (evt: NEvent) => {
             that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
-            that.trackEventSeenOn(evt.id, relay)
             // not eosed yet, push to events
             if (eosedCount < startedCount) {
               return events.push(evt)
@@ -549,8 +551,21 @@ class ClientService extends EventTarget {
     }
   }
 
+  getSeenEventRelays(eventId: string) {
+    return Array.from(this.pool.seenOn.get(eventId)?.values() || [])
+  }
+
   getSeenEventRelayUrls(eventId: string) {
-    return Array.from(this.pool.seenOn.get(eventId)?.values() || []).map((relay) => relay.url)
+    return this.getSeenEventRelays(eventId).map((relay) => relay.url)
+  }
+
+  trackEventSeenOn(eventId: string, relay: AbstractRelay) {
+    let set = this.pool.seenOn.get(eventId)
+    if (!set) {
+      set = new Set()
+      this.pool.seenOn.set(eventId, set)
+    }
+    set.add(relay)
   }
 
   private async fetchEventById(relayUrls: string[], id: string): Promise<NEvent | undefined> {
@@ -755,15 +770,6 @@ class ClientService extends EventTarget {
     )
 
     return followListEvents.sort((a, b) => b.created_at - a.created_at)[0]
-  }
-
-  private trackEventSeenOn(eventId: string, relay: AbstractRelay) {
-    let set = this.pool.seenOn.get(eventId)
-    if (!set) {
-      set = new Set()
-      this.pool.seenOn.set(eventId, set)
-    }
-    set.add(relay)
   }
 }
 

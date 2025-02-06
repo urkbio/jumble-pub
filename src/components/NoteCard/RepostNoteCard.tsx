@@ -21,6 +21,13 @@ export default function RepostNoteCard({
         return null
       }
       client.addEventToCache(targetEvent)
+      const targetSeenOn = client.getSeenEventRelays(targetEvent.id)
+      if (targetSeenOn.length === 0) {
+        const seenOn = client.getSeenEventRelays(event.id)
+        seenOn.forEach((relay) => {
+          client.trackEventSeenOn(targetEvent.id, relay)
+        })
+      }
     } catch {
       return null
     }
