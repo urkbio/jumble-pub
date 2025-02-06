@@ -16,6 +16,7 @@ import {
   SimplePool,
   VerifiedEvent
 } from 'nostr-tools'
+import { AbstractRelay } from 'nostr-tools/abstract-relay'
 
 type TTimelineRef = [string, number]
 
@@ -23,7 +24,7 @@ class ClientService extends EventTarget {
   static instance: ClientService
 
   private defaultRelayUrls: string[] = BIG_RELAY_URLS
-  private pool = new SimplePool()
+  private pool: SimplePool
 
   private timelines: Record<
     string,
@@ -84,6 +85,8 @@ class ClientService extends EventTarget {
 
   constructor() {
     super()
+    this.pool = new SimplePool()
+    this.pool.trackRelays = true
   }
 
   public static getInstance(): ClientService {
@@ -117,13 +120,21 @@ class ClientService extends EventTarget {
     const result = await Promise.any(
       relayUrls.map(async (url) => {
         const relay = await this.pool.ensureRelay(url)
-        return relay.publish(event).catch((error) => {
-          if (error instanceof Error && error.message.startsWith('auth-required:') && signer) {
-            relay.auth((authEvt: EventTemplate) => signer(authEvt)).then(() => relay.publish(event))
-          } else {
-            throw error
-          }
-        })
+        return relay
+          .publish(event)
+          .then((reason) => {
+            this.trackEventSeenOn(event.id, relay)
+            return reason
+          })
+          .catch((error) => {
+            if (error instanceof Error && error.message.startsWith('auth-required:') && signer) {
+              relay
+                .auth((authEvt: EventTemplate) => signer(authEvt))
+                .then(() => relay.publish(event))
+            } else {
+              throw error
+            }
+          })
       })
     )
     this.dispatchEvent(new CustomEvent('eventPublished', { detail: event }))
@@ -203,6 +214,7 @@ class ClientService extends EventTarget {
           },
           onevent: (evt: NEvent) => {
             that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
+            that.trackEventSeenOn(evt.id, relay)
             // not eosed yet, push to events
             if (eosedCount < startedCount) {
               return events.push(evt)
@@ -537,6 +549,10 @@ class ClientService extends EventTarget {
     }
   }
 
+  getSeenEventRelayUrls(eventId: string) {
+    return Array.from(this.pool.seenOn.get(eventId)?.values() || []).map((relay) => relay.url)
+  }
+
   private async fetchEventById(relayUrls: string[], id: string): Promise<NEvent | undefined> {
     const event = await this.fetchEventFromDefaultRelaysDataloader.load(id)
     if (event) {
@@ -739,6 +755,15 @@ class ClientService extends EventTarget {
     )
 
     return followListEvents.sort((a, b) => b.created_at - a.created_at)[0]
+  }
+
+  private trackEventSeenOn(eventId: string, relay: AbstractRelay) {
+    let set = this.pool.seenOn.get(eventId)
+    if (!set) {
+      set = new Set()
+      this.pool.seenOn.set(eventId, set)
+    }
+    set.add(relay)
   }
 }
 

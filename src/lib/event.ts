@@ -41,6 +41,10 @@ export function isPictureEvent(event: Event) {
   return event.kind === PICTURE_EVENT_KIND
 }
 
+export function isProtectedEvent(event: Event) {
+  return event.tags.some(([tagName]) => tagName === '-')
+}
+
 export function getParentEventId(event?: Event) {
   if (!event || !isReplyNoteEvent(event)) return undefined
   return event.tags.find(isReplyETag)?.[1] ?? event.tags.find(tagNameEquals('e'))?.[1]
