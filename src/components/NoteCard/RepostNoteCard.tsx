@@ -1,9 +1,19 @@
+import { useMuteList } from '@/providers/MuteListProvider'
 import client from '@/services/client.service'
 import { Event, kinds, verifyEvent } from 'nostr-tools'
 import { useMemo } from 'react'
 import NormalNoteCard from './NormalNoteCard'
 
-export default function RepostNoteCard({ event, className }: { event: Event; className?: string }) {
+export default function RepostNoteCard({
+  event,
+  className,
+  filterMutedNotes = true
+}: {
+  event: Event
+  className?: string
+  filterMutedNotes?: boolean
+}) {
+  const { mutePubkeys } = useMuteList()
   const targetEvent = useMemo(() => {
     const targetEvent = event.content ? (JSON.parse(event.content) as Event) : null
     try {
@@ -18,6 +28,9 @@ export default function RepostNoteCard({ event, className }: { event: Event; cla
     return targetEvent
   }, [event])
   if (!targetEvent) return null
+  if (filterMutedNotes && mutePubkeys.includes(targetEvent.pubkey)) {
+    return null
+  }
 
   return <NormalNoteCard className={className} reposter={event.pubkey} event={targetEvent} />
 }
