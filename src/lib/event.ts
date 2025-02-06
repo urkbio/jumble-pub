@@ -2,9 +2,9 @@ import { BIG_RELAY_URLS, COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/consta
 import client from '@/services/client.service'
 import { TImageInfo, TRelayList } from '@/types'
 import { Event, kinds, nip19 } from 'nostr-tools'
-import { extractImageInfoFromTag, isReplyETag, isRootETag, tagNameEquals } from './tag'
-import { isWebsocketUrl, normalizeUrl } from './url'
 import { formatPubkey } from './pubkey'
+import { extractImageInfoFromTag, isReplyETag, isRootETag, tagNameEquals } from './tag'
+import { isWebsocketUrl, normalizeHttpUrl, normalizeUrl } from './url'
 
 export function isNsfwEvent(event: Event) {
   return event.tags.some(
@@ -123,7 +123,7 @@ export function getProfileFromProfileEvent(event: Event) {
       original_username: username,
       nip05: profileObj.nip05,
       about: profileObj.about,
-      website: profileObj.website,
+      website: profileObj.website ? normalizeHttpUrl(profileObj.website) : undefined,
       created_at: event.created_at
     }
   } catch (err) {
