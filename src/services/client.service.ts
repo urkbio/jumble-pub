@@ -2,6 +2,7 @@ import { BIG_RELAY_URLS } from '@/constants'
 import { getProfileFromProfileEvent, getRelayListFromRelayListEvent } from '@/lib/event'
 import { formatPubkey, userIdToPubkey } from '@/lib/pubkey'
 import { extractPubkeysFromEventTags } from '@/lib/tag'
+import { isLocalNetworkUrl } from '@/lib/url'
 import { TDraftEvent, TProfile, TRelayInfo, TRelayList } from '@/types'
 import { sha256 } from '@noble/hashes/sha2'
 import DataLoader from 'dataloader'
@@ -557,6 +558,11 @@ class ClientService extends EventTarget {
 
   getSeenEventRelayUrls(eventId: string) {
     return this.getSeenEventRelays(eventId).map((relay) => relay.url)
+  }
+
+  getEventHint(eventId: string) {
+    const relayUrls = this.getSeenEventRelayUrls(eventId)
+    return relayUrls.find((url) => !isLocalNetworkUrl(url)) ?? ''
   }
 
   trackEventSeenOn(eventId: string, relay: AbstractRelay) {
