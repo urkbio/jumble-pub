@@ -200,7 +200,7 @@ export default function NoteList({
           )}
           {isPictures ? (
             <PictureNoteCardMasonry
-              className="px-2 sm:px-4"
+              className="px-2 sm:px-4 pt-2"
               columnCount={isLargeScreen ? 3 : 2}
               events={events}
             />
