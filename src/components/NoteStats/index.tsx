@@ -8,16 +8,18 @@ import RepostButton from './RepostButton'
 export default function NoteStats({
   event,
   className,
-  fetchIfNotExisting = false
+  fetchIfNotExisting = false,
+  variant = 'note'
 }: {
   event: Event
   className?: string
   fetchIfNotExisting?: boolean
+  variant?: 'note' | 'reply'
 }) {
   return (
     <div className={cn('flex justify-between', className)}>
-      <div className="flex gap-4 h-4 items-center" onClick={(e) => e.stopPropagation()}>
-        <ReplyButton event={event} />
+      <div className="flex gap-5 h-4 items-center" onClick={(e) => e.stopPropagation()}>
+        <ReplyButton event={event} variant={variant} />
         <RepostButton event={event} canFetch={fetchIfNotExisting} />
         <LikeButton event={event} canFetch={fetchIfNotExisting} />
       </div>
