@@ -184,6 +184,9 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
       >
         {loading ? t('loading...') : until ? t('load more older replies') : null}
       </div>
+      {replies.length === 0 && !loading && !until && (
+        <div className="text-sm text-center text-muted-foreground">{t('no replies')}</div>
+      )}
       {replies.length > 0 && (loading || until) && <Separator className="my-2" />}
       <div className={cn('mb-4', className)}>
         {replies.map((reply) => {
@@ -200,9 +203,6 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
           )
         })}
       </div>
-      {replies.length === 0 && !loading && !until && (
-        <div className="text-sm text-center text-muted-foreground">{t('no replies')}</div>
-      )}
       <div ref={bottomRef} />
     </>
   )
