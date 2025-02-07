@@ -35,7 +35,7 @@ export default function NoteList({
 }) {
   const { t } = useTranslation()
   const { isLargeScreen } = useScreenSize()
-  const { signEvent, checkLogin } = useNostr()
+  const { startLogin } = useNostr()
   const { mutePubkeys } = useMuteList()
   const [refreshCount, setRefreshCount] = useState(0)
   const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
@@ -102,10 +102,7 @@ export default function NoteList({
           }
         },
         {
-          signer: async (evt) => {
-            const signedEvt = await checkLogin(() => signEvent(evt))
-            return signedEvt ?? null
-          },
+          startLogin,
           needSort: !areAlgoRelays
         }
       )

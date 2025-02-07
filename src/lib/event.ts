@@ -65,11 +65,12 @@ export function getEventCoordinate(event: Event) {
 }
 
 export function getSharableEventId(event: Event) {
+  const hints = client.getEventHints(event.id).slice(0, 3)
   if (isReplaceable(event.kind)) {
     const identifier = event.tags.find(tagNameEquals('d'))?.[1] ?? ''
-    return nip19.naddrEncode({ pubkey: event.pubkey, kind: event.kind, identifier })
+    return nip19.naddrEncode({ pubkey: event.pubkey, kind: event.kind, identifier, relays: hints })
   }
-  return nip19.neventEncode({ id: event.id, author: event.pubkey, kind: event.kind })
+  return nip19.neventEncode({ id: event.id, author: event.pubkey, kind: event.kind, relays: hints })
 }
 
 export function getUsingClient(event: Event) {

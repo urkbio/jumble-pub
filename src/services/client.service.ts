@@ -24,6 +24,7 @@ type TTimelineRef = [string, number]
 class ClientService extends EventTarget {
   static instance: ClientService
 
+  signer?: (evt: TDraftEvent) => Promise<VerifiedEvent>
   private defaultRelayUrls: string[] = BIG_RELAY_URLS
   private pool: SimplePool
 
@@ -109,17 +110,11 @@ class ClientService extends EventTarget {
     return this.defaultRelayUrls
   }
 
-  async publishEvent(
-    relayUrls: string[],
-    event: NEvent,
-    {
-      signer
-    }: {
-      signer?: (evt: TDraftEvent) => Promise<VerifiedEvent>
-    } = {}
-  ) {
+  async publishEvent(relayUrls: string[], event: NEvent) {
     const result = await Promise.any(
       relayUrls.map(async (url) => {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const that = this
         const relay = await this.pool.ensureRelay(url)
         return relay
           .publish(event)
@@ -128,9 +123,13 @@ class ClientService extends EventTarget {
             return reason
           })
           .catch((error) => {
-            if (error instanceof Error && error.message.startsWith('auth-required:') && signer) {
+            if (
+              error instanceof Error &&
+              error.message.startsWith('auth-required:') &&
+              !!that.signer
+            ) {
               relay
-                .auth((authEvt: EventTemplate) => signer(authEvt))
+                .auth((authEvt: EventTemplate) => that.signer!(authEvt))
                 .then(() => relay.publish(event))
             } else {
               throw error
@@ -162,10 +161,10 @@ class ClientService extends EventTarget {
       onNew: (evt: NEvent) => void
     },
     {
-      signer,
+      startLogin,
       needSort = true
     }: {
-      signer?: (evt: TDraftEvent) => Promise<NEvent | null>
+      startLogin?: () => void
       needSort?: boolean
     } = {}
   ) {
@@ -255,26 +254,29 @@ class ClientService extends EventTarget {
             timeline.refs.splice(idx, 0, [evt.id, evt.created_at])
           },
           onclose: (reason: string) => {
-            if (reason.startsWith('auth-required:')) {
-              if (!hasAuthed && signer) {
-                relay
-                  .auth(async (authEvt: EventTemplate) => {
-                    const evt = await signer(authEvt)
-                    if (!evt) {
-                      throw new Error('sign event failed')
-                    }
-                    return evt as VerifiedEvent
-                  })
-                  .then(() => {
-                    hasAuthed = true
-                    if (!eosed) {
-                      startSub()
-                    }
-                  })
-                  .catch(() => {
-                    // ignore
-                  })
-              }
+            if (!reason.startsWith('auth-required:')) return
+            if (hasAuthed) return
+
+            if (that.signer) {
+              relay
+                .auth(async (authEvt: EventTemplate) => {
+                  const evt = await that.signer!(authEvt)
+                  if (!evt) {
+                    throw new Error('sign event failed')
+                  }
+                  return evt as VerifiedEvent
+                })
+                .then(() => {
+                  hasAuthed = true
+                  if (!eosed) {
+                    startSub()
+                  }
+                })
+                .catch(() => {
+                  // ignore
+                })
+            } else if (startLogin) {
+              startLogin()
             }
           },
           oneose: () => {
@@ -344,6 +346,55 @@ class ClientService extends EventTarget {
     }
   }
 
+  async query(urls: string[], filter: Filter) {
+    const _knownIds = new Set<string>()
+    const events: NEvent[] = []
+    await Promise.allSettled(
+      urls.map(async (url) => {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const that = this
+        const relay = await this.pool.ensureRelay(url)
+        let hasAuthed = false
+
+        return new Promise<void>((resolve, reject) => {
+          const startQuery = () => {
+            relay.subscribe([filter], {
+              receivedEvent(relay, id) {
+                that.trackEventSeenOn(id, relay)
+              },
+              onclose(reason) {
+                if (!reason.startsWith('auth-required:') || hasAuthed) {
+                  resolve()
+                  return
+                }
+
+                if (that.signer) {
+                  relay
+                    .auth((authEvt: EventTemplate) => that.signer!(authEvt))
+                    .then(() => {
+                      hasAuthed = true
+                      startQuery()
+                    })
+                    .catch(reject)
+                }
+              },
+              oneose() {
+                resolve()
+              },
+              onevent(evt) {
+                if (_knownIds.has(evt.id)) return
+                _knownIds.add(evt.id)
+                events.push(evt)
+              }
+            })
+          }
+          startQuery()
+        })
+      })
+    )
+    return events
+  }
+
   async loadMoreTimeline(key: string, until: number, limit: number) {
     const timeline = this.timelines[key]
     if (!timeline) return []
@@ -362,7 +413,7 @@ class ClientService extends EventTarget {
       return cachedEvents
     }
 
-    let events = await this.pool.querySync(urls, { ...filter, until: until, limit: limit })
+    let events = await this.query(urls, { ...filter, until: until, limit: limit })
     events.forEach((evt) => {
       this.eventDataLoader.prime(evt.id, Promise.resolve(evt))
     })
@@ -372,7 +423,7 @@ class ClientService extends EventTarget {
   }
 
   async fetchEvents(relayUrls: string[], filter: Filter, cache = false) {
-    const events = await this.pool.querySync(
+    const events = await this.query(
       relayUrls.length > 0 ? relayUrls : this.defaultRelayUrls,
       filter
     )
@@ -440,7 +491,7 @@ class ClientService extends EventTarget {
   }
 
   async fetchProfiles(relayUrls: string[], filter: Filter): Promise<TProfile[]> {
-    const events = await this.pool.querySync(relayUrls, {
+    const events = await this.query(relayUrls, {
       ...filter,
       kinds: [kinds.Metadata]
     })
@@ -560,9 +611,12 @@ class ClientService extends EventTarget {
     return this.getSeenEventRelays(eventId).map((relay) => relay.url)
   }
 
+  getEventHints(eventId: string) {
+    return this.getSeenEventRelayUrls(eventId).filter((url) => !isLocalNetworkUrl(url))
+  }
+
   getEventHint(eventId: string) {
-    const relayUrls = this.getSeenEventRelayUrls(eventId)
-    return relayUrls.find((url) => !isLocalNetworkUrl(url)) ?? ''
+    return this.getSeenEventRelayUrls(eventId).find((url) => !isLocalNetworkUrl(url)) ?? ''
   }
 
   trackEventSeenOn(eventId: string, relay: AbstractRelay) {
@@ -617,7 +671,9 @@ class ClientService extends EventTarget {
     let event: NEvent | undefined
     if (filter.ids) {
       event = await this.fetchEventById(relays, filter.ids[0])
-    } else {
+    }
+
+    if (!event) {
       event = await this.tryHarderToFetchEvent(relays, filter)
     }
 
@@ -710,12 +766,12 @@ class ClientService extends EventTarget {
     }
     if (!relayUrls.length) return
 
-    const events = await this.pool.querySync(relayUrls, filter)
+    const events = await this.query(relayUrls, filter)
     return events.sort((a, b) => b.created_at - a.created_at)[0]
   }
 
   private async eventBatchLoadFn(ids: readonly string[]) {
-    const events = await this.pool.querySync(this.defaultRelayUrls, {
+    const events = await this.query(this.defaultRelayUrls, {
       ids: Array.from(new Set(ids)),
       limit: ids.length
     })
@@ -728,7 +784,7 @@ class ClientService extends EventTarget {
   }
 
   private async profileEventBatchLoadFn(pubkeys: readonly string[]) {
-    const events = await this.pool.querySync(this.defaultRelayUrls, {
+    const events = await this.query(this.defaultRelayUrls, {
       authors: Array.from(new Set(pubkeys)),
       kinds: [kinds.Metadata],
       limit: pubkeys.length
@@ -748,7 +804,7 @@ class ClientService extends EventTarget {
   }
 
   private async relayListEventBatchLoadFn(pubkeys: readonly string[]) {
-    const events = await this.pool.querySync(this.defaultRelayUrls, {
+    const events = await this.query(this.defaultRelayUrls, {
       authors: pubkeys as string[],
       kinds: [kinds.RelayList],
       limit: pubkeys.length
@@ -767,13 +823,10 @@ class ClientService extends EventTarget {
 
   private async _fetchFollowListEvent(pubkey: string) {
     const relayList = await this.fetchRelayList(pubkey)
-    const followListEvents = await this.pool.querySync(
-      relayList.write.concat(this.defaultRelayUrls),
-      {
-        authors: [pubkey],
-        kinds: [kinds.Contacts]
-      }
-    )
+    const followListEvents = await this.query(relayList.write.concat(this.defaultRelayUrls), {
+      authors: [pubkey],
+      kinds: [kinds.Contacts]
+    })
 
     return followListEvents.sort((a, b) => b.created_at - a.created_at)[0]
   }
