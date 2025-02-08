@@ -15,8 +15,8 @@ export default function RepostNoteCard({
 }) {
   const { mutePubkeys } = useMuteList()
   const targetEvent = useMemo(() => {
-    const targetEvent = event.content ? (JSON.parse(event.content) as Event) : null
     try {
+      const targetEvent = event.content ? (JSON.parse(event.content) as Event) : null
       if (!targetEvent || !verifyEvent(targetEvent) || targetEvent.kind !== kinds.ShortTextNote) {
         return null
       }
@@ -28,11 +28,10 @@ export default function RepostNoteCard({
           client.trackEventSeenOn(targetEvent.id, relay)
         })
       }
+      return targetEvent
     } catch {
       return null
     }
-
-    return targetEvent
   }, [event])
   if (!targetEvent) return null
   if (filterMutedNotes && mutePubkeys.includes(targetEvent.pubkey)) {
