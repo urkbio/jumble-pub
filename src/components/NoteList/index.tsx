@@ -26,12 +26,14 @@ export default function NoteList({
   relayUrls,
   filter = {},
   className,
-  filterMutedNotes = true
+  filterMutedNotes = true,
+  needCheckAlgoRelay = false
 }: {
   relayUrls: string[]
   filter?: Filter
   className?: string
   filterMutedNotes?: boolean
+  needCheckAlgoRelay?: boolean
 }) {
   const { t } = useTranslation()
   const { isLargeScreen } = useScreenSize()
@@ -72,8 +74,7 @@ export default function NoteList({
       setHasMore(true)
 
       let areAlgoRelays = false
-      // if no authors, check if all relays are algo relays
-      if (!noteFilter.authors?.length) {
+      if (needCheckAlgoRelay) {
         const relayInfos = await client.fetchRelayInfos(relayUrls)
         areAlgoRelays = relayInfos.every((relayInfo) => checkAlgoRelay(relayInfo))
       }

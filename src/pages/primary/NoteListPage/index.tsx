@@ -33,7 +33,13 @@ const NoteListPage = forwardRef((_, ref) => {
       </div>
     )
   } else if (isReady) {
-    content = <NoteList relayUrls={relayUrls} filter={filter} />
+    content = (
+      <NoteList
+        relayUrls={relayUrls}
+        filter={filter}
+        needCheckAlgoRelay={feedType !== 'following'}
+      />
+    )
   }
 
   return (
