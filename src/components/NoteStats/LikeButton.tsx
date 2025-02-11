@@ -1,5 +1,4 @@
 import { createReactionDraftEvent } from '@/lib/draft-event'
-import { isProtectedEvent } from '@/lib/event'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
