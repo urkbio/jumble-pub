@@ -9,6 +9,7 @@ import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import client from '@/services/client.service'
+import relayInfoService from '@/services/relay-info.service'
 import storage from '@/services/storage.service'
 import { TNoteListMode } from '@/types'
 import dayjs from 'dayjs'
@@ -76,7 +77,7 @@ export default function NoteList({
 
       let areAlgoRelays = false
       if (needCheckAlgoRelay) {
-        const relayInfos = await client.fetchRelayInfos(relayUrls)
+        const relayInfos = await relayInfoService.getRelayInfos(relayUrls)
         areAlgoRelays = relayInfos.every((relayInfo) => checkAlgoRelay(relayInfo))
       }
       const filter = areAlgoRelays ? { ...noteFilter, limit: ALGO_RELAY_LIMIT } : noteFilter
@@ -255,7 +256,7 @@ function ListModeSwitch({
   return (
     <div
       className={cn(
-        'sticky top-12 bg-background z-10 duration-700 transition-transform',
+        'sticky top-12 bg-background z-30 duration-700 transition-transform',
         deepBrowsing && lastScrollTop > 800 ? '-translate-y-[calc(100%+12rem)]' : ''
       )}
     >

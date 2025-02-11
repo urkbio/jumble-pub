@@ -32,6 +32,7 @@ export type TRelayInfo = {
   software?: string
   version?: string
   tags?: string[]
+  payments_url?: string
   limitation?: {
     auth_required?: boolean
     payment_required?: boolean
@@ -98,3 +99,12 @@ export type TImageInfo = { url: string; blurHash?: string; dim?: { width: number
 export type TNoteListMode = 'posts' | 'postsAndReplies' | 'pictures'
 
 export type TPageRef = { scrollToTop: () => void }
+
+export type TNip66RelayInfo = TRelayInfo & {
+  url: string
+  shortUrl: string
+  hasNip11: boolean
+  triedNip11: boolean
+  relayType?: string
+  countryCode?: string
+}
