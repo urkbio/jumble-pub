@@ -49,17 +49,17 @@ class ClientService extends EventTarget {
   private profileEventCache = new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 })
   private profileEventDataloader = new DataLoader<string, NEvent | undefined>(
     (ids) => Promise.all(ids.map((id) => this._fetchProfileEvent(id))),
-    { cacheMap: this.profileEventCache, maxBatchSize: 20 }
+    { cacheMap: this.profileEventCache, maxBatchSize: 50 }
   )
   private fetchProfileEventFromDefaultRelaysDataloader = new DataLoader<string, NEvent | undefined>(
     this.profileEventBatchLoadFn.bind(this),
-    { cache: false, maxBatchSize: 20 }
+    { cache: false, maxBatchSize: 50 }
   )
   private relayListEventDataLoader = new DataLoader<string, NEvent | undefined>(
     this.relayListEventBatchLoadFn.bind(this),
     {
       cacheMap: new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 }),
-      maxBatchSize: 20
+      maxBatchSize: 50
     }
   )
   private followListCache = new LRUCache<string, Promise<NEvent | undefined>>({
@@ -578,9 +578,9 @@ class ClientService extends EventTarget {
 
   async initUserIndexFromFollowings(pubkey: string) {
     const followings = await this.fetchFollowings(pubkey)
-    for (let i = 0; i * 20 < followings.length; i++) {
-      await this.profileEventDataloader.loadMany(followings.slice(i * 20, (i + 1) * 20))
-      await new Promise((resolve) => setTimeout(resolve, 200))
+    for (let i = 0; i * 50 < followings.length; i++) {
+      await this.profileEventDataloader.loadMany(followings.slice(i * 50, (i + 1) * 50))
+      await new Promise((resolve) => setTimeout(resolve, 30000))
     }
   }
 
