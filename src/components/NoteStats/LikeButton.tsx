@@ -1,4 +1,5 @@
 import { createReactionDraftEvent } from '@/lib/draft-event'
+import { isProtectedEvent } from '@/lib/event'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
@@ -54,7 +55,13 @@ export default function LikeButton({
 
         const targetRelayList = await client.fetchRelayList(event.pubkey)
         const reaction = createReactionDraftEvent(event)
-        await publish(reaction, { additionalRelayUrls: targetRelayList.read.slice(0, 3) })
+        const isProtected = isProtectedEvent(event)
+        if (isProtected) {
+          const seenOn = client.getSeenEventRelayUrls(event.id)
+          await publish(reaction, { specifiedRelayUrls: seenOn })
+        } else {
+          await publish(reaction, { additionalRelayUrls: targetRelayList.read.slice(0, 3) })
+        }
         markNoteAsLiked(event.id)
       } catch (error) {
         console.error('like failed', error)

@@ -12,6 +12,7 @@ import Image from '../Image'
 import TextareaWithMentions from '../TextareaWithMentions.tsx'
 import Mentions from './Mentions'
 import PostOptions from './PostOptions.tsx'
+import SendOnlyToSwitch from './SendOnlyToSwitch.tsx'
 import { TPostOptions } from './types.ts'
 import Uploader from './Uploader'
 
@@ -94,6 +95,7 @@ export default function PicturePostContent({ close }: { close: () => void }) {
         textValue={content}
         placeholder={t('Write something...')}
       />
+      <SendOnlyToSwitch postOptions={postOptions} setPostOptions={setPostOptions} />
       <div className="flex items-center justify-between">
         <Button
           variant="link"

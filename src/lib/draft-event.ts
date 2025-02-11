@@ -9,6 +9,7 @@ import {
   extractImagesFromContent,
   extractMentions,
   getEventCoordinate,
+  isProtectedEvent,
   isReplaceable
 } from './event'
 
@@ -23,6 +24,10 @@ export function createReactionDraftEvent(event: Event): TDraftEvent {
 
   if (isReplaceable(event.kind)) {
     tags.push(hint ? ['a', getEventCoordinate(event), hint] : ['a', getEventCoordinate(event)])
+  }
+
+  if (isProtectedEvent(event)) {
+    tags.push(['-'])
   }
 
   return {

@@ -12,6 +12,7 @@ import TextareaWithMentions from '../TextareaWithMentions.tsx'
 import Mentions from './Mentions'
 import PostOptions from './PostOptions.tsx'
 import Preview from './Preview'
+import SendOnlyToSwitch from './SendOnlyToSwitch.tsx'
 import { TPostOptions } from './types.ts'
 import Uploader from './Uploader'
 
@@ -110,6 +111,11 @@ export default function NormalPostContent({
         placeholder={t('Write something...')}
       />
       {content && <Preview content={content} />}
+      <SendOnlyToSwitch
+        parentEvent={parentEvent}
+        postOptions={postOptions}
+        setPostOptions={setPostOptions}
+      />
       <div className="flex items-center justify-between">
         <div className="flex gap-2 items-center">
           <Uploader
