@@ -47,9 +47,9 @@ export function MuteListProvider({ children }: { children: React.ReactNode }) {
       })
       const muteEvent = getLatestEvent(events) as Event | undefined
       if (muteEvent) {
-        await indexedDb.putReplaceableEvent(muteEvent)
-        setMuteListEvent(muteEvent)
-        const tags = await extractMuteTags(muteEvent)
+        const newMuteEvent = await indexedDb.putReplaceableEvent(muteEvent)
+        setMuteListEvent(newMuteEvent)
+        const tags = await extractMuteTags(newMuteEvent)
         setTags(tags)
       }
     }

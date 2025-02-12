@@ -70,7 +70,7 @@ class IndexedDbService {
     return this.initPromise
   }
 
-  async putReplaceableEvent(event: Event): Promise<boolean> {
+  async putReplaceableEvent(event: Event): Promise<Event> {
     const storeName = this.getStoreNameByKind(event.kind)
     if (!storeName) {
       return Promise.reject('store name not found')
@@ -87,11 +87,11 @@ class IndexedDbService {
       getRequest.onsuccess = () => {
         const oldValue = getRequest.result as TValue<Event> | undefined
         if (oldValue && oldValue.value.created_at >= event.created_at) {
-          return resolve(false)
+          return resolve(oldValue.value)
         }
         const putRequest = store.put(this.formatValue(event.pubkey, event))
         putRequest.onsuccess = () => {
-          resolve(true)
+          resolve(event)
         }
 
         putRequest.onerror = (event) => {

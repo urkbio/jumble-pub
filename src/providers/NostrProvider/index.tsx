@@ -403,17 +403,15 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   }
 
   const updateRelayListEvent = async (relayListEvent: Event) => {
-    const isNew = await indexedDb.putReplaceableEvent(relayListEvent)
-    if (!isNew) return
-    setRelayList(getRelayListFromRelayListEvent(relayListEvent))
+    const newRelayList = await indexedDb.putReplaceableEvent(relayListEvent)
+    setRelayList(getRelayListFromRelayListEvent(newRelayList))
   }
 
   const updateProfileEvent = async (profileEvent: Event) => {
-    const isNew = await indexedDb.putReplaceableEvent(profileEvent)
-    if (!isNew) return
-    setProfileEvent(profileEvent)
-    setProfile(getProfileFromProfileEvent(profileEvent))
-    client.updateProfileCache(profileEvent)
+    const newProfileEvent = await indexedDb.putReplaceableEvent(profileEvent)
+    setProfileEvent(newProfileEvent)
+    setProfile(getProfileFromProfileEvent(newProfileEvent))
+    client.updateProfileCache(newProfileEvent)
   }
 
   return (

@@ -58,9 +58,8 @@ export function FollowListProvider({ children }: { children: React.ReactNode }) 
   }, [accountPubkey])
 
   const updateFollowListEvent = async (event: Event) => {
-    const isNew = await indexedDb.putReplaceableEvent(event)
-    if (!isNew) return
-    setFollowListEvent(event)
+    const newEvent = await indexedDb.putReplaceableEvent(event)
+    setFollowListEvent(newEvent)
   }
 
   const follow = async (pubkey: string) => {
