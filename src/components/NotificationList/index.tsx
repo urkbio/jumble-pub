@@ -5,6 +5,7 @@ import { extractEmbeddedNotesFromContent, extractImagesFromContent } from '@/lib
 import { toNote } from '@/lib/link'
 import { tagNameEquals } from '@/lib/tag'
 import { useSecondaryPage } from '@/PageManager'
+import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import client from '@/services/client.service'
 import dayjs from 'dayjs'
@@ -185,6 +186,10 @@ NotificationList.displayName = 'NotificationList'
 export default NotificationList
 
 function NotificationItem({ notification }: { notification: Event }) {
+  const { mutePubkeys } = useMuteList()
+  if (mutePubkeys.includes(notification.pubkey)) {
+    return null
+  }
   if (notification.kind === kinds.Reaction) {
     return <ReactionNotification notification={notification} />
   }
