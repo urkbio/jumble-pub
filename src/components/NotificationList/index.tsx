@@ -1,7 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { BIG_RELAY_URLS, COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
 import { useFetchEvent } from '@/hooks'
-import { extractEmbeddedNotesFromContent, extractImagesFromContent } from '@/lib/event'
 import { toNote } from '@/lib/link'
 import { tagNameEquals } from '@/lib/tag'
 import { useSecondaryPage } from '@/PageManager'
@@ -22,7 +21,7 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import { embedded, embeddedNostrNpubRenderer, embeddedNostrProfileRenderer } from '../Embedded'
+import ContentPreview from '../ContentPreview'
 import { FormattedTimestamp } from '../FormattedTimestamp'
 import UserAvatar from '../UserAvatar'
 
@@ -230,7 +229,7 @@ function ReactionNotification({ notification }: { notification: Event }) {
         <UserAvatar userId={notification.pubkey} size="small" />
         <Heart size={24} className="text-red-400" />
         <div>{notification.content === '+' ? <ThumbsUp size={14} /> : notification.content}</div>
-        <ContentPreview event={event} />
+        <ContentPreview className="truncate flex-1 w-0" event={event} />
       </div>
       <div className="text-muted-foreground">
         <FormattedTimestamp timestamp={notification.created_at} short />
@@ -248,7 +247,7 @@ function ReplyNotification({ notification }: { notification: Event }) {
     >
       <UserAvatar userId={notification.pubkey} size="small" />
       <MessageCircle size={24} className="text-blue-400" />
-      <ContentPreview event={notification} />
+      <ContentPreview className="truncate flex-1 w-0" event={notification} />
       <div className="text-muted-foreground">
         <FormattedTimestamp timestamp={notification.created_at} short />
       </div>
@@ -278,7 +277,7 @@ function RepostNotification({ notification }: { notification: Event }) {
     >
       <UserAvatar userId={notification.pubkey} size="small" />
       <Repeat size={24} className="text-green-400" />
-      <ContentPreview event={event} />
+      <ContentPreview className="truncate flex-1 w-0" event={event} />
       <div className="text-muted-foreground">
         <FormattedTimestamp timestamp={notification.created_at} short />
       </div>
@@ -307,26 +306,10 @@ function CommentNotification({ notification }: { notification: Event }) {
     >
       <UserAvatar userId={notification.pubkey} size="small" />
       <MessageCircle size={24} className="text-blue-400" />
-      <ContentPreview event={notification} />
+      <ContentPreview className="truncate flex-1 w-0" event={notification} />
       <div className="text-muted-foreground">
         <FormattedTimestamp timestamp={notification.created_at} short />
       </div>
     </div>
   )
-}
-
-function ContentPreview({ event }: { event?: Event }) {
-  const { t } = useTranslation()
-  const content = useMemo(() => {
-    if (!event) return null
-    const { contentWithoutEmbeddedNotes } = extractEmbeddedNotesFromContent(event.content)
-    const { contentWithoutImages, images } = extractImagesFromContent(contentWithoutEmbeddedNotes)
-    return embedded(contentWithoutImages + (images?.length ? `[${t('image')}]` : ''), [
-      embeddedNostrProfileRenderer,
-      embeddedNostrNpubRenderer
-    ])
-  }, [event])
-  if (!event) return null
-
-  return <div className="truncate flex-1 w-0">{content}</div>
 }
