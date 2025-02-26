@@ -15,12 +15,13 @@ import {
 
 // https://github.com/nostr-protocol/nips/blob/master/25.md
 export function createReactionDraftEvent(event: Event): TDraftEvent {
-  const tags = event.tags.filter((tag) => tag.length >= 2 && ['e', 'p'].includes(tag[0]))
-
+  const tags: string[][] = []
   const hint = client.getEventHint(event.id)
   tags.push(['e', event.id, hint, event.pubkey])
   tags.push(['p', event.pubkey])
-  tags.push(['k', event.kind.toString()])
+  if (event.kind !== kinds.ShortTextNote) {
+    tags.push(['k', event.kind.toString()])
+  }
 
   if (isReplaceable(event.kind)) {
     tags.push(hint ? ['a', getEventCoordinate(event), hint] : ['a', getEventCoordinate(event)])

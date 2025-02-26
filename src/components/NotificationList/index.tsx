@@ -9,7 +9,7 @@ import { useNostr } from '@/providers/NostrProvider'
 import client from '@/services/client.service'
 import dayjs from 'dayjs'
 import { Heart, MessageCircle, Repeat, ThumbsUp } from 'lucide-react'
-import { Event, kinds, nip19, validateEvent } from 'nostr-tools'
+import { Event, kinds, validateEvent } from 'nostr-tools'
 import {
   forwardRef,
   useCallback,
@@ -205,24 +205,23 @@ function NotificationItem({ notification }: { notification: Event }) {
 
 function ReactionNotification({ notification }: { notification: Event }) {
   const { push } = useSecondaryPage()
-  const bech32Id = useMemo(() => {
+  const { pubkey } = useNostr()
+  const eventId = useMemo(() => {
+    const targetPubkey = notification.tags.findLast(tagNameEquals('p'))?.[1]
+    if (targetPubkey !== pubkey) return undefined
+
     const eTag = notification.tags.findLast(tagNameEquals('e'))
-    const pTag = notification.tags.find(tagNameEquals('p'))
-    const eventId = eTag?.[1]
-    const author = pTag?.[1]
-    return eventId
-      ? nip19.neventEncode(author ? { id: eventId, author } : { id: eventId })
-      : undefined
-  }, [notification])
-  const { event } = useFetchEvent(bech32Id)
-  if (!event || !bech32Id || ![kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(event.kind)) {
+    return eTag?.[1]
+  }, [notification, pubkey])
+  const { event } = useFetchEvent(eventId)
+  if (!event || !eventId || ![kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(event.kind)) {
     return null
   }
 
   return (
     <div
       className="flex items-center justify-between cursor-pointer py-2"
-      onClick={() => push(toNote(bech32Id))}
+      onClick={() => push(toNote(event))}
     >
       <div className="flex gap-2 items-center flex-1">
         <UserAvatar userId={notification.pubkey} size="small" />
