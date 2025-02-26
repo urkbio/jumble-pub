@@ -7,7 +7,7 @@ import {
   extractCommentMentions,
   extractHashtags,
   extractImagesFromContent,
-  extractMentions,
+  extractRelatedEventIds,
   getEventCoordinate,
   isProtectedEvent,
   isReplaceable
@@ -54,21 +54,29 @@ export function createRepostDraftEvent(event: Event): TDraftEvent {
 export async function createShortTextNoteDraftEvent(
   content: string,
   pictureInfos: { url: string; tags: string[][] }[],
+  mentions: string[],
   options: {
     parentEvent?: Event
     addClientTag?: boolean
     protectedEvent?: boolean
   } = {}
 ): Promise<TDraftEvent> {
-  const { pubkeys, otherRelatedEventIds, quoteEventIds, rootEventId, parentEventId } =
-    await extractMentions(content, options.parentEvent)
+  const { otherRelatedEventIds, quoteEventIds, rootEventId, parentEventId } =
+    await extractRelatedEventIds(content, options.parentEvent)
   const hashtags = extractHashtags(content)
 
-  const tags = pubkeys
-    .map((pubkey) => ['p', pubkey])
-    .concat(quoteEventIds.map((eventId) => ['q', eventId, client.getEventHint(eventId)]))
-    .concat(hashtags.map((hashtag) => ['t', hashtag]))
+  const tags = hashtags.map((hashtag) => ['t', hashtag])
 
+  // imeta tags
+  const { images } = extractImagesFromContent(content)
+  if (images && images.length) {
+    tags.push(...generateImetaTags(images, pictureInfos))
+  }
+
+  // q tags
+  tags.push(...quoteEventIds.map((eventId) => ['q', eventId, client.getEventHint(eventId)]))
+
+  // e tags
   if (rootEventId) {
     tags.push(['e', rootEventId, client.getEventHint(rootEventId), 'root'])
   }
@@ -79,10 +87,8 @@ export async function createShortTextNoteDraftEvent(
     tags.push(['e', parentEventId, client.getEventHint(parentEventId), 'reply'])
   }
 
-  const { images } = extractImagesFromContent(content)
-  if (images && images.length) {
-    tags.push(...generateImetaTags(images, pictureInfos))
-  }
+  // p tags
+  tags.push(...mentions.map((pubkey) => ['p', pubkey]))
 
   if (options.addClientTag) {
     tags.push(['client', 'jumble'])
@@ -117,12 +123,13 @@ export function createRelaySetDraftEvent(relaySet: TRelaySet): TDraftEvent {
 export async function createPictureNoteDraftEvent(
   content: string,
   pictureInfos: { url: string; tags: string[][] }[],
+  mentions: string[],
   options: {
     addClientTag?: boolean
     protectedEvent?: boolean
   } = {}
 ): Promise<TDraftEvent> {
-  const { pubkeys, quoteEventIds } = await extractMentions(content)
+  const { quoteEventIds } = await extractRelatedEventIds(content)
   const hashtags = extractHashtags(content)
   if (!pictureInfos.length) {
     throw new Error('No images found in content')
@@ -130,9 +137,9 @@ export async function createPictureNoteDraftEvent(
 
   const tags = pictureInfos
     .map((info) => ['imeta', ...info.tags.map(([n, v]) => `${n} ${v}`)])
-    .concat(pubkeys.map((pubkey) => ['p', pubkey]))
-    .concat(quoteEventIds.map((eventId) => ['q', eventId, client.getEventHint(eventId)]))
     .concat(hashtags.map((hashtag) => ['t', hashtag]))
+    .concat(quoteEventIds.map((eventId) => ['q', eventId, client.getEventHint(eventId)]))
+    .concat(mentions.map((pubkey) => ['p', pubkey]))
 
   if (options.addClientTag) {
     tags.push(['client', 'jumble'])
@@ -154,13 +161,13 @@ export async function createCommentDraftEvent(
   content: string,
   parentEvent: Event,
   pictureInfos: { url: string; tags: string[][] }[],
+  mentions: string[],
   options: {
     addClientTag?: boolean
     protectedEvent?: boolean
   } = {}
 ): Promise<TDraftEvent> {
   const {
-    pubkeys,
     quoteEventIds,
     rootEventId,
     rootEventKind,
@@ -171,22 +178,28 @@ export async function createCommentDraftEvent(
   } = await extractCommentMentions(content, parentEvent)
   const hashtags = extractHashtags(content)
 
-  const tags = [
-    ['E', rootEventId, client.getEventHint(rootEventId), rootEventPubkey],
-    ['K', rootEventKind.toString()],
-    ['P', rootEventPubkey],
-    ['e', parentEventId, client.getEventHint(parentEventId), parentEventPubkey],
-    ['k', parentEventKind.toString()],
-    ['p', parentEventPubkey]
-  ]
-    .concat(pubkeys.map((pubkey) => ['p', pubkey]))
+  const tags = hashtags
+    .map((hashtag) => ['t', hashtag])
     .concat(quoteEventIds.map((eventId) => ['q', eventId, client.getEventHint(eventId)]))
-    .concat(hashtags.map((hashtag) => ['t', hashtag]))
 
   const { images } = extractImagesFromContent(content)
   if (images && images.length) {
     tags.push(...generateImetaTags(images, pictureInfos))
   }
+
+  tags.push(
+    ...mentions.filter((pubkey) => pubkey !== parentEventPubkey).map((pubkey) => ['p', pubkey])
+  )
+  tags.push(
+    ...[
+      ['E', rootEventId, client.getEventHint(rootEventId), rootEventPubkey],
+      ['K', rootEventKind.toString()],
+      ['P', rootEventPubkey],
+      ['e', parentEventId, client.getEventHint(parentEventId), parentEventPubkey],
+      ['k', parentEventKind.toString()],
+      ['p', parentEventPubkey]
+    ]
+  )
 
   if (options.addClientTag) {
     tags.push(['client', 'jumble'])
