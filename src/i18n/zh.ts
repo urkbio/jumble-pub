@@ -184,6 +184,24 @@ export default {
     'Open in a': '在 {{a}} 中打开',
     'Cannot handle event of kind k': '无法处理类型为 {{k}} 的事件',
     'Sorry! The note cannot be found 😔': '抱歉！找不到该笔记 😔',
-    'This user has been muted': '该用户已被屏蔽'
+    'This user has been muted': '该用户已被屏蔽',
+    Wallet: '钱包',
+    Sats: '聪',
+    sats: '聪',
+    'Zap to': '打闪给',
+    'Zap n sats': '打闪 {{n}} 聪',
+    zapComment: '附言',
+    'Default zap amount': '默认打闪金额',
+    'Default zap comment': '默认打闪附言',
+    'Lightning Address (or LNURL)': '闪电地址 (或 LNURL)',
+    'Quick zap': '快速打闪',
+    'If enabled, you can zap with a single click': '启用后，您可以单击打闪',
+    All: '全部',
+    Reactions: '互动',
+    Zaps: '打闪',
+    'Enjoying Jumble?': '喜欢 Jumble 吗？',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      '您的捐赠帮助我维护 Jumble 并使其更好！😊',
+    'Earlier notifications': '更早的通知'
   }
 }

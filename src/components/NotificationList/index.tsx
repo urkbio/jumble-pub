@@ -1,15 +1,15 @@
+import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { BIG_RELAY_URLS, COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
-import { useFetchEvent } from '@/hooks'
-import { toNote } from '@/lib/link'
-import { tagNameEquals } from '@/lib/tag'
-import { useSecondaryPage } from '@/PageManager'
-import { useMuteList } from '@/providers/MuteListProvider'
+import { BIG_RELAY_URLS, COMMENT_EVENT_KIND } from '@/constants'
+import { cn } from '@/lib/utils'
+import { useDeepBrowsing } from '@/providers/DeepBrowsingProvider'
 import { useNostr } from '@/providers/NostrProvider'
+import { useNoteStats } from '@/providers/NoteStatsProvider'
 import client from '@/services/client.service'
+import storage from '@/services/local-storage.service'
+import { TNotificationType } from '@/types'
 import dayjs from 'dayjs'
-import { Heart, MessageCircle, Repeat, ThumbsUp } from 'lucide-react'
-import { Event, kinds, validateEvent } from 'nostr-tools'
+import { Event, kinds } from 'nostr-tools'
 import {
   forwardRef,
   useCallback,
@@ -21,9 +21,7 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import ContentPreview from '../ContentPreview'
-import { FormattedTimestamp } from '../FormattedTimestamp'
-import UserAvatar from '../UserAvatar'
+import { NotificationItem } from './NotificationItem'
 
 const LIMIT = 100
 const SHOW_COUNT = 30
@@ -31,13 +29,30 @@ const SHOW_COUNT = 30
 const NotificationList = forwardRef((_, ref) => {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
+  const { updateNoteStatsByEvents } = useNoteStats()
+  const [notificationType, setNotificationType] = useState<TNotificationType>('all')
+  const [lastReadTime, setLastReadTime] = useState(0)
   const [refreshCount, setRefreshCount] = useState(0)
   const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
   const [refreshing, setRefreshing] = useState(true)
   const [notifications, setNotifications] = useState<Event[]>([])
+  const [newNotifications, setNewNotifications] = useState<Event[]>([])
+  const [oldNotifications, setOldNotifications] = useState<Event[]>([])
   const [showCount, setShowCount] = useState(SHOW_COUNT)
   const [until, setUntil] = useState<number | undefined>(dayjs().unix())
   const bottomRef = useRef<HTMLDivElement | null>(null)
+  const filterKinds = useMemo(() => {
+    switch (notificationType) {
+      case 'mentions':
+        return [kinds.ShortTextNote, COMMENT_EVENT_KIND]
+      case 'reactions':
+        return [kinds.Reaction, kinds.Repost]
+      case 'zaps':
+        return [kinds.Zap]
+      default:
+        return [kinds.ShortTextNote, kinds.Repost, kinds.Reaction, kinds.Zap, COMMENT_EVENT_KIND]
+    }
+  }, [notificationType])
   useImperativeHandle(
     ref,
     () => ({
@@ -57,6 +72,9 @@ const NotificationList = forwardRef((_, ref) => {
 
     const init = async () => {
       setRefreshing(true)
+      setNotifications([])
+      setShowCount(SHOW_COUNT)
+      setLastReadTime(storage.getLastReadNotificationTime(pubkey))
       const relayList = await client.fetchRelayList(pubkey)
       let eventCount = 0
       const { closer, timelineKey } = await client.subscribeTimeline(
@@ -65,7 +83,7 @@ const NotificationList = forwardRef((_, ref) => {
           : relayList.read.concat(BIG_RELAY_URLS).slice(0, 4),
         {
           '#p': [pubkey],
-          kinds: [kinds.ShortTextNote, kinds.Repost, kinds.Reaction, COMMENT_EVENT_KIND],
+          kinds: filterKinds,
           limit: LIMIT
         },
         {
@@ -76,6 +94,7 @@ const NotificationList = forwardRef((_, ref) => {
             if (eosed) {
               setRefreshing(false)
               setUntil(events.length > 0 ? events[events.length - 1].created_at - 1 : undefined)
+              updateNoteStatsByEvents(events)
             }
           },
           onNew: (event) => {
@@ -89,6 +108,7 @@ const NotificationList = forwardRef((_, ref) => {
               }
               return [...oldEvents.slice(0, index), event, ...oldEvents.slice(index)]
             })
+            updateNoteStatsByEvents([event])
           }
         }
       )
@@ -100,7 +120,19 @@ const NotificationList = forwardRef((_, ref) => {
     return () => {
       promise.then((closer) => closer?.())
     }
-  }, [pubkey, refreshCount])
+  }, [pubkey, refreshCount, filterKinds])
+
+  useEffect(() => {
+    const visibleNotifications = notifications.slice(0, showCount)
+    const index = visibleNotifications.findIndex((event) => event.created_at <= lastReadTime)
+    if (index === -1) {
+      setNewNotifications(visibleNotifications)
+      setOldNotifications([])
+    } else {
+      setNewNotifications(visibleNotifications.slice(0, index))
+      setOldNotifications(visibleNotifications.slice(index))
+    }
+  }, [notifications, lastReadTime, showCount])
 
   const loadMore = useCallback(async () => {
     if (showCount < notifications.length) {
@@ -153,160 +185,103 @@ const NotificationList = forwardRef((_, ref) => {
   }, [loadMore])
 
   return (
-    <PullToRefresh
-      onRefresh={async () => {
-        setRefreshCount((count) => count + 1)
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-      }}
-      pullingContent=""
-    >
-      <div>
-        {notifications.slice(0, showCount).map((notification) => (
-          <NotificationItem key={notification.id} notification={notification} />
-        ))}
-        <div className="text-center text-sm text-muted-foreground">
-          {until || refreshing ? (
-            <div ref={bottomRef}>
-              <div className="flex gap-2 items-center h-11 py-2">
-                <Skeleton className="w-7 h-7 rounded-full" />
-                <Skeleton className="h-6 flex-1 w-0" />
-              </div>
+    <div>
+      <NotificationTypeSwitch
+        type={notificationType}
+        setType={(type) => {
+          setShowCount(SHOW_COUNT)
+          setNotificationType(type)
+        }}
+      />
+      <PullToRefresh
+        onRefresh={async () => {
+          setRefreshCount((count) => count + 1)
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }}
+        pullingContent=""
+      >
+        <div className="px-4 pt-2">
+          {newNotifications.map((notification) => (
+            <NotificationItem key={notification.id} notification={notification} isNew />
+          ))}
+          {!!newNotifications.length && (
+            <div className="relative my-2">
+              <Separator />
+              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+                {t('Earlier notifications')}
+              </span>
             </div>
-          ) : (
-            t('no more notifications')
           )}
+          {oldNotifications.map((notification) => (
+            <NotificationItem key={notification.id} notification={notification} />
+          ))}
+          <div className="text-center text-sm text-muted-foreground">
+            {until || refreshing ? (
+              <div ref={bottomRef}>
+                <div className="flex gap-2 items-center h-11 py-2">
+                  <Skeleton className="w-7 h-7 rounded-full" />
+                  <Skeleton className="h-6 flex-1 w-0" />
+                </div>
+              </div>
+            ) : (
+              t('no more notifications')
+            )}
+          </div>
         </div>
-      </div>
-    </PullToRefresh>
+      </PullToRefresh>
+    </div>
   )
 })
 NotificationList.displayName = 'NotificationList'
 export default NotificationList
 
-function NotificationItem({ notification }: { notification: Event }) {
-  const { mutePubkeys } = useMuteList()
-  if (mutePubkeys.includes(notification.pubkey)) {
-    return null
-  }
-  if (notification.kind === kinds.Reaction) {
-    return <ReactionNotification notification={notification} />
-  }
-  if (notification.kind === kinds.ShortTextNote) {
-    return <ReplyNotification notification={notification} />
-  }
-  if (notification.kind === kinds.Repost) {
-    return <RepostNotification notification={notification} />
-  }
-  if (notification.kind === COMMENT_EVENT_KIND) {
-    return <CommentNotification notification={notification} />
-  }
-  return null
-}
-
-function ReactionNotification({ notification }: { notification: Event }) {
-  const { push } = useSecondaryPage()
-  const { pubkey } = useNostr()
-  const eventId = useMemo(() => {
-    const targetPubkey = notification.tags.findLast(tagNameEquals('p'))?.[1]
-    if (targetPubkey !== pubkey) return undefined
-
-    const eTag = notification.tags.findLast(tagNameEquals('e'))
-    return eTag?.[1]
-  }, [notification, pubkey])
-  const { event } = useFetchEvent(eventId)
-  if (!event || !eventId || ![kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(event.kind)) {
-    return null
-  }
+function NotificationTypeSwitch({
+  type,
+  setType
+}: {
+  type: TNotificationType
+  setType: (type: TNotificationType) => void
+}) {
+  const { t } = useTranslation()
+  const { deepBrowsing, lastScrollTop } = useDeepBrowsing()
 
   return (
     <div
-      className="flex items-center justify-between cursor-pointer py-2"
-      onClick={() => push(toNote(event))}
+      className={cn(
+        'sticky top-12 bg-background z-30 duration-700 transition-transform select-none',
+        deepBrowsing && lastScrollTop > 800 ? '-translate-y-[calc(100%+12rem)]' : ''
+      )}
     >
-      <div className="flex gap-2 items-center flex-1">
-        <UserAvatar userId={notification.pubkey} size="small" />
-        <Heart size={24} className="text-red-400" />
-        <div>{notification.content === '+' ? <ThumbsUp size={14} /> : notification.content}</div>
-        <ContentPreview className="truncate flex-1 w-0" event={event} />
+      <div className="flex">
+        <div
+          className={`w-1/4 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${type === 'all' ? '' : 'text-muted-foreground'}`}
+          onClick={() => setType('all')}
+        >
+          {t('All')}
+        </div>
+        <div
+          className={`w-1/4 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${type === 'mentions' ? '' : 'text-muted-foreground'}`}
+          onClick={() => setType('mentions')}
+        >
+          {t('Mentions')}
+        </div>
+        <div
+          className={`w-1/4 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${type === 'reactions' ? '' : 'text-muted-foreground'}`}
+          onClick={() => setType('reactions')}
+        >
+          {t('Reactions')}
+        </div>
+        <div
+          className={`w-1/4 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${type === 'zaps' ? '' : 'text-muted-foreground'}`}
+          onClick={() => setType('zaps')}
+        >
+          {t('Zaps')}
+        </div>
       </div>
-      <div className="text-muted-foreground">
-        <FormattedTimestamp timestamp={notification.created_at} short />
-      </div>
-    </div>
-  )
-}
-
-function ReplyNotification({ notification }: { notification: Event }) {
-  const { push } = useSecondaryPage()
-  return (
-    <div
-      className="flex gap-2 items-center cursor-pointer py-2"
-      onClick={() => push(toNote(notification))}
-    >
-      <UserAvatar userId={notification.pubkey} size="small" />
-      <MessageCircle size={24} className="text-blue-400" />
-      <ContentPreview className="truncate flex-1 w-0" event={notification} />
-      <div className="text-muted-foreground">
-        <FormattedTimestamp timestamp={notification.created_at} short />
-      </div>
-    </div>
-  )
-}
-
-function RepostNotification({ notification }: { notification: Event }) {
-  const { push } = useSecondaryPage()
-  const event = useMemo(() => {
-    try {
-      const event = JSON.parse(notification.content) as Event
-      const isValid = validateEvent(event)
-      if (!isValid) return null
-      client.addEventToCache(event)
-      return event
-    } catch {
-      return null
-    }
-  }, [notification.content])
-  if (!event) return null
-
-  return (
-    <div
-      className="flex gap-2 items-center cursor-pointer py-2"
-      onClick={() => push(toNote(event))}
-    >
-      <UserAvatar userId={notification.pubkey} size="small" />
-      <Repeat size={24} className="text-green-400" />
-      <ContentPreview className="truncate flex-1 w-0" event={event} />
-      <div className="text-muted-foreground">
-        <FormattedTimestamp timestamp={notification.created_at} short />
-      </div>
-    </div>
-  )
-}
-
-function CommentNotification({ notification }: { notification: Event }) {
-  const { push } = useSecondaryPage()
-  const rootEventId = notification.tags.find(tagNameEquals('E'))?.[1]
-  const rootPubkey = notification.tags.find(tagNameEquals('P'))?.[1]
-  const rootKind = notification.tags.find(tagNameEquals('K'))?.[1]
-  if (
-    !rootEventId ||
-    !rootPubkey ||
-    !rootKind ||
-    ![kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(parseInt(rootKind))
-  ) {
-    return null
-  }
-
-  return (
-    <div
-      className="flex gap-2 items-center cursor-pointer py-2"
-      onClick={() => push(toNote({ id: rootEventId, pubkey: rootPubkey }))}
-    >
-      <UserAvatar userId={notification.pubkey} size="small" />
-      <MessageCircle size={24} className="text-blue-400" />
-      <ContentPreview className="truncate flex-1 w-0" event={notification} />
-      <div className="text-muted-foreground">
-        <FormattedTimestamp timestamp={notification.created_at} short />
+      <div
+        className={`w-1/4 px-4 sm:px-6 transition-transform duration-500 ${type === 'mentions' ? 'translate-x-full' : type === 'reactions' ? 'translate-x-[200%]' : type === 'zaps' ? 'translate-x-[300%]' : ''} `}
+      >
+        <div className="w-full h-1 bg-primary rounded-full" />
       </div>
     </div>
   )

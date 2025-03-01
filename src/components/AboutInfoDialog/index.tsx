@@ -1,10 +1,13 @@
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer'
+import { CODY_PUBKEY } from '@/constants'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
-import { Drawer, DrawerContent, DrawerTrigger } from '../ui/drawer'
+import { useState } from 'react'
 import Username from '../Username'
 
 export default function AboutInfoDialog({ children }: { children: React.ReactNode }) {
   const { isSmallScreen } = useScreenSize()
+  const [open, setOpen] = useState(false)
 
   const content = (
     <>
@@ -13,12 +16,7 @@ export default function AboutInfoDialog({ children }: { children: React.ReactNod
         A beautiful nostr client focused on browsing relay feeds
       </div>
       <div>
-        Made by{' '}
-        <Username
-          userId={'npub1syjmjy0dp62dhccq3g97fr87tngvpvzey08llyt6ul58m2zqpzps9wf6wl'}
-          className="inline-block text-primary"
-          showAt
-        />
+        Made by <Username userId={CODY_PUBKEY} className="inline-block text-primary" showAt />
       </div>
       <div>
         Source code:{' '}
@@ -30,30 +28,26 @@ export default function AboutInfoDialog({ children }: { children: React.ReactNod
         >
           GitHub
         </a>
-      </div>
-      <div>
-        If you like this project, you can buy me a coffee ☕️ <br />
-        <div className="font-semibold">⚡️ codytseng@getalby.com ⚡️</div>
-      </div>
-      <div className="text-muted-foreground">
-        Version: v{__APP_VERSION__} ({__GIT_COMMIT__})
+        <div className="text-sm text-muted-foreground">
+          If you like Jumble, please consider giving it a star ⭐
+        </div>
       </div>
     </>
   )
 
   if (isSmallScreen) {
     return (
-      <Drawer>
+      <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>{children}</DrawerTrigger>
         <DrawerContent>
-          <div className="p-4">{content}</div>
+          <div className="p-4 space-y-4">{content}</div>
         </DrawerContent>
       </Drawer>
     )
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>{content}</DialogContent>
     </Dialog>

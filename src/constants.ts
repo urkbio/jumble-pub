@@ -7,6 +7,11 @@ export const StorageKey = {
   CURRENT_ACCOUNT: 'currentAccount',
   ADD_CLIENT_TAG: 'addClientTag',
   NOTE_LIST_MODE: 'noteListMode',
+  NOTIFICATION_TYPE: 'notificationType',
+  DEFAULT_ZAP_SATS: 'defaultZapSats',
+  DEFAULT_ZAP_COMMENT: 'defaultZapComment',
+  QUICK_ZAP: 'quickZap',
+  LAST_READ_NOTIFICATION_TIME_MAP: 'lastReadNotificationTimeMap',
   ACCOUNT_RELAY_LIST_EVENT_MAP: 'accountRelayListEventMap', // deprecated
   ACCOUNT_FOLLOW_LIST_EVENT_MAP: 'accountFollowListEventMap', // deprecated
   ACCOUNT_MUTE_LIST_EVENT_MAP: 'accountMuteListEventMap', // deprecated
@@ -32,3 +37,5 @@ export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 export const MONITOR = '9bbbb845e5b6c831c29789900769843ab43bb5047abe697870cb50b6fc9bf923'
 export const MONITOR_RELAYS = ['wss://relay.nostr.watch/']
+
+export const CODY_PUBKEY = '8125b911ed0e94dbe3008a0be48cfe5cd0c0b05923cfff917ae7e87da8400883'

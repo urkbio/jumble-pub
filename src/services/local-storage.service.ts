@@ -48,6 +48,10 @@ class LocalStorageService {
   private accounts: TAccount[] = []
   private currentAccount: TAccount | null = null
   private noteListMode: TNoteListMode = 'posts'
+  private lastReadNotificationTimeMap: Record<string, number> = {}
+  private defaultZapSats: number = 21
+  private defaultZapComment: string = 'Zap!'
+  private quickZap: boolean = false
 
   constructor() {
     if (!LocalStorageService.instance) {
@@ -75,6 +79,9 @@ class LocalStorageService {
       noteListModeStr && ['posts', 'postsAndReplies', 'pictures'].includes(noteListModeStr)
         ? (noteListModeStr as TNoteListMode)
         : 'posts'
+    const lastReadNotificationTimeMapStr =
+      window.localStorage.getItem(StorageKey.LAST_READ_NOTIFICATION_TIME_MAP) ?? '{}'
+    this.lastReadNotificationTimeMap = JSON.parse(lastReadNotificationTimeMapStr)
 
     const relaySetsStr = window.localStorage.getItem(StorageKey.RELAY_SETS)
     if (!relaySetsStr) {
@@ -102,6 +109,16 @@ class LocalStorageService {
       this.relaySets = JSON.parse(relaySetsStr)
       this.activeRelaySetId = window.localStorage.getItem(StorageKey.ACTIVE_RELAY_SET_ID) ?? null
     }
+
+    const defaultZapSatsStr = window.localStorage.getItem(StorageKey.DEFAULT_ZAP_SATS)
+    if (defaultZapSatsStr) {
+      const num = parseInt(defaultZapSatsStr)
+      if (!isNaN(num)) {
+        this.defaultZapSats = num
+      }
+    }
+    this.defaultZapComment = window.localStorage.getItem(StorageKey.DEFAULT_ZAP_COMMENT) ?? 'Zap!'
+    this.quickZap = window.localStorage.getItem(StorageKey.QUICK_ZAP) === 'true'
 
     // Clean up deprecated data
     window.localStorage.removeItem(StorageKey.ACCOUNT_PROFILE_EVENT_MAP)
@@ -208,6 +225,45 @@ class LocalStorageService {
     }
     this.currentAccount = act
     window.localStorage.setItem(StorageKey.CURRENT_ACCOUNT, JSON.stringify(act))
+  }
+
+  getDefaultZapSats() {
+    return this.defaultZapSats
+  }
+
+  setDefaultZapSats(sats: number) {
+    this.defaultZapSats = sats
+    window.localStorage.setItem(StorageKey.DEFAULT_ZAP_SATS, sats.toString())
+  }
+
+  getDefaultZapComment() {
+    return this.defaultZapComment
+  }
+
+  setDefaultZapComment(comment: string) {
+    this.defaultZapComment = comment
+    window.localStorage.setItem(StorageKey.DEFAULT_ZAP_COMMENT, comment)
+  }
+
+  getQuickZap() {
+    return this.quickZap
+  }
+
+  setQuickZap(quickZap: boolean) {
+    this.quickZap = quickZap
+    window.localStorage.setItem(StorageKey.QUICK_ZAP, quickZap.toString())
+  }
+
+  getLastReadNotificationTime(pubkey: string) {
+    return this.lastReadNotificationTimeMap[pubkey] ?? 0
+  }
+
+  setLastReadNotificationTime(pubkey: string, time: number) {
+    this.lastReadNotificationTimeMap[pubkey] = time
+    window.localStorage.setItem(
+      StorageKey.LAST_READ_NOTIFICATION_TIME_MAP,
+      JSON.stringify(this.lastReadNotificationTimeMap)
+    )
   }
 }
 

@@ -22,7 +22,7 @@ import PictureNoteCard from '../PictureNoteCard'
 
 const LIMIT = 100
 const ALGO_LIMIT = 500
-const SHOW_COUNT = 20
+const SHOW_COUNT = 10
 
 export default function NoteList({
   relayUrls,
@@ -266,7 +266,7 @@ function ListModeSwitch({
   return (
     <div
       className={cn(
-        'sticky top-12 bg-background z-30 duration-700 transition-transform',
+        'sticky top-12 bg-background z-30 duration-700 transition-transform select-none',
         deepBrowsing && lastScrollTop > 800 ? '-translate-y-[calc(100%+12rem)]' : ''
       )}
     >
