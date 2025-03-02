@@ -18,6 +18,15 @@ A beautiful nostr client focused on browsing relay feeds
 - **Relay Sets:** Easily manage and switch between relay sets
 - **Clean Interface:** Enjoy a minimalist design and intuitive interactions
 
+## Screenshots
+
+<img src="./screenshots/01.png" alt="Jumble Screenshot 01" width="650" />
+<div> 
+  <img src="./screenshots/02.png" alt="Jumble Screenshot 02" width="200" />
+  <img src="./screenshots/03.png" alt="Jumble Screenshot 03" width="200" />
+  <img src="./screenshots/04.png" alt="Jumble Screenshot 04" width="200" />
+</div>
+
 ## Run Locally
 
 ```bash
