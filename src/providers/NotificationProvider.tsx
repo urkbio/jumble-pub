@@ -6,6 +6,7 @@ import dayjs from 'dayjs'
 import { kinds } from 'nostr-tools'
 import { SubCloser } from 'nostr-tools/abstract-pool'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { useMuteList } from './MuteListProvider'
 import { useNostr } from './NostrProvider'
 
 type TNotificationContext = {
@@ -24,6 +25,7 @@ export const useNotification = () => {
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const { pubkey } = useNostr()
+  const { mutePubkeys } = useMuteList()
   const { current } = usePrimaryPage()
   const [hasNewNotification, setHasNewNotification] = useState(false)
   const [lastReadTime, setLastReadTime] = useState(-1)
@@ -83,7 +85,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           ],
           {
             onevent: (evt) => {
-              if (evt.pubkey !== pubkey) {
+              // Only show notification if not from self and not muted
+              if (evt.pubkey !== pubkey && !mutePubkeys.includes(evt.pubkey)) {
                 setHasNewNotification(true)
                 subCloser.close()
               }
