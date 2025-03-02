@@ -203,6 +203,8 @@ export default {
     'Your donation helps me maintain Jumble and make it better! 😊':
       '您的捐赠帮助我维护 Jumble 并使其更好！😊',
     'Earlier notifications': '更早的通知',
-    'Temporarily display this note': '临时显示此笔记'
+    'Temporarily display this note': '临时显示此笔记',
+    buttonFollowing: '已关注',
+    'Are you sure you want to unfollow this user?': '确定要取消关注此用户吗？'
   }
 }

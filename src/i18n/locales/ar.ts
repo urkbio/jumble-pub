@@ -201,6 +201,9 @@ export default {
     'Your donation helps me maintain Jumble and make it better! 😊':
       'تبرعك يساعد في صيانة Jumble وتحسينه! 😊',
     'Earlier notifications': 'الإشعارات السابقة',
-    'Temporarily display this note': 'عرض هذه الملاحظة مؤقتاً'
+    'Temporarily display this note': 'عرض هذه الملاحظة مؤقتاً',
+    buttonFollowing: 'جارٍ المتابعة',
+    'Are you sure you want to unfollow this user?':
+      'هل أنت متأكد أنك تريد إلغاء متابعة هذا المستخدم؟'
   }
 }

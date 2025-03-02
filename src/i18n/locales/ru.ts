@@ -206,6 +206,9 @@ export default {
     'Your donation helps me maintain Jumble and make it better! 😊':
       'Ваше пожертвование помогает поддерживать и улучшать Jumble! 😊',
     'Earlier notifications': 'Ранние уведомления',
-    'Temporarily display this note': 'Временно отобразить эту заметку'
+    'Temporarily display this note': 'Временно отобразить эту заметку',
+    buttonFollowing: 'Подписан',
+    'Are you sure you want to unfollow this user?':
+      'Вы уверены, что хотите отписаться от этого пользователя?'
   }
 }

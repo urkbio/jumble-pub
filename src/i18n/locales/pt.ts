@@ -204,6 +204,9 @@ export default {
     'Your donation helps me maintain Jumble and make it better! 😊':
       'Sua doação me ajuda a manter o Jumble e torná-lo melhor! 😊',
     'Earlier notifications': 'Notificações anteriores',
-    'Temporarily display this note': 'Exibir esta nota temporariamente'
+    'Temporarily display this note': 'Exibir esta nota temporariamente',
+    buttonFollowing: 'Seguindo',
+    'Are you sure you want to unfollow this user?':
+      'Tem certeza de que deseja deixar de seguir este usuário?'
   }
 }

@@ -90,12 +90,7 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
         </div>
       </div>
       <div className="px-4">
-        <div className="flex justify-end h-8 gap-2 items-center">
-          {isFollowingYou && (
-            <div className="text-muted-foreground rounded-full bg-muted text-xs h-fit px-2">
-              {t('Follows you')}
-            </div>
-          )}
+        <div className="flex justify-end h-8 gap-2 items-center max-sm:translate-x-2">
           <ProfileOptions pubkey={pubkey} />
           {isSelf ? (
             <Button
@@ -113,7 +108,14 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
           )}
         </div>
         <div className="pt-2">
-          <div className="text-xl font-semibold">{username}</div>
+          <div className="flex gap-2 items-center">
+            <div className="text-xl font-semibold truncate">{username}</div>
+            {isFollowingYou && (
+              <div className="text-muted-foreground rounded-full bg-muted text-xs h-fit px-2 shrink-0">
+                {t('Follows you')}
+              </div>
+            )}
+          </div>
           <Nip05 pubkey={pubkey} />
           {lightningAddress && (
             <div className="text-sm text-yellow-400 flex gap-1 items-center">

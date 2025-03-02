@@ -203,6 +203,8 @@ export default {
     'Your donation helps me maintain Jumble and make it better! 😊':
       'あなたの寄付はJumbleの維持と改善に役立ちます！ 😊',
     'Earlier notifications': '以前の通知',
-    'Temporarily display this note': 'このノートを一時的に表示'
+    'Temporarily display this note': 'このノートを一時的に表示',
+    buttonFollowing: 'フォロー中',
+    'Are you sure you want to unfollow this user?': 'このユーザーのフォローを解除しますか？'
   }
 }
