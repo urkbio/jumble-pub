@@ -13,9 +13,9 @@ A beautiful nostr client focused on browsing relay feeds
 
 ## Features
 
-- **Relay-Based Browsing:** Explore content directly through relays without following specific users
+- **Relay Feeds:** Explore content directly through relays without following specific users
 - **Relay-Friendly Design:** Minimized and simplified requests ensure efficient communication with relays
-- **Relay Groups:** Easily manage and switch between relay groups
+- **Relay Sets:** Easily manage and switch between relay sets
 - **Clean Interface:** Enjoy a minimalist design and intuitive interactions
 
 ## Run Locally
@@ -36,7 +36,11 @@ npm run dev
 
 ## Donate
 
-If you like this project, you can buy me a coffee :) ⚡️ codytseng@getalby.com ⚡️
+If you like this project, you can buy me a coffee :)
+
+lightning: ⚡️ codytseng@getalby.com ⚡️
+bitcoin: bc1qx8kvutghdhejx7vuvatmvw2ghypdungu0qm7ds
+geyser: https://geyser.fund/project/jumble
 
 ## License
 
