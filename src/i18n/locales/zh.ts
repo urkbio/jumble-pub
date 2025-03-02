@@ -78,7 +78,7 @@ export default {
     'All users': '所有用户',
     'Display replies': '显示回复',
     Notes: '笔记',
-    'Notes & Replies': '笔记 & 回复',
+    Replies: '回复',
     Notifications: '通知',
     'no more notifications': '到底了',
     'Using private key login is insecure. It is recommended to use a browser extension for login, such as alby, nostr-keyx or nos2x.':
@@ -202,6 +202,7 @@ export default {
     'Enjoying Jumble?': '喜欢 Jumble 吗？',
     'Your donation helps me maintain Jumble and make it better! 😊':
       '您的捐赠帮助我维护 Jumble 并使其更好！😊',
-    'Earlier notifications': '更早的通知'
+    'Earlier notifications': '更早的通知',
+    'Temporarily display this note': '临时显示此笔记'
   }
 }
