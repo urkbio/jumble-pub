@@ -45,7 +45,7 @@ const SettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
           <div>{t('Languages')}</div>
         </div>
         <Select defaultValue="en" value={language} onValueChange={handleLanguageChange}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -63,7 +63,7 @@ const SettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
           <div>{t('Theme')}</div>
         </div>
         <Select defaultValue="system" value={themeSetting} onValueChange={setThemeSetting}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
