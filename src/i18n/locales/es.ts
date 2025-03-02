@@ -22,7 +22,7 @@ export default {
     'n h': '{{n}}h',
     'n days ago': 'hace {{n}} días',
     'n d': '{{n}}d',
-    date: '{{timestamp, date}}', // ...existing code...
+    date: '{{timestamp, date}}',
     Follow: 'Seguir',
     Unfollow: 'Dejar de seguir',
     'Follow failed': 'Error al seguir',

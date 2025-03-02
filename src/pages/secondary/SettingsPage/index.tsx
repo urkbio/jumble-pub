@@ -1,14 +1,13 @@
 import AboutInfoDialog from '@/components/AboutInfoDialog'
 import Donation from '@/components/Donation'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
-import { LocalizedLanguageNames } from '@/i18n'
+import { LocalizedLanguageNames, TLanguage } from '@/i18n'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { toRelaySettings, toWallet } from '@/lib/link'
 import { cn } from '@/lib/utils'
 import { useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
 import { useTheme } from '@/providers/ThemeProvider'
-import { TLanguage } from '@/types'
 import { SelectValue } from '@radix-ui/react-select'
 import {
   Check,

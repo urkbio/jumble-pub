@@ -81,7 +81,7 @@ export default {
     'Display replies': 'Antworten anzeigen',
     Notes: 'Notizen',
     Replies: 'Antworten',
-    Notifications: 'Benachr.', // shortened from 'Benachrichtigungen'
+    Notifications: 'Benachr.',
     'no more notifications': 'keine weiteren Benachrichtigungen',
     'Using private key login is insecure. It is recommended to use a browser extension for login, such as alby, nostr-keyx or nos2x.':
       'Die Anmeldung mit privatem Schlüssel ist unsicher. Es wird empfohlen, eine Browsererweiterung wie alby, nostr-keyx oder nos2x zu verwenden.',

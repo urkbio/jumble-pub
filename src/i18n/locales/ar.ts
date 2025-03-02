@@ -202,6 +202,5 @@ export default {
       'تبرعك يساعد في صيانة Jumble وتحسينه! 😊',
     'Earlier notifications': 'الإشعارات السابقة',
     'Temporarily display this note': 'عرض هذه الملاحظة مؤقتاً'
-    // ...existing code...
   }
 }
