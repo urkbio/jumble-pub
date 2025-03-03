@@ -79,7 +79,7 @@ export default function PostEditor({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="p-0" withoutClose>
+      <DialogContent className="p-0 max-w-2xl" withoutClose>
         <ScrollArea className="px-4 h-full max-h-screen">
           <div className="space-y-4 px-2 py-6">
             <DialogHeader>
