@@ -22,20 +22,17 @@ export default function Mentions({
 }) {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
-  const [pubkeys, setPubkeys] = useState<string[]>([])
-  const [relatedPubkeys, setRelatedPubkeys] = useState<string[]>([])
   const [potentialMentions, setPotentialMentions] = useState<string[]>([])
   const [parentEventPubkey, setParentEventPubkey] = useState<string | undefined>()
   const [removedPubkeys, setRemovedPubkeys] = useState<string[]>([])
 
   useEffect(() => {
     extractMentions(content, parentEvent).then(({ pubkeys, relatedPubkeys, parentEventPubkey }) => {
-      setPubkeys(pubkeys.filter((p) => p !== pubkey))
-      setRelatedPubkeys(relatedPubkeys.filter((p) => p !== pubkey))
-      setParentEventPubkey(parentEventPubkey !== pubkey ? parentEventPubkey : undefined)
-      const potentialMentions = [...pubkeys, ...relatedPubkeys]
-      if (parentEventPubkey) {
-        potentialMentions.push(parentEventPubkey)
+      const _parentEventPubkey = parentEventPubkey !== pubkey ? parentEventPubkey : undefined
+      setParentEventPubkey(_parentEventPubkey)
+      const potentialMentions = [...pubkeys, ...relatedPubkeys].filter((p) => p !== pubkey)
+      if (_parentEventPubkey) {
+        potentialMentions.push(_parentEventPubkey)
       }
       setPotentialMentions(potentialMentions)
       setRemovedPubkeys((pubkeys) => {
@@ -55,7 +52,7 @@ export default function Mentions({
         <Button
           className="px-3"
           variant="ghost"
-          disabled={pubkeys.length === 0 && relatedPubkeys.length === 0 && !parentEventPubkey}
+          disabled={potentialMentions.length === 0}
           onClick={(e) => e.stopPropagation()}
         >
           {t('Mentions')}{' '}
