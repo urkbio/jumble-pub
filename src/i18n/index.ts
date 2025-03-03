@@ -15,17 +15,17 @@ import ru from './locales/ru'
 import zh from './locales/zh'
 
 const languages = {
+  ar: { resource: ar, name: 'العربية' },
+  de: { resource: de, name: 'Deutsch' },
   en: { resource: en, name: 'English' },
-  zh: { resource: zh, name: '简体中文' },
-  pl: { resource: pl, name: 'Polski' },
   es: { resource: es, name: 'Español' },
   fr: { resource: fr, name: 'Français' },
-  de: { resource: de, name: 'Deutsch' },
   ja: { resource: ja, name: '日本語' },
-  ru: { resource: ru, name: 'Русский' },
+  pl: { resource: pl, name: 'Polski' },
   'pt-BR': { resource: pt_BR, name: 'Português (Brasil)' },
   'pt-PT': { resource: pt_PT, name: 'Português (Portugal)' },
-  ar: { resource: ar, name: 'العربية' }
+  ru: { resource: ru, name: 'Русский' },
+  zh: { resource: zh, name: '简体中文' }
 } as const
 
 export type TLanguage = keyof typeof languages
