@@ -7,7 +7,7 @@ import { useFeed } from '@/providers/FeedProvider'
 import client from '@/services/client.service'
 import { Info } from 'lucide-react'
 import { Event } from 'nostr-tools'
-import { Dispatch, SetStateAction, useMemo } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export default function SendOnlyToSwitch({
@@ -21,15 +21,18 @@ export default function SendOnlyToSwitch({
 }) {
   const { t } = useTranslation()
   const { relayUrls } = useFeed()
-  const urls = useMemo(() => {
-    if (!parentEvent) return relayUrls
+  const [urls, setUrls] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!parentEvent) return
     const isProtected = isProtectedEvent(parentEvent)
     const seenOn = client.getSeenEventRelayUrls(parentEvent.id)
     if (isProtected && seenOn.length) {
       setSpecifiedRelayUrls(seenOn)
-      return seenOn
+      setUrls(seenOn)
+    } else {
+      setUrls(relayUrls)
     }
-    return relayUrls
   }, [parentEvent, relayUrls])
 
   if (!urls.length) return null
