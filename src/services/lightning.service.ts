@@ -82,7 +82,7 @@ class LightningService {
     )
     const zapRequestResBody = await zapRequestRes.json()
     if (zapRequestResBody.error) {
-      throw new Error(zapRequestResBody.error)
+      throw new Error(zapRequestResBody.message)
     }
     const { pr, verify } = zapRequestResBody
     if (!pr) {
