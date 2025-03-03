@@ -48,7 +48,9 @@ npm run dev
 If you like this project, you can buy me a coffee :)
 
 lightning: ⚡️ codytseng@getalby.com ⚡️
+
 bitcoin: bc1qx8kvutghdhejx7vuvatmvw2ghypdungu0qm7ds
+
 geyser: https://geyser.fund/project/jumble
 
 ## License
