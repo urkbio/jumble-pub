@@ -207,6 +207,7 @@ export default {
     'Temporarily display this note': 'Afficher temporairement cette note',
     buttonFollowing: 'Suivi',
     'Are you sure you want to unfollow this user?':
-      'Êtes-vous sûr de vouloir arrêter de suivre cet utilisateur ?'
+      'Êtes-vous sûr de vouloir arrêter de suivre cet utilisateur ?',
+    'Recent Supporters': 'Derniers soutiens'
   }
 }

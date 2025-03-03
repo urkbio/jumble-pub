@@ -1,4 +1,4 @@
-import { BIG_RELAY_URLS } from '@/constants'
+import { BIG_RELAY_URLS, CODY_PUBKEY } from '@/constants'
 import { extractZapInfoFromReceipt } from '@/lib/event'
 import { TProfile } from '@/types'
 import {
@@ -17,9 +17,12 @@ import { makeZapRequest } from 'nostr-tools/nip57'
 import { utf8Decoder } from 'nostr-tools/utils'
 import client from './client.service'
 
+export type TRecentSupporter = { pubkey: string; amount: number; comment?: string }
+
 class LightningService {
   static instance: LightningService
   private provider: WebLNProvider | null = null
+  private recentSupportersCache: TRecentSupporter[] | null = null
 
   constructor() {
     if (!LightningService.instance) {
@@ -148,6 +151,36 @@ class LightningService {
         )
       }
     })
+  }
+
+  async fetchRecentSupporters() {
+    if (this.recentSupportersCache) {
+      return this.recentSupportersCache
+    }
+    const relayList = await client.fetchRelayList(CODY_PUBKEY)
+    const events = await client.fetchEvents(relayList.read.slice(0, 4), {
+      authors: ['79f00d3f5a19ec806189fcab03c1be4ff81d18ee4f653c88fac41fe03570f432'], // alby
+      kinds: [kinds.Zap],
+      '#p': [CODY_PUBKEY],
+      since: dayjs().subtract(1, 'month').unix()
+    })
+    events.sort((a, b) => b.created_at - a.created_at)
+    const map = new Map<string, { pubkey: string; amount: number; comment?: string }>()
+    events.forEach((event) => {
+      const info = extractZapInfoFromReceipt(event)
+      if (!info || info.eventId || !info.senderPubkey || info.senderPubkey === CODY_PUBKEY) return
+
+      const { amount, comment, senderPubkey } = info
+      const item = map.get(senderPubkey)
+      if (!item) {
+        map.set(senderPubkey, { pubkey: senderPubkey, amount, comment })
+      } else {
+        item.amount += amount
+        if (!item.comment && comment) item.comment = comment
+      }
+    })
+    this.recentSupportersCache = Array.from(map.values()).sort((a, b) => b.amount - a.amount)
+    return this.recentSupportersCache
   }
 
   private async getZapEndpoint(profile: TProfile): Promise<null | {

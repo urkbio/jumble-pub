@@ -207,6 +207,7 @@ export default {
     'Temporarily display this note': 'Tymczas wyświetl ten wpis',
     buttonFollowing: 'Obserwujesz',
     'Are you sure you want to unfollow this user?':
-      'Czy na pewno chcesz przestać obserwować tego użytkownika?'
+      'Czy na pewno chcesz przestać obserwować tego użytkownika?',
+    'Recent Supporters': 'Ostatni wspierający'
   }
 }

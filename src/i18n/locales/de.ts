@@ -209,6 +209,7 @@ export default {
     'Temporarily display this note': 'Notiz vorübergehend anzeigen',
     buttonFollowing: 'Folge',
     'Are you sure you want to unfollow this user?':
-      'Möchtest du diesem Benutzer wirklich nicht mehr folgen?'
+      'Möchtest du diesem Benutzer wirklich nicht mehr folgen?',
+    'Recent Supporters': 'Neueste Unterstützer'
   }
 }

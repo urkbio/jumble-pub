@@ -205,6 +205,7 @@ export default {
     'Earlier notifications': '以前の通知',
     'Temporarily display this note': 'このノートを一時的に表示',
     buttonFollowing: 'フォロー中',
-    'Are you sure you want to unfollow this user?': 'このユーザーのフォローを解除しますか？'
+    'Are you sure you want to unfollow this user?': 'このユーザーのフォローを解除しますか？',
+    'Recent Supporters': '最近のサポーター'
   }
 }

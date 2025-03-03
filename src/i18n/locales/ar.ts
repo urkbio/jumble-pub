@@ -204,6 +204,7 @@ export default {
     'Temporarily display this note': 'عرض هذه الملاحظة مؤقتاً',
     buttonFollowing: 'جارٍ المتابعة',
     'Are you sure you want to unfollow this user?':
-      'هل أنت متأكد أنك تريد إلغاء متابعة هذا المستخدم؟'
+      'هل أنت متأكد أنك تريد إلغاء متابعة هذا المستخدم؟',
+    'Recent Supporters': 'الداعمين الجدد'
   }
 }

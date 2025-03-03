@@ -205,6 +205,7 @@ export default {
     'Earlier notifications': '更早的通知',
     'Temporarily display this note': '临时显示此笔记',
     buttonFollowing: '已关注',
-    'Are you sure you want to unfollow this user?': '确定要取消关注此用户吗？'
+    'Are you sure you want to unfollow this user?': '确定要取消关注此用户吗？',
+    'Recent Supporters': '最近的支持者'
   }
 }

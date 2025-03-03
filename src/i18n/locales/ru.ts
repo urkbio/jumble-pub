@@ -209,6 +209,7 @@ export default {
     'Temporarily display this note': 'Временно отобразить эту заметку',
     buttonFollowing: 'Подписан',
     'Are you sure you want to unfollow this user?':
-      'Вы уверены, что хотите отписаться от этого пользователя?'
+      'Вы уверены, что хотите отписаться от этого пользователя?',
+    'Recent Supporters': 'Недавние спонсоры'
   }
 }
