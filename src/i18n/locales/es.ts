@@ -197,8 +197,8 @@ export default {
     'Default zap comment': 'Comentario predeterminado de zap',
     'Lightning Address (or LNURL)': 'Dirección Lightning (o LNURL)',
     'Quick zap': 'Zap rápido',
-    'If enabled, you can zap with a single click':
-      'Si está habilitado, puedes enviar zap con un solo clic',
+    'If enabled, you can zap with a single click. Click and hold for custom amounts':
+      'Si está habilitado, puedes enviar un zap con un solo clic. Haz clic y mantén pulsado para cantidades personalizadas',
     All: 'Todo',
     Reactions: 'Reacciones',
     Zaps: 'Zaps',
@@ -210,6 +210,8 @@ export default {
     buttonFollowing: 'Siguiendo',
     'Are you sure you want to unfollow this user?':
       '¿Estás seguro de que deseas dejar de seguir a este usuario?',
-    'Recent Supporters': 'Últimos patrocinadores'
+    'Recent Supporters': 'Últimos patrocinadores',
+    'Seen on': 'Visto en',
+    'Temporarily display this reply': 'Mostrar temporalmente esta respuesta'
   }
 }

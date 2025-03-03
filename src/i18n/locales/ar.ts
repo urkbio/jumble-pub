@@ -193,7 +193,8 @@ export default {
     'Default zap comment': 'التعليق الافتراضي لـ Zap',
     'Lightning Address (or LNURL)': 'عنوان Lightning (أو LNURL)',
     'Quick zap': 'Zap سريع',
-    'If enabled, you can zap with a single click': 'إذا تم التفعيل، يمكنك إرسال Zap بنقرة واحدة',
+    'If enabled, you can zap with a single click. Click and hold for custom amounts':
+      'إذا تم تمكينه، يمكنك إرسال Zap بنقرة واحدة. انقر واستمر للحصول على كميات مخصصة',
     All: 'الكل',
     Reactions: 'التفاعلات',
     Zaps: 'Zaps',
@@ -205,6 +206,8 @@ export default {
     buttonFollowing: 'جارٍ المتابعة',
     'Are you sure you want to unfollow this user?':
       'هل أنت متأكد أنك تريد إلغاء متابعة هذا المستخدم؟',
-    'Recent Supporters': 'الداعمين الجدد'
+    'Recent Supporters': 'الداعمين الجدد',
+    'Seen on': 'شوهد على',
+    'Temporarily display this reply': 'عرض هذا الرد مؤقتاً'
   }
 }

@@ -197,8 +197,8 @@ export default {
     'Default zap comment': 'Стандартный комментарий для зап',
     'Lightning Address (or LNURL)': 'Lightning-адрес (или LNURL)',
     'Quick zap': 'Быстрый зап',
-    'If enabled, you can zap with a single click':
-      'Если включено, можно отправить зап одним кликом',
+    'If enabled, you can zap with a single click. Click and hold for custom amounts':
+      'Если включено, вы можете отправить зап одним нажатием. Нажмите и удерживайте для выбора суммы',
     All: 'Все',
     Reactions: 'Реакции',
     Zaps: 'Запы',
@@ -210,6 +210,8 @@ export default {
     buttonFollowing: 'Подписан',
     'Are you sure you want to unfollow this user?':
       'Вы уверены, что хотите отписаться от этого пользователя?',
-    'Recent Supporters': 'Недавние спонсоры'
+    'Recent Supporters': 'Недавние спонсоры',
+    'Seen on': 'Просмотрено на',
+    'Temporarily display this reply': 'Временно отобразить этот ответ'
   }
 }

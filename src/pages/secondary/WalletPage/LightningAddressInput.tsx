@@ -74,7 +74,7 @@ export default function LightningAddressInput() {
           }}
         />
         <Button onClick={handleSave} disabled={saving || !hasChanged} className="w-20">
-          {saving ? <Loader className="animate-spin" /> : 'Save'}
+          {saving ? <Loader className="animate-spin" /> : t('Save')}
         </Button>
       </div>
     </div>

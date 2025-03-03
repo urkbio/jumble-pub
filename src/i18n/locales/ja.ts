@@ -195,7 +195,8 @@ export default {
     'Default zap comment': 'デフォルトのZapコメント',
     'Lightning Address (or LNURL)': 'Lightningアドレス（またはLNURL）',
     'Quick zap': 'クイックZap',
-    'If enabled, you can zap with a single click': '有効の場合、ワンクリックでZapできます',
+    'If enabled, you can zap with a single click. Click and hold for custom amounts':
+      '有効にすると、1クリックでZapできます。クリックして金額をカスタマイズします',
     All: 'すべて',
     Reactions: '反応',
     Zaps: 'Zap',
@@ -206,6 +207,8 @@ export default {
     'Temporarily display this note': 'このノートを一時的に表示',
     buttonFollowing: 'フォロー中',
     'Are you sure you want to unfollow this user?': 'このユーザーのフォローを解除しますか？',
-    'Recent Supporters': '最近のサポーター'
+    'Recent Supporters': '最近のサポーター',
+    'Seen on': '見た',
+    'Temporarily display this reply': 'この返信を一時的に表示'
   }
 }

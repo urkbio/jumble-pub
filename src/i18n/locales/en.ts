@@ -194,7 +194,8 @@ export default {
     'Default zap comment': 'Default zap comment',
     'Lightning Address (or LNURL)': 'Lightning Address (or LNURL)',
     'Quick zap': 'Quick zap',
-    'If enabled, you can zap with a single click': 'If enabled, you can zap with a single click',
+    'If enabled, you can zap with a single click. Click and hold for custom amounts':
+      'If enabled, you can zap with a single click. Click and hold for custom amounts',
     All: 'All',
     Reactions: 'Reactions',
     Zaps: 'Zaps',
@@ -205,6 +206,8 @@ export default {
     'Temporarily display this note': 'Temporarily display this note',
     buttonFollowing: 'Following',
     'Are you sure you want to unfollow this user?': 'Are you sure you want to unfollow this user?',
-    'Recent Supporters': 'Recent Supporters'
+    'Recent Supporters': 'Recent Supporters',
+    'Seen on': 'Seen on',
+    'Temporarily display this reply': 'Temporarily display this reply'
   }
 }

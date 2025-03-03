@@ -12,7 +12,7 @@ export default function QuickZapSwitch() {
       <Label htmlFor="quick-zap-switch">
         <div className="text-base font-medium">{t('Quick zap')}</div>
         <div className="text-muted-foreground text-sm">
-          {t('If enabled, you can zap with a single click')}
+          {t('If enabled, you can zap with a single click. Click and hold for custom amounts')}
         </div>
       </Label>
       <Switch id="quick-zap-switch" checked={quickZap} onCheckedChange={updateQuickZap} />

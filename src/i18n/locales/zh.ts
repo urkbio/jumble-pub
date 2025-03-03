@@ -195,7 +195,8 @@ export default {
     'Default zap comment': '默认打闪附言',
     'Lightning Address (or LNURL)': '闪电地址 (或 LNURL)',
     'Quick zap': '快速打闪',
-    'If enabled, you can zap with a single click': '启用后，您可以单击打闪',
+    'If enabled, you can zap with a single click. Click and hold for custom amounts':
+      '如果启用，您单击即可打闪。长按以设置自定义金额',
     All: '全部',
     Reactions: '互动',
     Zaps: '打闪',
@@ -206,6 +207,8 @@ export default {
     'Temporarily display this note': '临时显示此笔记',
     buttonFollowing: '已关注',
     'Are you sure you want to unfollow this user?': '确定要取消关注此用户吗？',
-    'Recent Supporters': '最近的支持者'
+    'Recent Supporters': '最近的支持者',
+    'Seen on': '来自',
+    'Temporarily display this reply': '临时显示此回复'
   }
 }
