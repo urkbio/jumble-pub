@@ -38,7 +38,7 @@ export default function SeenOnButton({ event }: { event: Event }) {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent collisionPadding={8}>
-        <DropdownMenuLabel>Seen on</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('Seen on')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {relays.map((relay) => (
           <DropdownMenuItem key={relay} onClick={() => push(toRelay(relay))}>

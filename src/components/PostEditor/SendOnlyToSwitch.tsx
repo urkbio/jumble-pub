@@ -24,7 +24,10 @@ export default function SendOnlyToSwitch({
   const [urls, setUrls] = useState<string[]>([])
 
   useEffect(() => {
-    if (!parentEvent) return
+    if (!parentEvent) {
+      setUrls(relayUrls)
+      return
+    }
     const isProtected = isProtectedEvent(parentEvent)
     const seenOn = client.getSeenEventRelayUrls(parentEvent.id)
     if (isProtected && seenOn.length) {
