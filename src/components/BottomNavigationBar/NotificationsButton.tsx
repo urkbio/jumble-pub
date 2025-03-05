@@ -15,7 +15,7 @@ export default function NotificationsButton() {
       <div className="relative">
         <Bell />
         {hasNewNotification && (
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+          <div className="absolute -top-0.5 right-0.5 w-2 h-2 bg-primary rounded-full" />
         )}
       </div>
     </BottomNavigationBarItem>

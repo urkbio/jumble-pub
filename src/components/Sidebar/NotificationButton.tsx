@@ -16,7 +16,7 @@ export default function NotificationsButton() {
       <div className="relative">
         <Bell strokeWidth={3} />
         {hasNewNotification && (
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+          <div className="absolute -top-1 right-0 w-2 h-2 bg-primary rounded-full" />
         )}
       </div>
     </SidebarItem>
