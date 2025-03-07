@@ -113,7 +113,7 @@ function ParentNote({ eventId }: { eventId?: string }) {
     return (
       <div>
         <Card className="flex p-1 items-center justify-center text-sm text-muted-foreground">
-          {t('Not found')}
+          [{t('Not found the note')}]
         </Card>
         <div className="ml-5 w-px h-2 bg-border" />
       </div>
@@ -130,10 +130,10 @@ function ParentNote({ eventId }: { eventId?: string }) {
           <UserAvatar userId={event.pubkey} size="tiny" className="shrink-0" />
           <SimpleUsername
             userId={event.pubkey}
-            className="font-semibold truncate shrink-0"
+            className="font-semibold truncate"
             skeletonClassName="h-3 shrink-0"
           />
-          <div>[{t('This user has been muted')}]</div>
+          <div className="shrink-0">[{t('This user has been muted')}]</div>
         </Card>
         <div className="ml-5 w-px h-2 bg-border" />
       </div>
@@ -149,7 +149,7 @@ function ParentNote({ eventId }: { eventId?: string }) {
         <UserAvatar userId={event.pubkey} size="tiny" className="shrink-0" />
         <SimpleUsername
           userId={event.pubkey}
-          className="font-semibold truncate shrink-0"
+          className="font-semibold truncate"
           skeletonClassName="h-3 shrink-0"
         />
         <ContentPreview className="truncate" event={event} />
