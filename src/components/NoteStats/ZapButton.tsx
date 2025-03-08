@@ -48,14 +48,18 @@ export default function ZapButton({ event }: { event: Event }) {
         throw new Error('You need to be logged in to zap')
       }
       setZapping(true)
-      const { invoice } = await lightning.zap(
+      const zapResult = await lightning.zap(
         pubkey,
         event.pubkey,
         defaultZapSats,
         defaultZapComment,
         event.id
       )
-      addZap(event.id, invoice, defaultZapSats, defaultZapComment)
+      // user canceled
+      if (!zapResult) {
+        return
+      }
+      addZap(event.id, zapResult.invoice, defaultZapSats, defaultZapComment)
     } catch (error) {
       toast({
         title: t('Zap failed'),
