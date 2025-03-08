@@ -37,8 +37,7 @@ export default function RepostButton({ event }: { event: Event }) {
   }, [noteStatsMap, event.id])
   const canRepost = !hasReposted && !reposting
 
-  const repost = async (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const repost = async () => {
     checkLogin(async () => {
       if (!canRepost || !pubkey) return
 
@@ -102,7 +101,11 @@ export default function RepostButton({ event }: { event: Event }) {
           <DrawerContent hideOverlay>
             <div className="py-2">
               <Button
-                onClick={repost}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsDrawerOpen(false)
+                  repost()
+                }}
                 disabled={!canRepost}
                 className="w-full p-6 justify-start text-lg gap-4 [&_svg]:size-5"
                 variant="ghost"
@@ -112,8 +115,8 @@ export default function RepostButton({ event }: { event: Event }) {
               <Button
                 onClick={(e) => {
                   e.stopPropagation()
+                  setIsDrawerOpen(false)
                   checkLogin(() => {
-                    setIsDrawerOpen(false)
                     setIsPostDialogOpen(true)
                   })
                 }}
@@ -135,7 +138,13 @@ export default function RepostButton({ event }: { event: Event }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
         <DropdownMenuContent className="min-w-44">
-          <DropdownMenuItem onClick={repost} disabled={!canRepost}>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              repost()
+            }}
+            disabled={!canRepost}
+          >
             <Repeat /> {t('Repost')}
           </DropdownMenuItem>
           <DropdownMenuItem
