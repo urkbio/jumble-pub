@@ -15,7 +15,7 @@ export default function Preview({ content }: { content: string }) {
           pubkey: '',
           sig: ''
         }}
-        disableLightbox
+        className="pointer-events-none"
       />
     </Card>
   )
