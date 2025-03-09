@@ -27,7 +27,7 @@ export function ZapNotification({
     () => extractZapInfoFromReceipt(notification) ?? ({} as any),
     [notification]
   )
-  const { event } = useFetchEvent(eventId)
+  const { event, isFetching } = useFetchEvent(eventId)
 
   if (!senderPubkey || !amount) return null
 
@@ -43,10 +43,12 @@ export function ZapNotification({
           {formatAmount(amount)} {t('sats')}
         </div>
         {comment && <div className="text-yellow-400 truncate">{comment}</div>}
-        <ContentPreview
-          className={cn('truncate flex-1 w-0', isNew ? 'font-semibold' : 'text-muted-foreground')}
-          event={event}
-        />
+        {eventId && !isFetching && (
+          <ContentPreview
+            className={cn('truncate flex-1 w-0', isNew ? 'font-semibold' : 'text-muted-foreground')}
+            event={event}
+          />
+        )}
       </div>
       <div className="text-muted-foreground shrink-0">
         <FormattedTimestamp timestamp={notification.created_at} short />
