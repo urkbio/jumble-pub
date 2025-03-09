@@ -5,7 +5,6 @@ import Note from '@/components/Note'
 import PictureNote from '@/components/PictureNote'
 import ReplyNoteList from '@/components/ReplyNoteList'
 import UserAvatar from '@/components/UserAvatar'
-import { SimpleUsername } from '@/components/Username'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -13,11 +12,11 @@ import { useFetchEvent } from '@/hooks'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { getParentEventId, getRootEventId, isPictureEvent } from '@/lib/event'
 import { toNote } from '@/lib/link'
+import { useMuteList } from '@/providers/MuteListProvider'
 import { kinds } from 'nostr-tools'
 import { forwardRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
-import { useMuteList } from '@/providers/MuteListProvider'
 
 const NotePage = forwardRef(({ id, index }: { id?: string; index?: number }, ref) => {
   const { t } = useTranslation()
@@ -128,11 +127,6 @@ function ParentNote({ eventId }: { eventId?: string }) {
           onClick={() => push(toNote(eventId))}
         >
           <UserAvatar userId={event.pubkey} size="tiny" className="shrink-0" />
-          <SimpleUsername
-            userId={event.pubkey}
-            className="font-semibold truncate"
-            skeletonClassName="h-3 shrink-0"
-          />
           <div className="shrink-0">[{t('This user has been muted')}]</div>
         </Card>
         <div className="ml-5 w-px h-2 bg-border" />
@@ -147,11 +141,6 @@ function ParentNote({ eventId }: { eventId?: string }) {
         onClick={() => push(toNote(eventId))}
       >
         <UserAvatar userId={event.pubkey} size="tiny" className="shrink-0" />
-        <SimpleUsername
-          userId={event.pubkey}
-          className="font-semibold truncate"
-          skeletonClassName="h-3 shrink-0"
-        />
         <ContentPreview className="truncate" event={event} />
       </Card>
       <div className="ml-5 w-px h-2 bg-border" />
