@@ -3,8 +3,9 @@ import { useToast } from '@/hooks/use-toast'
 import { createPictureNoteDraftEvent } from '@/lib/draft-event'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
+import postContentCache from '@/services/post-content-cache.service'
 import { ChevronDown, Loader, LoaderCircle, Plus, X } from 'lucide-react'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Image from '../Image'
 import TextareaWithMentions from '../TextareaWithMentions.tsx'
@@ -24,7 +25,22 @@ export default function PicturePostContent({ close }: { close: () => void }) {
   const [addClientTag, setAddClientTag] = useState(false)
   const [mentions, setMentions] = useState<string[]>([])
   const [specifiedRelayUrls, setSpecifiedRelayUrls] = useState<string[] | undefined>(undefined)
+  const initializedRef = useRef(false)
   const canPost = !!content && !posting && pictureInfos.length > 0
+
+  useEffect(() => {
+    const { content, pictureInfos } = postContentCache.getPicturePostCache()
+    setContent(content)
+    setPictureInfos(pictureInfos)
+    setTimeout(() => {
+      initializedRef.current = true
+    }, 100)
+  }, [])
+
+  useEffect(() => {
+    if (!initializedRef.current) return
+    postContentCache.setPicturePostCache(content, pictureInfos)
+  }, [content, pictureInfos])
 
   const post = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -45,6 +61,7 @@ export default function PicturePostContent({ close }: { close: () => void }) {
         })
         await publish(draftEvent, { specifiedRelayUrls })
         setContent('')
+        setPictureInfos([])
         close()
       } catch (error) {
         if (error instanceof AggregateError) {

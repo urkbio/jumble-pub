@@ -41,19 +41,21 @@ export default function NormalPostContent({
   const canPost = !!content && !posting
 
   useEffect(() => {
-    const cachedContent = postContentCache.get({ defaultContent, parentEvent })
+    const cachedContent = postContentCache.getNormalPostCache({ defaultContent, parentEvent })
     if (cachedContent) {
       setContent(cachedContent)
     }
     if (defaultContent) {
       setCursorOffset(defaultContent.length)
     }
-    initializedRef.current = true
+    setTimeout(() => {
+      initializedRef.current = true
+    }, 100)
   }, [defaultContent, parentEvent])
 
   useEffect(() => {
     if (!initializedRef.current) return
-    postContentCache.set({ defaultContent, parentEvent }, content)
+    postContentCache.setNormalPostCache({ defaultContent, parentEvent }, content)
   }, [content])
 
   const post = async (e: React.MouseEvent) => {
