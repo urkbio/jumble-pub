@@ -28,7 +28,7 @@ export default function ZapButton({ event }: { event: Event }) {
       hasZapped: pubkey ? stats.zaps?.some((zap) => zap.pubkey === pubkey) : false
     }
   }, [noteStatsMap, event, pubkey])
-  const [showButton, setShowButton] = useState(false)
+  const [disable, setDisable] = useState(true)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isLongPressRef = useRef(false)
 
@@ -36,11 +36,9 @@ export default function ZapButton({ event }: { event: Event }) {
     client.fetchProfile(event.pubkey).then((profile) => {
       if (!profile) return
       const lightningAddress = getLightningAddressFromProfile(profile)
-      if (lightningAddress) setShowButton(true)
+      if (lightningAddress) setDisable(false)
     })
   }, [event])
-
-  if (!showButton) return null
 
   const handleZap = async () => {
     try {
@@ -74,6 +72,8 @@ export default function ZapButton({ event }: { event: Event }) {
   const handleClickStart = (e: MouseEvent | TouchEvent) => {
     e.stopPropagation()
     e.preventDefault()
+    if (disable) return
+
     isLongPressRef.current = false
 
     if ('touches' in e) {
@@ -98,6 +98,7 @@ export default function ZapButton({ event }: { event: Event }) {
     if (timerRef.current) {
       clearTimeout(timerRef.current)
     }
+    if (disable) return
 
     if ('touches' in e) {
       setTouchStart(null)
@@ -129,8 +130,11 @@ export default function ZapButton({ event }: { event: Event }) {
     <>
       <button
         className={cn(
-          'flex items-center enabled:hover:text-yellow-400 gap-1 select-none px-3 h-full',
-          hasZapped ? 'text-yellow-400' : 'text-muted-foreground'
+          'flex items-center gap-1 select-none px-3 h-full',
+          hasZapped ? 'text-yellow-400' : 'text-muted-foreground',
+          disable
+            ? 'cursor-not-allowed text-muted-foreground/40'
+            : 'cursor-pointer enabled:hover:text-yellow-400'
         )}
         title={t('Zap')}
         onMouseDown={handleClickStart}
