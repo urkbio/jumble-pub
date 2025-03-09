@@ -4,9 +4,10 @@ import { createCommentDraftEvent, createShortTextNoteDraftEvent } from '@/lib/dr
 import { getRootEventTag } from '@/lib/event.ts'
 import { useNostr } from '@/providers/NostrProvider'
 import client from '@/services/client.service'
+import postContentCache from '@/services/post-content-cache.service'
 import { ChevronDown, ImageUp, LoaderCircle } from 'lucide-react'
 import { Event, kinds, nip19 } from 'nostr-tools'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import TextareaWithMentions from '../TextareaWithMentions.tsx'
 import Mentions from './Mentions'
@@ -27,7 +28,7 @@ export default function NormalPostContent({
   const { t } = useTranslation()
   const { toast } = useToast()
   const { publish, checkLogin } = useNostr()
-  const [content, setContent] = useState(defaultContent)
+  const [content, setContent] = useState('')
   const [pictureInfos, setPictureInfos] = useState<{ url: string; tags: string[][] }[]>([])
   const [posting, setPosting] = useState(false)
   const [showMoreOptions, setShowMoreOptions] = useState(false)
@@ -35,7 +36,25 @@ export default function NormalPostContent({
   const [specifiedRelayUrls, setSpecifiedRelayUrls] = useState<string[] | undefined>(undefined)
   const [uploadingPicture, setUploadingPicture] = useState(false)
   const [mentions, setMentions] = useState<string[]>([])
+  const [cursorOffset, setCursorOffset] = useState(0)
+  const initializedRef = useRef(false)
   const canPost = !!content && !posting
+
+  useEffect(() => {
+    const cachedContent = postContentCache.get({ defaultContent, parentEvent })
+    if (cachedContent) {
+      setContent(cachedContent)
+    }
+    if (defaultContent) {
+      setCursorOffset(defaultContent.length)
+    }
+    initializedRef.current = true
+  }, [defaultContent, parentEvent])
+
+  useEffect(() => {
+    if (!initializedRef.current) return
+    postContentCache.set({ defaultContent, parentEvent }, content)
+  }, [content])
 
   const post = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -130,6 +149,7 @@ export default function NormalPostContent({
         setTextValue={setContent}
         textValue={content}
         placeholder={t('Write something...')}
+        cursorOffset={cursorOffset}
       />
       {content && <Preview content={content} />}
       <SendOnlyToSwitch

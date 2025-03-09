@@ -10,11 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { Event } from 'nostr-tools'
 import { Dispatch, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '../ui/sheet'
 import NormalPostContent from './NormalPostContent'
 import PicturePostContent from './PicturePostContent'
 import Title from './Title'
-import { useTranslation } from 'react-i18next'
 
 export default function PostEditor({
   defaultContent = '',
@@ -55,7 +55,7 @@ export default function PostEditor({
         </TabsContent>
       </Tabs>
     )
-  }, [parentEvent])
+  }, [parentEvent, defaultContent])
 
   if (isSmallScreen) {
     return (

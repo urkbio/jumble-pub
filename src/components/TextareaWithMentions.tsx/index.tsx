@@ -21,10 +21,12 @@ import { getCurrentWord, replaceWord } from './utils'
 export default function TextareaWithMentions({
   textValue,
   setTextValue,
+  cursorOffset = 0,
   ...props
 }: ComponentProps<'textarea'> & {
   textValue: string
   setTextValue: Dispatch<SetStateAction<string>>
+  cursorOffset?: number
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -32,6 +34,15 @@ export default function TextareaWithMentions({
   const [commandValue, setCommandValue] = useState('')
   const [debouncedCommandValue, setDebouncedCommandValue] = useState(commandValue)
   const [profiles, setProfiles] = useState<TProfile[]>([])
+
+  useEffect(() => {
+    if (textareaRef.current && cursorOffset !== 0) {
+      const textarea = textareaRef.current
+      const newPos = Math.max(0, textarea.selectionStart - cursorOffset)
+      textarea.setSelectionRange(newPos, newPos)
+      textarea.focus()
+    }
+  }, [cursorOffset])
 
   useEffect(() => {
     const handler = setTimeout(() => {
