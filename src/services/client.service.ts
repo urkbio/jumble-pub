@@ -312,8 +312,8 @@ class ClientService extends EventTarget {
       subPromises.push(startSub())
 
       async function startSub() {
-        startedCount++
         const relay = await that.pool.ensureRelay(url)
+        startedCount++
         return relay.subscribe(filters, {
           receivedEvent: (relay, id) => {
             that.trackEventSeenOn(id, relay)
