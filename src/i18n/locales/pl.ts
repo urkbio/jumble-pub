@@ -211,6 +211,7 @@ export default {
     'Recent Supporters': 'Ostatni wspierający',
     'Seen on': 'Widziany na',
     'Temporarily display this reply': 'Tymczasowo wyświetl tę odpowiedź',
-    'Not found the note': 'Nie znaleziono wpisu'
+    'Not found the note': 'Nie znaleziono wpisu',
+    'no more replies': 'brak kolejnych odpowiedzi'
   }
 }

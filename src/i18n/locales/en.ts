@@ -209,6 +209,7 @@ export default {
     'Recent Supporters': 'Recent Supporters',
     'Seen on': 'Seen on',
     'Temporarily display this reply': 'Temporarily display this reply',
-    'Not found the note': 'Not found the note'
+    'Not found the note': 'Not found the note',
+    'no more replies': 'no more replies'
   }
 }

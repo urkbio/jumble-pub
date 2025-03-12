@@ -212,6 +212,7 @@ export default {
     'Recent Supporters': 'Derniers soutiens',
     'Seen on': 'Vu sur',
     'Temporarily display this reply': 'Afficher temporairement cette réponse',
-    'Not found the note': 'Note introuvable'
+    'Not found the note': 'Note introuvable',
+    'no more replies': 'aucune autre réponse'
   }
 }

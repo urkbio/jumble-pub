@@ -213,6 +213,7 @@ export default {
     'Recent Supporters': 'Недавние спонсоры',
     'Seen on': 'Просмотрено на',
     'Temporarily display this reply': 'Временно отобразить этот ответ',
-    'Not found the note': 'Заметка не найдена'
+    'Not found the note': 'Заметка не найдена',
+    'no more replies': 'больше нет ответов'
   }
 }

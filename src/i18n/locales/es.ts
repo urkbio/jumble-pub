@@ -213,6 +213,7 @@ export default {
     'Recent Supporters': 'Últimos patrocinadores',
     'Seen on': 'Visto en',
     'Temporarily display this reply': 'Mostrar temporalmente esta respuesta',
-    'Not found the note': 'No se encontró la nota'
+    'Not found the note': 'No se encontró la nota',
+    'no more replies': 'no hay más respuestas'
   }
 }

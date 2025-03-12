@@ -7,11 +7,9 @@ import {
   isReplyNoteEvent
 } from '@/lib/event'
 import { generateEventIdFromETag } from '@/lib/tag'
-import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
 import client from '@/services/client.service'
-import dayjs from 'dayjs'
 import { Event as NEvent, kinds } from 'nostr-tools'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,7 +22,7 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
   const { pubkey } = useNostr()
   const [rootInfo, setRootInfo] = useState<{ id: string; pubkey: string } | undefined>(undefined)
   const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
-  const [until, setUntil] = useState<number | undefined>(() => dayjs().unix())
+  const [until, setUntil] = useState<number | undefined>(undefined)
   const [events, setEvents] = useState<NEvent[]>([])
   const [replies, setReplies] = useState<NEvent[]>([])
   const [replyMap, setReplyMap] = useState<
@@ -99,8 +97,8 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
             onEvents: (evts, eosed) => {
               setEvents(evts.filter((evt) => isReplyNoteEvent(evt)).reverse())
               if (eosed) {
-                setLoading(false)
                 setUntil(evts.length >= LIMIT ? evts[evts.length - 1].created_at - 1 : undefined)
+                setLoading(false)
               }
             },
             onNew: (evt) => {
@@ -202,7 +200,7 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
 
   return (
     <>
-      {(loading || until) && (
+      {(loading || (!!until && replies.length > 0)) && (
         <div
           className={`text-sm text-center text-muted-foreground mt-2 ${!loading ? 'hover:text-foreground cursor-pointer' : ''}`}
           onClick={loadMore}
@@ -210,11 +208,8 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
           {loading ? t('loading...') : t('load more older replies')}
         </div>
       )}
-      {replies.length === 0 && !loading && !until && (
-        <div className="text-sm mt-2 text-center text-muted-foreground">{t('no replies')}</div>
-      )}
       {replies.length > 0 && (loading || until) && <Separator className="mt-2" />}
-      <div className={cn('mb-2', className)}>
+      <div className={className}>
         {replies.map((reply) => {
           const info = replyMap.get(reply.id)
           return (
@@ -229,6 +224,11 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
           )
         })}
       </div>
+      {!loading && (
+        <div className="text-sm mt-2 text-center text-muted-foreground">
+          {replies.length > 0 ? t('no more replies') : t('no replies')}
+        </div>
+      )}
       <div ref={bottomRef} />
     </>
   )

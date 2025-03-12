@@ -210,6 +210,7 @@ export default {
     'Recent Supporters': '最近のサポーター',
     'Seen on': '見た',
     'Temporarily display this reply': 'この返信を一時的に表示',
-    'Not found the note': 'ノートが見つかりません'
+    'Not found the note': 'ノートが見つかりません',
+    'no more replies': 'これ以上の返信はありません'
   }
 }

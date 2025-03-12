@@ -212,6 +212,7 @@ export default {
     'Recent Supporters': 'Apoiadores Recentes',
     'Seen on': 'Visto em',
     'Temporarily display this reply': 'Exibir temporariamente esta resposta',
-    'Not found the note': 'Nota não encontrada'
+    'Not found the note': 'Nota não encontrada',
+    'no more replies': 'não há mais respostas'
   }
 }
