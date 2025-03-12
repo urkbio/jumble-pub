@@ -7,6 +7,7 @@ import {
   isReplyNoteEvent
 } from '@/lib/event'
 import { generateEventIdFromETag } from '@/lib/tag'
+import { useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
 import client from '@/services/client.service'
@@ -17,8 +18,17 @@ import ReplyNote from '../ReplyNote'
 
 const LIMIT = 100
 
-export default function ReplyNoteList({ event, className }: { event: NEvent; className?: string }) {
+export default function ReplyNoteList({
+  index,
+  event,
+  className
+}: {
+  index?: number
+  event: NEvent
+  className?: string
+}) {
   const { t } = useTranslation()
+  const { currentIndex } = useSecondaryPage()
   const { pubkey } = useNostr()
   const [rootInfo, setRootInfo] = useState<{ id: string; pubkey: string } | undefined>(undefined)
   const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
@@ -75,7 +85,7 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
   }, [rootInfo])
 
   useEffect(() => {
-    if (loading || !rootInfo) return
+    if (loading || !rootInfo || currentIndex !== index) return
 
     const init = async () => {
       setLoading(true)
@@ -119,7 +129,7 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
     return () => {
       promise.then((closer) => closer?.())
     }
-  }, [rootInfo])
+  }, [rootInfo, currentIndex, index])
 
   useEffect(() => {
     const replies: NEvent[] = []

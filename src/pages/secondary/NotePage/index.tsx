@@ -74,7 +74,7 @@ const NotePage = forwardRef(({ id, index }: { id?: string; index?: number }, ref
       </div>
       <Separator className="mt-4" />
       {event.kind === kinds.ShortTextNote ? (
-        <ReplyNoteList key={`reply-note-list-${event.id}`} event={event} />
+        <ReplyNoteList key={`reply-note-list-${event.id}`} index={index} event={event} />
       ) : isPictureEvent(event) ? (
         <Nip22ReplyNoteList key={`nip22-reply-note-list-${event.id}`} event={event} />
       ) : null}
