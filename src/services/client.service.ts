@@ -17,7 +17,7 @@ import {
   SimplePool,
   VerifiedEvent
 } from 'nostr-tools'
-import { AbstractRelay } from 'nostr-tools/abstract-relay'
+import { AbstractRelay, Subscription } from 'nostr-tools/abstract-relay'
 import indexedDb from './indexed-db.service'
 
 type TTimelineRef = [string, number]
@@ -305,14 +305,15 @@ class ClientService extends EventTarget {
     let eosed = false
     let closedCount = 0
     const closeReasons: string[] = []
-    const subPromises = relays.map(async (url) => {
-      const relay = await this.pool.ensureRelay(url)
+    const subPromises: Promise<Subscription>[] = []
+    relays.forEach((url) => {
       let hasAuthed = false
 
-      return startSub()
+      subPromises.push(startSub())
 
-      function startSub() {
+      async function startSub() {
         startedCount++
+        const relay = await that.pool.ensureRelay(url)
         return relay.subscribe(filters, {
           receivedEvent: (relay, id) => {
             that.trackEventSeenOn(id, relay)
@@ -358,7 +359,7 @@ class ClientService extends EventTarget {
                 .then(() => {
                   hasAuthed = true
                   if (!eosed) {
-                    startSub()
+                    subPromises.push(startSub())
                   }
                 })
                 .catch(() => {
