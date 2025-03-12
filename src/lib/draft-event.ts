@@ -61,8 +61,10 @@ export async function createShortTextNoteDraftEvent(
     protectedEvent?: boolean
   } = {}
 ): Promise<TDraftEvent> {
-  const { otherRelatedEventIds, quoteEventIds, rootEventId, parentEventId } =
-    await extractRelatedEventIds(content, options.parentEvent)
+  const { quoteEventIds, rootETag, parentETag } = await extractRelatedEventIds(
+    content,
+    options.parentEvent
+  )
   const hashtags = extractHashtags(content)
 
   const tags = hashtags.map((hashtag) => ['t', hashtag])
@@ -77,14 +79,12 @@ export async function createShortTextNoteDraftEvent(
   tags.push(...quoteEventIds.map((eventId) => ['q', eventId, client.getEventHint(eventId)]))
 
   // e tags
-  if (rootEventId) {
-    tags.push(['e', rootEventId, client.getEventHint(rootEventId), 'root'])
+  if (rootETag.length) {
+    tags.push(rootETag)
   }
 
-  tags.push(...otherRelatedEventIds.map((eventId) => ['e', eventId, client.getEventHint(eventId)]))
-
-  if (parentEventId) {
-    tags.push(['e', parentEventId, client.getEventHint(parentEventId), 'reply'])
+  if (parentETag.length) {
+    tags.push(parentETag)
   }
 
   // p tags

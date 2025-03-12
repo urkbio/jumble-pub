@@ -5,7 +5,13 @@ import { LRUCache } from 'lru-cache'
 import { Event, kinds, nip19 } from 'nostr-tools'
 import { getAmountFromInvoice, getLightningAddressFromProfile } from './lightning'
 import { formatPubkey } from './pubkey'
-import { extractImageInfoFromTag, isReplyETag, isRootETag, tagNameEquals } from './tag'
+import {
+  extractImageInfoFromTag,
+  generateEventIdFromETag,
+  isReplyETag,
+  isRootETag,
+  tagNameEquals
+} from './tag'
 import { isWebsocketUrl, normalizeHttpUrl, normalizeUrl } from './url'
 
 const EVENT_EMBEDDED_EVENT_IDS_CACHE = new LRUCache<string, string[]>({ max: 10000 })
@@ -56,23 +62,28 @@ export function isSupportedKind(kind: number) {
   return [kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(kind)
 }
 
-export function getParentEventId(event?: Event) {
+export function getParentEventTag(event?: Event) {
   if (!event) return undefined
   let tag = event.tags.find(isReplyETag)
   if (!tag) {
     const embeddedEventIds = extractEmbeddedEventIds(event)
     tag = event.tags.findLast(
-      ([tagName, tagValue]) => tagName === 'e' && !embeddedEventIds.includes(tagValue)
+      ([tagName, tagValue]) => tagName === 'e' && !!tagValue && !embeddedEventIds.includes(tagValue)
     )
   }
+  return tag
+}
+
+export function getParentEventHexId(event?: Event) {
+  const tag = getParentEventTag(event)
+  return tag?.[1]
+}
+
+export function getParentEventId(event?: Event) {
+  const tag = getParentEventTag(event)
   if (!tag) return undefined
 
-  try {
-    const [, id, relay, , author] = tag
-    return nip19.neventEncode({ id, relays: relay ? [relay] : undefined, author })
-  } catch {
-    return undefined
-  }
+  return generateEventIdFromETag(tag)
 }
 
 export function getRootEventTag(event?: Event) {
@@ -81,22 +92,22 @@ export function getRootEventTag(event?: Event) {
   if (!tag) {
     const embeddedEventIds = extractEmbeddedEventIds(event)
     tag = event.tags.find(
-      ([tagName, tagValue]) => tagName === 'e' && !embeddedEventIds.includes(tagValue)
+      ([tagName, tagValue]) => tagName === 'e' && !!tagValue && !embeddedEventIds.includes(tagValue)
     )
   }
   return tag
+}
+
+export function getRootEventHexId(event?: Event) {
+  const tag = getRootEventTag(event)
+  return tag?.[1]
 }
 
 export function getRootEventId(event?: Event) {
   const tag = getRootEventTag(event)
   if (!tag) return undefined
 
-  try {
-    const [, id, relay, , author] = tag
-    return nip19.neventEncode({ id, relays: relay ? [relay] : undefined, author })
-  } catch {
-    return undefined
-  }
+  return generateEventIdFromETag(tag)
 }
 
 export function isReplaceable(kind: number) {
@@ -231,19 +242,13 @@ export async function extractMentions(content: string, parentEvent?: Event) {
 }
 
 export async function extractRelatedEventIds(content: string, parentEvent?: Event) {
-  const relatedEventIds: string[] = []
   const quoteEventIds: string[] = []
-  let rootEventId: string | undefined
-  let parentEventId: string | undefined
+  let rootETag: string[] = []
+  let parentETag: string[] = []
   const matches = content.match(/nostr:(note1[a-z0-9]{58}|nevent1[a-z0-9]+)/g)
 
   const addToSet = (arr: string[], item: string) => {
     if (!arr.includes(item)) arr.push(item)
-  }
-
-  const removeFromSet = (arr: string[], item: string) => {
-    const index = arr.indexOf(item)
-    if (index !== -1) arr.splice(index, 1)
   }
 
   for (const m of matches || []) {
@@ -261,32 +266,48 @@ export async function extractRelatedEventIds(content: string, parentEvent?: Even
   }
 
   if (parentEvent) {
-    addToSet(relatedEventIds, parentEvent.id)
-    parentEvent.tags.forEach((tag) => {
-      if (isRootETag(tag)) {
-        rootEventId = tag[1]
-      } else if (tagNameEquals('e')(tag)) {
-        addToSet(relatedEventIds, tag[1])
+    const rootEventTag = getRootEventTag(parentEvent)
+    if (rootEventTag) {
+      parentETag = [
+        'e',
+        parentEvent.id,
+        client.getEventHint(parentEvent.id),
+        'reply',
+        parentEvent.pubkey
+      ]
+
+      const [, rootEventHexId, hint, , rootEventPubkey] = rootEventTag
+      if (rootEventPubkey) {
+        rootETag = [
+          'e',
+          rootEventHexId,
+          hint ?? client.getEventHint(rootEventHexId),
+          'root',
+          rootEventPubkey
+        ]
+      } else {
+        const rootEventId = generateEventIdFromETag(rootEventTag)
+        const rootEvent = rootEventId ? await client.fetchEvent(rootEventId) : undefined
+        rootETag = rootEvent
+          ? ['e', rootEvent.id, hint ?? client.getEventHint(rootEvent.id), 'root', rootEvent.pubkey]
+          : ['e', rootEventHexId, hint ?? client.getEventHint(rootEventHexId), 'root']
       }
-    })
-    if (rootEventId || isReplyNoteEvent(parentEvent)) {
-      parentEventId = parentEvent.id
     } else {
-      rootEventId = parentEvent.id
+      // reply to root event
+      rootETag = [
+        'e',
+        parentEvent.id,
+        client.getEventHint(parentEvent.id),
+        'root',
+        parentEvent.pubkey
+      ]
     }
   }
 
-  if (rootEventId) {
-    removeFromSet(relatedEventIds, rootEventId)
-  }
-  if (parentEventId) {
-    removeFromSet(relatedEventIds, parentEventId)
-  }
   return {
-    otherRelatedEventIds: relatedEventIds,
     quoteEventIds,
-    rootEventId,
-    parentEventId
+    rootETag,
+    parentETag
   }
 }
 

@@ -1,7 +1,12 @@
 import { Separator } from '@/components/ui/separator'
 import { BIG_RELAY_URLS } from '@/constants'
-import { isProtectedEvent, isReplyNoteEvent } from '@/lib/event'
-import { isReplyETag, isRootETag } from '@/lib/tag'
+import {
+  getParentEventHexId,
+  getRootEventHexId,
+  getRootEventTag,
+  isReplyNoteEvent
+} from '@/lib/event'
+import { generateEventIdFromETag } from '@/lib/tag'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
@@ -17,12 +22,14 @@ const LIMIT = 100
 export default function ReplyNoteList({ event, className }: { event: NEvent; className?: string }) {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
+  const [rootInfo, setRootInfo] = useState<{ id: string; pubkey: string } | undefined>(undefined)
   const [timelineKey, setTimelineKey] = useState<string | undefined>(undefined)
   const [until, setUntil] = useState<number | undefined>(() => dayjs().unix())
+  const [events, setEvents] = useState<NEvent[]>([])
   const [replies, setReplies] = useState<NEvent[]>([])
   const [replyMap, setReplyMap] = useState<
-    Record<string, { event: NEvent; level: number; parent?: NEvent } | undefined>
-  >({})
+    Map<string, { event: NEvent; level: number; parent?: NEvent } | undefined>
+  >(new Map())
   const [loading, setLoading] = useState<boolean>(false)
   const [highlightReplyId, setHighlightReplyId] = useState<string | undefined>(undefined)
   const { updateNoteReplyCount } = useNoteStats()
@@ -30,13 +37,35 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
+    const fetchRootEvent = async () => {
+      let root = { id: event.id, pubkey: event.pubkey }
+      const rootEventTag = getRootEventTag(event)
+      if (rootEventTag) {
+        const [, rootEventHexId, , , rootEventPubkey] = rootEventTag
+        if (rootEventHexId && rootEventPubkey) {
+          root = { id: rootEventHexId, pubkey: rootEventPubkey }
+        } else {
+          const rootEventId = generateEventIdFromETag(rootEventTag)
+          if (rootEventId) {
+            const rootEvent = await client.fetchEvent(rootEventId)
+            if (rootEvent) {
+              root = { id: rootEvent.id, pubkey: rootEvent.pubkey }
+            }
+          }
+        }
+      }
+      setRootInfo(root)
+    }
+    fetchRootEvent()
+  }, [event])
+
+  useEffect(() => {
+    if (!rootInfo) return
     const handleEventPublished = (data: Event) => {
       const customEvent = data as CustomEvent<NEvent>
       const evt = customEvent.detail
-      if (
-        isReplyNoteEvent(evt) &&
-        evt.tags.some(([tagName, tagValue]) => tagName === 'e' && tagValue === event.id)
-      ) {
+      const rootId = getRootEventHexId(evt)
+      if (rootId === rootInfo.id) {
         onNewReply(evt)
       }
     }
@@ -45,32 +74,30 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
     return () => {
       client.removeEventListener('eventPublished', handleEventPublished)
     }
-  }, [event])
+  }, [rootInfo])
 
   useEffect(() => {
-    if (loading) return
+    if (loading || !rootInfo) return
 
     const init = async () => {
       setLoading(true)
-      setReplies([])
+      setEvents([])
 
       try {
-        const relayList = await client.fetchRelayList(event.pubkey)
+        const relayList = await client.fetchRelayList(rootInfo.pubkey)
         const relayUrls = relayList.read.concat(BIG_RELAY_URLS)
-        if (isProtectedEvent(event)) {
-          const seenOn = client.getSeenEventRelayUrls(event.id)
-          relayUrls.unshift(...seenOn)
-        }
+        const seenOn = client.getSeenEventRelayUrls(rootInfo.id)
+        relayUrls.unshift(...seenOn)
         const { closer, timelineKey } = await client.subscribeTimeline(
-          relayUrls.slice(0, 4),
+          relayUrls.slice(0, 5),
           {
-            '#e': [event.id],
+            '#e': [rootInfo.id],
             kinds: [kinds.ShortTextNote],
             limit: LIMIT
           },
           {
             onEvents: (evts, eosed) => {
-              setReplies(evts.filter((evt) => isReplyNoteEvent(evt)).reverse())
+              setEvents(evts.filter((evt) => isReplyNoteEvent(evt)).reverse())
               if (eosed) {
                 setLoading(false)
                 setUntil(evts.length >= LIMIT ? evts[evts.length - 1].created_at - 1 : undefined)
@@ -94,52 +121,49 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
     return () => {
       promise.then((closer) => closer?.())
     }
-  }, [event])
+  }, [rootInfo])
 
   useEffect(() => {
-    updateNoteReplyCount(event.id, replies.length)
+    const replies: NEvent[] = []
+    const replyMap: Map<string, { event: NEvent; level: number; parent?: NEvent } | undefined> =
+      new Map()
+    const rootEventId = getRootEventHexId(event) ?? event.id
+    const isRootEvent = rootEventId === event.id
+    for (const evt of events) {
+      if (evt.created_at < event.created_at) continue
 
-    const replyMap: Record<string, { event: NEvent; level: number; parent?: NEvent } | undefined> =
-      {}
-    for (const reply of replies) {
-      const parentReplyTag = reply.tags.find(isReplyETag)
-      if (parentReplyTag) {
-        const parentReplyInfo = replyMap[parentReplyTag[1]]
+      const parentEventId = getParentEventHexId(evt)
+      if (parentEventId) {
+        const parentReplyInfo = replyMap.get(parentEventId)
+        if (!parentReplyInfo && parentEventId !== event.id) continue
+
         const level = parentReplyInfo ? parentReplyInfo.level + 1 : 1
-        replyMap[reply.id] = { event: reply, level, parent: parentReplyInfo?.event }
+        replies.push(evt)
+        replyMap.set(evt.id, { event: evt, level, parent: parentReplyInfo?.event })
         continue
       }
 
-      const rootReplyTag = reply.tags.find(isRootETag)
-      if (rootReplyTag) {
-        replyMap[reply.id] = { event: reply, level: 1 }
-        continue
-      }
+      if (!isRootEvent) continue
 
-      let level = 0
-      let parent: NEvent | undefined
-      for (const [tagName, tagValue] of reply.tags) {
-        if (tagName === 'e') {
-          const info = replyMap[tagValue]
-          if (info && info.level > level) {
-            level = info.level
-            parent = info.event
-          }
-        }
-      }
-      replyMap[reply.id] = { event: reply, level: level + 1, parent }
+      replies.push(evt)
+      replyMap.set(evt.id, { event: evt, level: 1 })
     }
     setReplyMap(replyMap)
-  }, [replies, event.id, updateNoteReplyCount])
+    setReplies(replies)
+    updateNoteReplyCount(event.id, replies.length)
+    if (replies.length === 0) {
+      loadMore()
+    }
+  }, [events, event, updateNoteReplyCount])
 
   const loadMore = useCallback(async () => {
     if (loading || !until || !timelineKey) return
 
     setLoading(true)
     const events = await client.loadMoreTimeline(timelineKey, until, LIMIT)
-    const olderReplies = events.filter((evt) => isReplyNoteEvent(evt)).reverse()
-    if (olderReplies.length > 0) {
-      setReplies((pre) => [...olderReplies, ...pre])
+    const olderEvents = events.filter((evt) => isReplyNoteEvent(evt)).reverse()
+    if (olderEvents.length > 0) {
+      setEvents((pre) => [...olderEvents, ...pre])
     }
     setUntil(events.length ? events[events.length - 1].created_at - 1 : undefined)
     setLoading(false)
@@ -147,7 +171,7 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
 
   const onNewReply = useCallback(
     (evt: NEvent) => {
-      setReplies((pre) => {
+      setEvents((pre) => {
         if (pre.some((reply) => reply.id === evt.id)) return pre
         return [...pre, evt]
       })
@@ -192,7 +216,7 @@ export default function ReplyNoteList({ event, className }: { event: NEvent; cla
       {replies.length > 0 && (loading || until) && <Separator className="mt-2" />}
       <div className={cn('mb-2', className)}>
         {replies.map((reply) => {
-          const info = replyMap[reply.id]
+          const info = replyMap.get(reply.id)
           return (
             <div ref={(el) => (replyRefs.current[reply.id] = el)} key={reply.id}>
               <ReplyNote

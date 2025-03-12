@@ -17,7 +17,6 @@ import {
   SimplePool,
   VerifiedEvent
 } from 'nostr-tools'
-import { SubscribeManyParams } from 'nostr-tools/abstract-pool'
 import { AbstractRelay } from 'nostr-tools/abstract-relay'
 import indexedDb from './indexed-db.service'
 
@@ -185,11 +184,127 @@ class ClientService extends EventTarget {
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
-    const _knownIds = new Set<string>()
     let events: NEvent[] = []
+    let eosed = false
+    const subCloser = this.subscribe(relays, since ? { ...filter, since } : filter, {
+      startLogin,
+      onevent: (evt: NEvent) => {
+        that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
+        // not eosed yet, push to events
+        if (!eosed) {
+          return events.push(evt)
+        }
+        // eosed, (algo relay feeds) no need to sort and cache
+        if (!needSort) {
+          return onNew(evt)
+        }
+
+        const timeline = that.timelines[key]
+        if (!timeline || !timeline.refs.length) {
+          return onNew(evt)
+        }
+        // the event is newer than the first ref, insert it to the front
+        if (evt.created_at > timeline.refs[0][1]) {
+          onNew(evt)
+          return timeline.refs.unshift([evt.id, evt.created_at])
+        }
+
+        let idx = 0
+        for (const ref of timeline.refs) {
+          if (evt.created_at > ref[1] || (evt.created_at === ref[1] && evt.id < ref[0])) {
+            break
+          }
+          // the event is already in the cache
+          if (evt.created_at === ref[1] && evt.id === ref[0]) {
+            return
+          }
+          idx++
+        }
+        // the event is too old, ignore it
+        if (idx >= timeline.refs.length) return
+
+        // insert the event to the right position
+        timeline.refs.splice(idx, 0, [evt.id, evt.created_at])
+      },
+      oneose: (_eosed) => {
+        eosed = _eosed
+        // (algo feeds) no need to sort and cache
+        if (!needSort) {
+          return onEvents([...events], eosed)
+        }
+        if (!eosed) {
+          events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
+          return onEvents([...events.concat(cachedEvents)], false)
+        }
+
+        events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
+        const timeline = that.timelines[key]
+        // no cache yet
+        if (!timeline || !timeline.refs.length) {
+          that.timelines[key] = {
+            refs: events.map((evt) => [evt.id, evt.created_at]),
+            filter,
+            urls
+          }
+          return onEvents([...events], true)
+        }
+
+        const newEvents = events.filter((evt) => {
+          const firstRef = timeline.refs[0]
+          return (
+            evt.created_at > firstRef[1] || (evt.created_at === firstRef[1] && evt.id < firstRef[0])
+          )
+        })
+        const newRefs = newEvents.map((evt) => [evt.id, evt.created_at] as TTimelineRef)
+
+        if (newRefs.length >= filter.limit) {
+          // if new refs are more than limit, means old refs are too old, replace them
+          timeline.refs = newRefs
+          onEvents([...newEvents], true)
+        } else {
+          // merge new refs with old refs
+          timeline.refs = newRefs.concat(timeline.refs)
+          onEvents([...newEvents.concat(cachedEvents)], true)
+        }
+      }
+    })
+
+    return {
+      timelineKey: key,
+      closer: () => {
+        onEvents = () => {}
+        onNew = () => {}
+        subCloser.close()
+      }
+    }
+  }
+
+  subscribe(
+    urls: string[],
+    filter: Filter | Filter[],
+    {
+      onevent,
+      oneose,
+      onclose,
+      startLogin
+    }: {
+      onevent?: (evt: NEvent) => void
+      oneose?: (eosed: boolean) => void
+      onclose?: (reasons: string[]) => void
+      startLogin?: () => void
+    }
+  ) {
+    const relays = Array.from(new Set(urls))
+    const filters = Array.isArray(filter) ? filter : [filter]
+
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this
+    const _knownIds = new Set<string>()
     let startedCount = 0
     let eosedCount = 0
     let eosed = false
+    let closedCount = 0
+    const closeReasons: string[] = []
     const subPromises = relays.map(async (url) => {
       const relay = await this.pool.ensureRelay(url)
       let hasAuthed = false
@@ -198,7 +313,7 @@ class ClientService extends EventTarget {
 
       function startSub() {
         startedCount++
-        return relay.subscribe([since ? { ...filter, since } : filter], {
+        return relay.subscribe(filters, {
           receivedEvent: (relay, id) => {
             that.trackEventSeenOn(id, relay)
           },
@@ -211,45 +326,24 @@ class ClientService extends EventTarget {
             return false
           },
           onevent: (evt: NEvent) => {
-            that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
-            // not eosed yet, push to events
-            if (eosedCount < startedCount) {
-              return events.push(evt)
-            }
-            // eosed, (algo relay feeds) no need to sort and cache
-            if (!needSort) {
-              return onNew(evt)
-            }
+            onevent?.(evt)
+          },
+          oneose: () => {
+            if (eosed) return
+            eosedCount++
+            eosed = eosedCount >= startedCount
 
-            const timeline = that.timelines[key]
-            if (!timeline || !timeline.refs.length) {
-              return onNew(evt)
-            }
-            // the event is newer than the first ref, insert it to the front
-            if (evt.created_at > timeline.refs[0][1]) {
-              onNew(evt)
-              return timeline.refs.unshift([evt.id, evt.created_at])
-            }
-
-            let idx = 0
-            for (const ref of timeline.refs) {
-              if (evt.created_at > ref[1] || (evt.created_at === ref[1] && evt.id < ref[0])) {
-                break
-              }
-              // the event is already in the cache
-              if (evt.created_at === ref[1] && evt.id === ref[0]) {
-                return
-              }
-              idx++
-            }
-            // the event is too old, ignore it
-            if (idx >= timeline.refs.length) return
-
-            // insert the event to the right position
-            timeline.refs.splice(idx, 0, [evt.id, evt.created_at])
+            oneose?.(eosed)
           },
           onclose: (reason: string) => {
-            if (!reason.startsWith('auth-required:')) return
+            if (!reason.startsWith('auth-required:')) {
+              closedCount++
+              closeReasons.push(reason)
+              if (closedCount >= startedCount) {
+                onclose?.(closeReasons)
+              }
+              return
+            }
             if (hasAuthed) return
 
             if (that.signer) {
@@ -274,61 +368,13 @@ class ClientService extends EventTarget {
               startLogin()
             }
           },
-          oneose: () => {
-            if (eosed) return
-            eosedCount++
-            eosed = eosedCount >= startedCount
-
-            // (algo feeds) no need to sort and cache
-            if (!needSort) {
-              return onEvents([...events], eosed)
-            }
-            if (!eosed) {
-              events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
-              return onEvents([...events.concat(cachedEvents)], false)
-            }
-
-            events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
-            const timeline = that.timelines[key]
-            // no cache yet
-            if (!timeline || !timeline.refs.length) {
-              that.timelines[key] = {
-                refs: events.map((evt) => [evt.id, evt.created_at]),
-                filter,
-                urls
-              }
-              return onEvents([...events], true)
-            }
-
-            const newEvents = events.filter((evt) => {
-              const firstRef = timeline.refs[0]
-              return (
-                evt.created_at > firstRef[1] ||
-                (evt.created_at === firstRef[1] && evt.id < firstRef[0])
-              )
-            })
-            const newRefs = newEvents.map((evt) => [evt.id, evt.created_at] as TTimelineRef)
-
-            if (newRefs.length >= filter.limit) {
-              // if new refs are more than limit, means old refs are too old, replace them
-              timeline.refs = newRefs
-              onEvents([...newEvents], true)
-            } else {
-              // merge new refs with old refs
-              timeline.refs = newRefs.concat(timeline.refs)
-              onEvents([...newEvents.concat(cachedEvents)], true)
-            }
-          },
           eoseTimeout: 10000 // 10s
         })
       }
     })
 
     return {
-      timelineKey: key,
-      closer: () => {
-        onEvents = () => {}
-        onNew = () => {}
+      close: () => {
         subPromises.forEach((subPromise) => {
           subPromise
             .then((sub) => {
@@ -340,12 +386,6 @@ class ClientService extends EventTarget {
         })
       }
     }
-  }
-
-  subscribe(urls: string[], filter: Filter | Filter[], params: SubscribeManyParams) {
-    const relays = Array.from(new Set(urls))
-    const filters = Array.isArray(filter) ? filter : [filter]
-    return this.pool.subscribeMany(relays, filters, params)
   }
 
   private async query(urls: string[], filter: Filter | Filter[], onevent?: (evt: NEvent) => void) {
@@ -708,6 +748,7 @@ class ClientService extends EventTarget {
   private async _fetchEvent(id: string): Promise<NEvent | undefined> {
     let filter: Filter | undefined
     let relays: string[] = []
+    let author: string | undefined
     if (/^[0-9a-f]{64}$/.test(id)) {
       filter = { ids: [id] }
     } else {
@@ -719,6 +760,7 @@ class ClientService extends EventTarget {
         case 'nevent':
           filter = { ids: [data.id] }
           if (data.relays) relays = data.relays
+          if (data.author) author = data.author
           break
         case 'naddr':
           filter = {
@@ -726,6 +768,7 @@ class ClientService extends EventTarget {
             kinds: [data.kind],
             limit: 1
           }
+          author = data.pubkey
           if (data.identifier) {
             filter['#d'] = [data.identifier]
           }
@@ -740,6 +783,10 @@ class ClientService extends EventTarget {
     if (filter.ids) {
       event = await this.fetchEventById(relays, filter.ids[0])
     } else {
+      if (author) {
+        const relayList = await this.fetchRelayList(author)
+        relays.push(...relayList.write.slice(0, 4))
+      }
       event = await this.tryHarderToFetchEvent(relays, filter)
     }
 

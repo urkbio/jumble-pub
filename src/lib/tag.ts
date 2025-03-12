@@ -1,5 +1,6 @@
 import { TImageInfo } from '@/types'
 import { isBlurhashValid } from 'blurhash'
+import { nip19 } from 'nostr-tools'
 import { isValidPubkey } from './pubkey'
 
 export function tagNameEquals(tagName: string) {
@@ -16,6 +17,15 @@ export function isRootETag([tagName, , , marker]: string[]) {
 
 export function isMentionETag([tagName, , , marker]: string[]) {
   return tagName === 'e' && marker === 'mention'
+}
+
+export function generateEventIdFromETag(tag: string[]) {
+  try {
+    const [, id, relay, , author] = tag
+    return nip19.neventEncode({ id, relays: relay ? [relay] : undefined, author })
+  } catch {
+    return undefined
+  }
 }
 
 export function extractImageInfoFromTag(tag: string[]): TImageInfo | null {
