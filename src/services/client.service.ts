@@ -402,7 +402,7 @@ class ClientService extends EventTarget {
 
         return new Promise<void>((resolve, reject) => {
           const startQuery = () => {
-            relay.subscribe(filters, {
+            const sub = relay.subscribe(filters, {
               receivedEvent(relay, id) {
                 that.trackEventSeenOn(id, relay)
               },
@@ -423,6 +423,7 @@ class ClientService extends EventTarget {
                 }
               },
               oneose() {
+                sub.close()
                 resolve()
               },
               onevent(evt) {
