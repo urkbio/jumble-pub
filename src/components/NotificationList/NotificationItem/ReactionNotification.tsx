@@ -1,7 +1,8 @@
+import Image from '@/components/Image'
 import { PICTURE_EVENT_KIND } from '@/constants'
 import { useFetchEvent } from '@/hooks'
 import { toNote } from '@/lib/link'
-import { tagNameEquals } from '@/lib/tag'
+import { extractEmojiFromEventTags, tagNameEquals } from '@/lib/tag'
 import { cn } from '@/lib/utils'
 import { useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
@@ -29,6 +30,29 @@ export function ReactionNotification({
     return eTag?.[1]
   }, [notification, pubkey])
   const { event } = useFetchEvent(eventId)
+  const reaction = useMemo(() => {
+    if (!notification.content || notification.content === '+') {
+      return <Heart size={24} className="text-red-400" />
+    }
+
+    const emojiName = /^:([^:]+):$/.exec(notification.content)?.[1]
+    if (emojiName) {
+      const emojiUrl = extractEmojiFromEventTags(emojiName, notification.tags)
+      if (emojiUrl) {
+        return (
+          <Image
+            image={{ url: emojiUrl }}
+            alt={emojiName}
+            className="w-6 h-6"
+            classNames={{ errorPlaceholder: 'bg-transparent' }}
+            errorPlaceholder={<Heart size={24} className="text-red-400" />}
+          />
+        )
+      }
+    }
+    return notification.content
+  }, [notification])
+
   if (!event || !eventId || ![kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(event.kind)) {
     return null
   }
@@ -40,13 +64,7 @@ export function ReactionNotification({
     >
       <div className="flex gap-2 items-center flex-1">
         <UserAvatar userId={notification.pubkey} size="small" />
-        <div className="text-xl min-w-6 text-center">
-          {!notification.content || notification.content === '+' ? (
-            <Heart size={24} className="text-red-400" />
-          ) : (
-            notification.content
-          )}
-        </div>
+        <div className="text-xl min-w-6 text-center">{reaction}</div>
         <ContentPreview
           className={cn('truncate flex-1 w-0', isNew ? 'font-semibold' : 'text-muted-foreground')}
           event={event}

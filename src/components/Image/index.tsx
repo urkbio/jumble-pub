@@ -11,6 +11,7 @@ export default function Image({
   className = '',
   classNames = {},
   hideIfError = false,
+  errorPlaceholder = <ImageOff />,
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   classNames?: {
@@ -20,6 +21,7 @@ export default function Image({
   image: TImageInfo
   alt?: string
   hideIfError?: boolean
+  errorPlaceholder?: React.ReactNode
 }) {
   const [isLoading, setIsLoading] = useState(true)
   const [displayBlurHash, setDisplayBlurHash] = useState(true)
@@ -77,7 +79,7 @@ export default function Image({
             classNames.errorPlaceholder
           )}
         >
-          <ImageOff />
+          {errorPlaceholder}
         </div>
       )}
       {displayBlurHash && blurDataUrl && !hasError && (
