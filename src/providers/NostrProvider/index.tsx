@@ -1,11 +1,12 @@
 import LoginDialog from '@/components/LoginDialog'
-import { BIG_RELAY_URLS } from '@/constants'
+import { BIG_RELAY_URLS, COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
 import { useToast } from '@/hooks'
 import {
   getLatestEvent,
   getProfileFromProfileEvent,
   getRelayListFromRelayListEvent
 } from '@/lib/event'
+import { isValidPubkey } from '@/lib/pubkey'
 import client from '@/services/client.service'
 import indexedDb from '@/services/indexed-db.service'
 import storage from '@/services/local-storage.service'
@@ -40,10 +41,7 @@ type TNostrContext = {
   /**
    * Default publish the event to current relays, user's write relays and additional relays
    */
-  publish: (
-    draftEvent: TDraftEvent,
-    options?: { additionalRelayUrls?: string[]; specifiedRelayUrls?: string[] }
-  ) => Promise<Event>
+  publish: (draftEvent: TDraftEvent, options?: { specifiedRelayUrls?: string[] }) => Promise<Event>
   signHttpAuth: (url: string, method: string) => Promise<string>
   signEvent: (draftEvent: TDraftEvent) => Promise<VerifiedEvent>
   nip04Encrypt: (pubkey: string, plainText: string) => Promise<string>
@@ -372,11 +370,40 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
   const publish = async (
     draftEvent: TDraftEvent,
-    {
-      additionalRelayUrls,
-      specifiedRelayUrls
-    }: { additionalRelayUrls?: string[]; specifiedRelayUrls?: string[] } = {}
+    { specifiedRelayUrls }: { specifiedRelayUrls?: string[] } = {}
   ) => {
+    const additionalRelayUrls: string[] = []
+    if (
+      !specifiedRelayUrls?.length &&
+      [
+        kinds.ShortTextNote,
+        kinds.Reaction,
+        kinds.Repost,
+        COMMENT_EVENT_KIND,
+        PICTURE_EVENT_KIND
+      ].includes(draftEvent.kind)
+    ) {
+      const mentions: string[] = []
+      draftEvent.tags.forEach(([tagName, tagValue]) => {
+        if (
+          ['p', 'P'].includes(tagName) &&
+          !!tagValue &&
+          isValidPubkey(tagValue) &&
+          !mentions.includes(tagValue)
+        ) {
+          mentions.push(tagValue)
+        }
+      })
+      if (mentions.length > 0) {
+        const relayLists = await Promise.all(
+          mentions.map((pubkey) => client.fetchRelayList(pubkey))
+        )
+        relayLists.forEach((relayList) => {
+          additionalRelayUrls.push(...relayList.read.slice(0, 4))
+        })
+      }
+    }
+
     const event = await signEvent(draftEvent)
     const relays = specifiedRelayUrls?.length
       ? specifiedRelayUrls

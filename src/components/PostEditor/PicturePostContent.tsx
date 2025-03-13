@@ -8,10 +8,10 @@ import { ChevronDown, Loader, LoaderCircle, Plus, X } from 'lucide-react'
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Image from '../Image'
-import TextareaWithMentions from '../TextareaWithMentions.tsx'
+import TextareaWithMentions from '../TextareaWithMentions'
 import Mentions from './Mentions'
-import PostOptions from './PostOptions.tsx'
-import SendOnlyToSwitch from './SendOnlyToSwitch.tsx'
+import PostOptions from './PostOptions'
+import SendOnlyToSwitch from './SendOnlyToSwitch'
 import Uploader from './Uploader'
 
 export default function PicturePostContent({ close }: { close: () => void }) {

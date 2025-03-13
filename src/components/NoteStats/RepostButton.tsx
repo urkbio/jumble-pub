@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
-import client from '@/services/client.service'
 import { Loader, PencilLine, Repeat } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useMemo, useState } from 'react'
@@ -53,9 +52,8 @@ export default function RepostButton({ event }: { event: Event }) {
           if (stats?.reposts?.has(pubkey)) return
         }
 
-        const targetRelayList = await client.fetchRelayList(event.pubkey)
         const repost = createRepostDraftEvent(event)
-        const evt = await publish(repost, { additionalRelayUrls: targetRelayList.read.slice(0, 5) })
+        const evt = await publish(repost)
         updateNoteStatsByEvents([evt])
       } catch (error) {
         console.error('repost failed', error)

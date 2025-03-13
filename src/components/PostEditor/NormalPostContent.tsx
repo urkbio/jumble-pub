@@ -1,20 +1,17 @@
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { createCommentDraftEvent, createShortTextNoteDraftEvent } from '@/lib/draft-event'
-import { getRootEventTag } from '@/lib/event.ts'
-import { generateEventIdFromETag } from '@/lib/tag.ts'
 import { useNostr } from '@/providers/NostrProvider'
-import client from '@/services/client.service'
 import postContentCache from '@/services/post-content-cache.service'
 import { ChevronDown, ImageUp, LoaderCircle } from 'lucide-react'
 import { Event, kinds } from 'nostr-tools'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import TextareaWithMentions from '../TextareaWithMentions.tsx'
+import TextareaWithMentions from '../TextareaWithMentions'
 import Mentions from './Mentions'
-import PostOptions from './PostOptions.tsx'
+import PostOptions from './PostOptions'
 import Preview from './Preview'
-import SendOnlyToSwitch from './SendOnlyToSwitch.tsx'
+import SendOnlyToSwitch from './SendOnlyToSwitch'
 import Uploader from './Uploader'
 
 export default function NormalPostContent({
@@ -69,31 +66,6 @@ export default function NormalPostContent({
 
       setPosting(true)
       try {
-        const additionalRelayUrls: string[] = []
-        if (parentEvent && !specifiedRelayUrls) {
-          const rootEventTag = getRootEventTag(parentEvent)
-          if (rootEventTag) {
-            const [, , , , rootAuthor] = rootEventTag
-            if (rootAuthor) {
-              if (rootAuthor !== parentEvent.pubkey) {
-                const rootAuthorRelayList = await client.fetchRelayList(rootAuthor)
-                additionalRelayUrls.push(...rootAuthorRelayList.read.slice(0, 4))
-              }
-            } else {
-              const rootEventId = generateEventIdFromETag(rootEventTag)
-              if (rootEventId) {
-                const rootEvent = await client.fetchEvent(rootEventId)
-
-                if (rootEvent && rootEvent.pubkey !== parentEvent.pubkey) {
-                  const rootAuthorRelayList = await client.fetchRelayList(rootEvent.pubkey)
-                  additionalRelayUrls.push(...rootAuthorRelayList.read.slice(0, 4))
-                }
-              }
-            }
-          }
-          const relayList = await client.fetchRelayList(parentEvent.pubkey)
-          additionalRelayUrls.push(...relayList.read.slice(0, 4))
-        }
         const draftEvent =
           parentEvent && parentEvent.kind !== kinds.ShortTextNote
             ? await createCommentDraftEvent(content, parentEvent, pictureInfos, mentions, {
@@ -105,10 +77,7 @@ export default function NormalPostContent({
                 addClientTag,
                 protectedEvent: !!specifiedRelayUrls
               })
-        await publish(draftEvent, {
-          additionalRelayUrls,
-          specifiedRelayUrls
-        })
+        await publish(draftEvent, { specifiedRelayUrls })
         setContent('')
         close()
       } catch (error) {
