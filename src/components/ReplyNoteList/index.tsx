@@ -73,7 +73,7 @@ export default function ReplyNoteList({
       const customEvent = data as CustomEvent<NEvent>
       const evt = customEvent.detail
       const rootId = getRootEventHexId(evt)
-      if (rootId === rootInfo.id) {
+      if (rootId === rootInfo.id && isReplyNoteEvent(evt)) {
         onNewReply(evt)
       }
     }
