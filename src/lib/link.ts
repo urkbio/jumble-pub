@@ -16,9 +16,9 @@ export const toNoteList = ({ hashtag, search }: { hashtag?: string; search?: str
   if (search) query.set('s', search)
   return `${path}?${query.toString()}`
 }
-export const toProfile = (pubkeyOrNpub: string) => {
-  if (pubkeyOrNpub.startsWith('npub')) return `/users/${pubkeyOrNpub}`
-  const npub = nip19.npubEncode(pubkeyOrNpub)
+export const toProfile = (userId: string) => {
+  if (userId.startsWith('npub') || userId.startsWith('nprofile')) return `/users/${userId}`
+  const npub = nip19.npubEncode(userId)
   return `/users/${npub}`
 }
 export const toProfileList = ({ search }: { search?: string }) => {
