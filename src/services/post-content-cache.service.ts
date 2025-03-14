@@ -3,7 +3,13 @@ import { Event } from 'nostr-tools'
 class PostContentCacheService {
   static instance: PostContentCacheService
 
-  private normalPostCache: Map<string, string> = new Map()
+  private normalPostCache: Map<
+    string,
+    {
+      content: string
+      pictureInfos: { url: string; tags: string[][] }[]
+    }
+  > = new Map()
   private picturePostCache: {
     content: string
     pictureInfos: { url: string; tags: string[][] }[]
@@ -21,15 +27,22 @@ class PostContentCacheService {
     parentEvent
   }: { defaultContent?: string; parentEvent?: Event } = {}) {
     return (
-      this.normalPostCache.get(this.generateCacheKey(defaultContent, parentEvent)) ?? defaultContent
+      this.normalPostCache.get(this.generateCacheKey(defaultContent, parentEvent)) ?? {
+        content: defaultContent,
+        pictureInfos: [] as { url: string; tags: string[][] }[]
+      }
     )
   }
 
   setNormalPostCache(
     { defaultContent, parentEvent }: { defaultContent?: string; parentEvent?: Event },
-    content: string
+    content: string,
+    pictureInfos: { url: string; tags: string[][] }[]
   ) {
-    this.normalPostCache.set(this.generateCacheKey(defaultContent, parentEvent), content)
+    this.normalPostCache.set(this.generateCacheKey(defaultContent, parentEvent), {
+      content,
+      pictureInfos
+    })
   }
 
   getPicturePostCache() {

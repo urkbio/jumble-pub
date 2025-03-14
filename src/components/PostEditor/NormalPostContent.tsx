@@ -13,6 +13,7 @@ import PostOptions from './PostOptions'
 import Preview from './Preview'
 import SendOnlyToSwitch from './SendOnlyToSwitch'
 import Uploader from './Uploader'
+import { preprocessContent } from './utils'
 
 export default function NormalPostContent({
   defaultContent = '',
@@ -27,6 +28,7 @@ export default function NormalPostContent({
   const { toast } = useToast()
   const { publish, checkLogin } = useNostr()
   const [content, setContent] = useState('')
+  const [processedContent, setProcessedContent] = useState('')
   const [pictureInfos, setPictureInfos] = useState<{ url: string; tags: string[][] }[]>([])
   const [posting, setPosting] = useState(false)
   const [showMoreOptions, setShowMoreOptions] = useState(false)
@@ -39,9 +41,10 @@ export default function NormalPostContent({
   const canPost = !!content && !posting
 
   useEffect(() => {
-    const cachedContent = postContentCache.getNormalPostCache({ defaultContent, parentEvent })
-    if (cachedContent) {
-      setContent(cachedContent)
+    const cached = postContentCache.getNormalPostCache({ defaultContent, parentEvent })
+    if (cached) {
+      setContent(cached.content || '')
+      setPictureInfos(cached.pictureInfos || [])
     }
     if (defaultContent) {
       setCursorOffset(defaultContent.length)
@@ -52,9 +55,10 @@ export default function NormalPostContent({
   }, [defaultContent, parentEvent])
 
   useEffect(() => {
+    setProcessedContent(preprocessContent(content))
     if (!initializedRef.current) return
-    postContentCache.setNormalPostCache({ defaultContent, parentEvent }, content)
-  }, [content])
+    postContentCache.setNormalPostCache({ defaultContent, parentEvent }, content, pictureInfos)
+  }, [content, pictureInfos])
 
   const post = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -68,11 +72,11 @@ export default function NormalPostContent({
       try {
         const draftEvent =
           parentEvent && parentEvent.kind !== kinds.ShortTextNote
-            ? await createCommentDraftEvent(content, parentEvent, pictureInfos, mentions, {
+            ? await createCommentDraftEvent(processedContent, parentEvent, pictureInfos, mentions, {
                 addClientTag,
                 protectedEvent: !!specifiedRelayUrls
               })
-            : await createShortTextNoteDraftEvent(content, pictureInfos, mentions, {
+            : await createShortTextNoteDraftEvent(processedContent, pictureInfos, mentions, {
                 parentEvent,
                 addClientTag,
                 protectedEvent: !!specifiedRelayUrls
@@ -117,7 +121,7 @@ export default function NormalPostContent({
         placeholder={t('Write something...')}
         cursorOffset={cursorOffset}
       />
-      {content && <Preview content={content} />}
+      {processedContent && <Preview content={processedContent} />}
       <SendOnlyToSwitch
         parentEvent={parentEvent}
         specifiedRelayUrls={specifiedRelayUrls}
@@ -150,7 +154,7 @@ export default function NormalPostContent({
         </div>
         <div className="flex gap-2 items-center">
           <Mentions
-            content={content}
+            content={processedContent}
             parentEvent={parentEvent}
             mentions={mentions}
             setMentions={setMentions}

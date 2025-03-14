@@ -13,12 +13,14 @@ import Mentions from './Mentions'
 import PostOptions from './PostOptions'
 import SendOnlyToSwitch from './SendOnlyToSwitch'
 import Uploader from './Uploader'
+import { preprocessContent } from './utils'
 
 export default function PicturePostContent({ close }: { close: () => void }) {
   const { t } = useTranslation()
   const { toast } = useToast()
   const { publish, checkLogin } = useNostr()
   const [content, setContent] = useState('')
+  const [processedContent, setProcessedContent] = useState('')
   const [pictureInfos, setPictureInfos] = useState<{ url: string; tags: string[][] }[]>([])
   const [posting, setPosting] = useState(false)
   const [showMoreOptions, setShowMoreOptions] = useState(false)
@@ -38,6 +40,7 @@ export default function PicturePostContent({ close }: { close: () => void }) {
   }, [])
 
   useEffect(() => {
+    setProcessedContent(preprocessContent(content))
     if (!initializedRef.current) return
     postContentCache.setPicturePostCache(content, pictureInfos)
   }, [content, pictureInfos])
@@ -55,10 +58,15 @@ export default function PicturePostContent({ close }: { close: () => void }) {
         if (!pictureInfos.length) {
           throw new Error(t('Picture note requires images'))
         }
-        const draftEvent = await createPictureNoteDraftEvent(content, pictureInfos, mentions, {
-          addClientTag,
-          protectedEvent: !!specifiedRelayUrls
-        })
+        const draftEvent = await createPictureNoteDraftEvent(
+          processedContent,
+          pictureInfos,
+          mentions,
+          {
+            addClientTag,
+            protectedEvent: !!specifiedRelayUrls
+          }
+        )
         await publish(draftEvent, { specifiedRelayUrls })
         setContent('')
         setPictureInfos([])
@@ -117,7 +125,7 @@ export default function PicturePostContent({ close }: { close: () => void }) {
           <ChevronDown className={`transition-transform ${showMoreOptions ? 'rotate-180' : ''}`} />
         </Button>
         <div className="flex gap-2 items-center">
-          <Mentions content={content} mentions={mentions} setMentions={setMentions} />
+          <Mentions content={processedContent} mentions={mentions} setMentions={setMentions} />
           <div className="flex gap-2 items-center max-sm:hidden">
             <Button
               variant="secondary"
