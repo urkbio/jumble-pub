@@ -2,6 +2,7 @@ import FeedSwitcher from '@/components/FeedSwitcher'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { simplifyUrl } from '@/lib/url'
+import { cn } from '@/lib/utils'
 import { useFeed } from '@/providers/FeedProvider'
 import { useRelaySets } from '@/providers/RelaySetsProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
@@ -9,14 +10,14 @@ import { ChevronDown, Server, UsersRound } from 'lucide-react'
 import { forwardRef, HTMLAttributes, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export default function FeedButton() {
+export default function FeedButton({ className }: { className?: string }) {
   const { isSmallScreen } = useScreenSize()
   const [open, setOpen] = useState(false)
 
   if (isSmallScreen) {
     return (
       <>
-        <FeedSwitcherTrigger onClick={() => setOpen(true)} />
+        <FeedSwitcherTrigger className={className} onClick={() => setOpen(true)} />
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent className="max-h-[80vh]">
             <div className="p-4 overflow-auto">
@@ -31,7 +32,7 @@ export default function FeedButton() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <FeedSwitcherTrigger />
+        <FeedSwitcherTrigger className={className} />
       </PopoverTrigger>
       <PopoverContent side="bottom" className="w-96 p-4 max-h-[80vh] overflow-auto">
         <FeedSwitcher close={() => setOpen(false)} />
@@ -41,7 +42,7 @@ export default function FeedButton() {
 }
 
 const FeedSwitcherTrigger = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  (props, ref) => {
+  ({ className, ...props }, ref) => {
     const { t } = useTranslation()
     const { feedType, relayUrls, activeRelaySetId } = useFeed()
     const { relaySets } = useRelaySets()
@@ -61,12 +62,12 @@ const FeedSwitcherTrigger = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
 
     return (
       <div
-        className="flex items-center gap-2 clickable px-3 h-full rounded-lg"
+        className={cn('flex items-center gap-2 clickable px-3 h-full rounded-lg', className)}
         ref={ref}
         {...props}
       >
         {feedType === 'following' ? <UsersRound /> : <Server />}
-        <div className="text-lg font-semibold">{title}</div>
+        <div className="text-lg font-semibold truncate">{title}</div>
         <ChevronDown />
       </div>
     )

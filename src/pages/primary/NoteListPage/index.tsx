@@ -66,8 +66,8 @@ function NoteListPageTitlebar({ temporaryRelayUrls = [] }: { temporaryRelayUrls?
 
   return (
     <div className="flex gap-1 items-center h-full justify-between">
-      <FeedButton />
-      <div>
+      <FeedButton className="flex-1 max-w-fit w-0" />
+      <div className="shrink-0">
         {temporaryRelayUrls.length > 0 && (
           <SaveRelayDropdownMenu urls={temporaryRelayUrls} atTitlebar />
         )}

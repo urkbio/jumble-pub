@@ -129,9 +129,13 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
           </div>
           <ProfileAbout about={about} className="text-wrap break-words whitespace-pre-wrap mt-2" />
           {website && (
-            <div className="flex gap-1 items-center text-primary mt-2">
-              <Link size={14} />
-              <a href={website} target="_blank" className="hover:underline">
+            <div className="flex gap-1 items-center text-primary mt-2 truncate">
+              <Link size={14} className="shrink-0" />
+              <a
+                href={website}
+                target="_blank"
+                className="hover:underline truncate flex-1 max-w-fit w-0"
+              >
                 {website}
               </a>
             </div>
