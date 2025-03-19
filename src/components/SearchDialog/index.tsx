@@ -98,7 +98,7 @@ function NormalItem({ search, onClick }: { search: string; onClick?: () => void 
     <SecondaryPageLink to={toNoteList({ search })} onClick={onClick}>
       <CommandItem value={`search-${search}`}>
         <Notebook className="text-muted-foreground" />
-        <div className="font-semibold">{search}</div>
+        <div className="font-semibold truncate">{search}</div>
       </CommandItem>
     </SecondaryPageLink>
   )
