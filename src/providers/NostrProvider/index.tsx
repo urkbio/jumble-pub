@@ -11,6 +11,7 @@ import client from '@/services/client.service'
 import indexedDb from '@/services/indexed-db.service'
 import storage from '@/services/local-storage.service'
 import { ISigner, TAccount, TAccountPointer, TDraftEvent, TProfile, TRelayList } from '@/types'
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 import dayjs from 'dayjs'
 import { Event, kinds, VerifiedEvent } from 'nostr-tools'
 import * as nip19 from 'nostr-tools/nip19'
@@ -248,18 +249,26 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     await loginWithAccountPointer(act)
   }
 
-  const nsecLogin = async (nsec: string, password?: string) => {
+  const nsecLogin = async (nsecOrHex: string, password?: string) => {
     const browserNsecSigner = new NsecSigner()
-    const { type, data: privkey } = nip19.decode(nsec)
-    if (type !== 'nsec') {
-      throw new Error('invalid nsec')
+    let privkey: Uint8Array
+    if (nsecOrHex.startsWith('nsec')) {
+      const { type, data } = nip19.decode(nsecOrHex)
+      if (type !== 'nsec') {
+        throw new Error('invalid nsec or hex')
+      }
+      privkey = data
+    } else if (/^[0-9a-fA-F]{64}$/.test(nsecOrHex)) {
+      privkey = hexToBytes(nsecOrHex)
+    } else {
+      throw new Error('invalid nsec or hex')
     }
     const pubkey = browserNsecSigner.login(privkey)
     if (password) {
       const ncryptsec = nip49.encrypt(privkey, password)
       return login(browserNsecSigner, { pubkey, signerType: 'ncryptsec', ncryptsec })
     }
-    return login(browserNsecSigner, { pubkey, signerType: 'nsec', nsec })
+    return login(browserNsecSigner, { pubkey, signerType: 'nsec', nsec: nip19.nsecEncode(privkey) })
   }
 
   const ncryptsecLogin = async (ncryptsec: string) => {

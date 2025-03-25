@@ -31,19 +31,19 @@ export default function PrivateKeyLogin({
 function NsecLogin({ back, onLoginSuccess }: { back: () => void; onLoginSuccess: () => void }) {
   const { t } = useTranslation()
   const { nsecLogin } = useNostr()
-  const [nsec, setNsec] = useState('')
+  const [nsecOrHex, setNsecOrHex] = useState('')
   const [errMsg, setErrMsg] = useState<string | null>(null)
   const [password, setPassword] = useState('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNsec(e.target.value)
+    setNsecOrHex(e.target.value)
     setErrMsg(null)
   }
 
   const handleLogin = () => {
-    if (nsec === '') return
+    if (nsecOrHex === '') return
 
-    nsecLogin(nsec, password)
+    nsecLogin(nsecOrHex, password)
       .then(() => onLoginSuccess())
       .catch((err) => {
         setErrMsg(err.message)
@@ -58,11 +58,11 @@ function NsecLogin({ back, onLoginSuccess }: { back: () => void; onLoginSuccess:
         )}
       </div>
       <div className="space-y-1">
-        <div className="text-muted-foreground text-sm font-semibold">nsec</div>
+        <div className="text-muted-foreground text-sm font-semibold">nsec or hex</div>
         <Input
           type="password"
-          placeholder="nsec1.."
-          value={nsec}
+          placeholder="nsec1.. or hex"
+          value={nsecOrHex}
           onChange={handleInputChange}
           className={errMsg ? 'border-destructive' : ''}
         />
