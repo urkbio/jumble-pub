@@ -119,8 +119,8 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
           <Nip05 pubkey={pubkey} />
           {lightningAddress && (
             <div className="text-sm text-yellow-400 flex gap-1 items-center">
-              <Zap className="size-4" />
-              {lightningAddress}
+              <Zap className="size-4 shrink-0" />
+              <div className="flex-1 max-w-fit w-0 truncate">{lightningAddress}</div>
             </div>
           )}
           <div className="flex gap-1 mt-1">
