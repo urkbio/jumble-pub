@@ -6,7 +6,7 @@ import {
   getProfileFromProfileEvent,
   getRelayListFromRelayListEvent
 } from '@/lib/event'
-import { isValidPubkey } from '@/lib/pubkey'
+import { formatPubkey, isValidPubkey } from '@/lib/pubkey'
 import client from '@/services/client.service'
 import indexedDb from '@/services/indexed-db.service'
 import storage from '@/services/local-storage.service'
@@ -176,6 +176,11 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         setProfileEvent(profileEvent)
         setProfile(getProfileFromProfileEvent(profileEvent))
         await indexedDb.putReplaceableEvent(profileEvent)
+      } else if (!storedProfileEvent) {
+        setProfile({
+          pubkey: account.pubkey,
+          username: formatPubkey(account.pubkey)
+        })
       }
       if (followListEvent) {
         setFollowListEvent(followListEvent)
