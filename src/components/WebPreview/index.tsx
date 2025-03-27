@@ -29,7 +29,13 @@ export default function WebPreview({
 
   if (isSmallScreen && image) {
     return (
-      <div className="rounded-lg border mt-2">
+      <div
+        className="rounded-lg border mt-2"
+        onClick={(e) => {
+          e.stopPropagation()
+          window.open(url, '_blank')
+        }}
+      >
         <Image image={{ url: image }} className="w-full h-44 rounded-t-lg" hideIfError />
         <div className="bg-muted p-2 w-full rounded-b-lg">
           <div className="text-xs text-muted-foreground">{hostname}</div>
