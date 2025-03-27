@@ -68,7 +68,9 @@ function SignerTypeBadge({ signerType }: { signerType: TSignerType }) {
     return <Badge className=" bg-blue-400 hover:bg-blue-400/80">Bunker</Badge>
   } else if (signerType === 'ncryptsec') {
     return <Badge>NCRYPTSEC</Badge>
-  } else {
+  } else if (signerType === 'nsec') {
     return <Badge className=" bg-orange-400 hover:bg-orange-400/80">NSEC</Badge>
+  } else if (signerType === 'npub') {
+    return <Badge className=" bg-yellow-400 hover:bg-yellow-400/80">NPUB</Badge>
   }
 }

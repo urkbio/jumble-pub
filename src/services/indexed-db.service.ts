@@ -88,19 +88,23 @@ class IndexedDbService {
       getRequest.onsuccess = () => {
         const oldValue = getRequest.result as TValue<Event> | undefined
         if (oldValue && oldValue.value.created_at >= event.created_at) {
+          transaction.commit()
           return resolve(oldValue.value)
         }
         const putRequest = store.put(this.formatValue(event.pubkey, event))
         putRequest.onsuccess = () => {
+          transaction.commit()
           resolve(event)
         }
 
         putRequest.onerror = (event) => {
+          transaction.commit()
           reject(event)
         }
       }
 
       getRequest.onerror = (event) => {
+        transaction.commit()
         reject(event)
       }
     })
@@ -121,12 +125,56 @@ class IndexedDbService {
       const request = store.get(pubkey)
 
       request.onsuccess = () => {
+        transaction.commit()
         resolve((request.result as TValue<Event>)?.value)
       }
 
       request.onerror = (event) => {
+        transaction.commit()
         reject(event)
       }
+    })
+  }
+
+  async getManyReplaceableEvents(
+    pubkeys: readonly string[],
+    kind: number
+  ): Promise<(Event | undefined)[]> {
+    const storeName = this.getStoreNameByKind(kind)
+    if (!storeName) {
+      return Promise.reject('store name not found')
+    }
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(storeName, 'readonly')
+      const store = transaction.objectStore(storeName)
+      const events: Event[] = new Array(pubkeys.length).fill(undefined)
+      let count = 0
+      pubkeys.forEach((pubkey, i) => {
+        const request = store.get(pubkey)
+
+        request.onsuccess = () => {
+          const event = (request.result as TValue<Event>)?.value
+          if (event) {
+            events[i] = event
+          }
+
+          if (++count === pubkeys.length) {
+            transaction.commit()
+            resolve(events)
+          }
+        }
+
+        request.onerror = () => {
+          if (++count === pubkeys.length) {
+            transaction.commit()
+            resolve(events)
+          }
+        }
+      })
     })
   }
 
@@ -141,10 +189,12 @@ class IndexedDbService {
       const request = store.get(id)
 
       request.onsuccess = () => {
+        transaction.commit()
         resolve((request.result as TValue<string[][]>)?.value)
       }
 
       request.onerror = (event) => {
+        transaction.commit()
         reject(event)
       }
     })
@@ -161,10 +211,12 @@ class IndexedDbService {
 
       const putRequest = store.put(this.formatValue(id, tags))
       putRequest.onsuccess = () => {
+        transaction.commit()
         resolve()
       }
 
       putRequest.onerror = (event) => {
+        transaction.commit()
         reject(event)
       }
     })
@@ -181,10 +233,12 @@ class IndexedDbService {
       const request = store.getAll()
 
       request.onsuccess = () => {
+        transaction.commit()
         resolve((request.result as TValue<Event>[])?.map((item) => item.value))
       }
 
       request.onerror = (event) => {
+        transaction.commit()
         reject(event)
       }
     })
@@ -205,10 +259,12 @@ class IndexedDbService {
 
       const putRequest = store.put(this.formatValue(dValue, event))
       putRequest.onsuccess = () => {
+        transaction.commit()
         resolve()
       }
 
       putRequest.onerror = (event) => {
+        transaction.commit()
         reject(event)
       }
     })
@@ -230,11 +286,13 @@ class IndexedDbService {
           callback((cursor.value as TValue<Event>).value)
           cursor.continue()
         } else {
+          transaction.commit()
           resolve()
         }
       }
 
       request.onerror = (event) => {
+        transaction.commit()
         reject(event)
       }
     })
@@ -296,7 +354,8 @@ class IndexedDbService {
             const cursor = (event.target as IDBRequest).result
             if (cursor) {
               const value: TValue = cursor.value
-              if (value.addedAt < expirationTimestamp) {
+              // 10% chance to delete
+              if (value.addedAt < expirationTimestamp && Math.random() < 0.1) {
                 cursor.delete()
               }
               cursor.continue()

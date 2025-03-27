@@ -3,7 +3,8 @@ import { getProfileFromProfileEvent, getRelayListFromRelayListEvent } from '@/li
 import { formatPubkey, userIdToPubkey } from '@/lib/pubkey'
 import { extractPubkeysFromEventTags } from '@/lib/tag'
 import { isLocalNetworkUrl } from '@/lib/url'
-import { TDraftEvent, TProfile, TRelayList } from '@/types'
+import { isSafari } from '@/lib/utils'
+import { ISigner, TProfile, TRelayList } from '@/types'
 import { sha256 } from '@noble/hashes/sha2'
 import DataLoader from 'dataloader'
 import FlexSearch from 'flexsearch'
@@ -17,7 +18,7 @@ import {
   SimplePool,
   VerifiedEvent
 } from 'nostr-tools'
-import { AbstractRelay, Subscription } from 'nostr-tools/abstract-relay'
+import { AbstractRelay } from 'nostr-tools/abstract-relay'
 import indexedDb from './indexed-db.service'
 
 type TTimelineRef = [string, number]
@@ -25,7 +26,7 @@ type TTimelineRef = [string, number]
 class ClientService extends EventTarget {
   static instance: ClientService
 
-  signer?: (evt: TDraftEvent) => Promise<VerifiedEvent>
+  signer?: ISigner
   private currentRelayUrls: string[] = []
   private pool: SimplePool
 
@@ -36,6 +37,7 @@ class ClientService extends EventTarget {
         filter: Omit<Filter, 'since' | 'until'> & { limit: number }
         urls: string[]
       }
+    | string[]
     | undefined
   > = {}
   private eventCache = new LRUCache<string, Promise<NEvent | undefined>>({ max: 10000 })
@@ -45,22 +47,20 @@ class ClientService extends EventTarget {
   )
   private fetchEventFromBigRelaysDataloader = new DataLoader<string, NEvent | undefined>(
     this.fetchEventsFromBigRelays.bind(this),
-    { cache: false, batchScheduleFn: (callback) => setTimeout(callback, 200) }
+    { cache: false, batchScheduleFn: (callback) => setTimeout(callback, 50) }
   )
   private fetchProfileEventFromBigRelaysDataloader = new DataLoader<string, NEvent | undefined>(
     this.profileEventBatchLoadFn.bind(this),
     {
-      batchScheduleFn: (callback) => setTimeout(callback, 200),
-      cacheMap: new LRUCache<string, Promise<NEvent | undefined>>({ max: 1000 }),
-      maxBatchSize: 20
+      batchScheduleFn: (callback) => setTimeout(callback, 50),
+      maxBatchSize: 500
     }
   )
   private relayListEventDataLoader = new DataLoader<string, NEvent | undefined>(
     this.relayListEventBatchLoadFn.bind(this),
     {
-      batchScheduleFn: (callback) => setTimeout(callback, 200),
-      cacheMap: new LRUCache<string, Promise<NEvent | undefined>>({ max: 1000 }),
-      maxBatchSize: 20
+      batchScheduleFn: (callback) => setTimeout(callback, 50),
+      maxBatchSize: 500
     }
   )
   private followListCache = new LRUCache<string, Promise<NEvent | undefined>>({
@@ -122,7 +122,7 @@ class ClientService extends EventTarget {
               !!that.signer
             ) {
               relay
-                .auth((authEvt: EventTemplate) => that.signer!(authEvt))
+                .auth((authEvt: EventTemplate) => that.signer!.signEvent(authEvt))
                 .then(() => relay.publish(event))
             } else {
               throw error
@@ -135,7 +135,19 @@ class ClientService extends EventTarget {
   }
 
   private generateTimelineKey(urls: string[], filter: Filter) {
-    const paramsStr = JSON.stringify({ urls: urls.sort(), filter })
+    const stableFilter: any = {}
+    Object.entries(filter)
+      .sort()
+      .forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          stableFilter[key] = [...value].sort()
+        }
+        stableFilter[key] = value
+      })
+    const paramsStr = JSON.stringify({
+      urls: [...urls].sort(),
+      filter: stableFilter
+    })
     const encoder = new TextEncoder()
     const data = encoder.encode(paramsStr)
     const hashBuffer = sha256(data)
@@ -145,7 +157,7 @@ class ClientService extends EventTarget {
 
   async subscribeTimeline(
     urls: string[],
-    filter: Omit<Filter, 'since' | 'until'> & { limit: number }, // filter with limit,
+    { authors, ...filter }: Omit<Filter, 'since' | 'until'> & { limit: number },
     {
       onEvents,
       onNew
@@ -161,122 +173,136 @@ class ClientService extends EventTarget {
       needSort?: boolean
     } = {}
   ) {
-    const relays = Array.from(new Set(urls))
-    const key = this.generateTimelineKey(relays, filter)
-    const timeline = this.timelines[key]
-    let cachedEvents: NEvent[] = []
-    let since: number | undefined
-    if (timeline && timeline.refs.length && needSort) {
-      cachedEvents = (
-        await Promise.all(
-          timeline.refs.slice(0, filter.limit).map(([id]) => this.eventCache.get(id))
-        )
-      ).filter(Boolean) as NEvent[]
-      if (cachedEvents.length) {
-        onEvents([...cachedEvents], false)
-        since = cachedEvents[0].created_at + 1
+    if (urls.length || !authors?.length) {
+      return this._subscribeTimeline(
+        urls.length ? urls : BIG_RELAY_URLS,
+        filter,
+        { onEvents, onNew },
+        { startLogin, needSort }
+      )
+    }
+
+    const subRequests: { urls: string[]; authors: string[] }[] = []
+    // If many websocket connections are initiated simultaneously, it will be
+    // very slow on Safari (for unknown reason)
+    if (authors.length > 5 && isSafari()) {
+      const pubkey = await this.signer?.getPublicKey()
+      if (!pubkey) {
+        subRequests.push({ urls: BIG_RELAY_URLS, authors })
+      } else {
+        const relayList = await this.fetchRelayList(pubkey)
+        const urls = relayList.read.concat(BIG_RELAY_URLS).slice(0, 5)
+        subRequests.push({ urls, authors })
       }
-    }
-
-    if (!timeline && needSort) {
-      this.timelines[key] = { refs: [], filter, urls: relays }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this
-    let events: NEvent[] = []
-    let eosed = false
-    const subCloser = this.subscribe(relays, since ? { ...filter, since } : filter, {
-      startLogin,
-      onevent: (evt: NEvent) => {
-        that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
-        // not eosed yet, push to events
-        if (!eosed) {
-          return events.push(evt)
-        }
-        // eosed, (algo relay feeds) no need to sort and cache
-        if (!needSort) {
-          return onNew(evt)
-        }
-
-        const timeline = that.timelines[key]
-        if (!timeline || !timeline.refs.length) {
-          return onNew(evt)
-        }
-        // the event is newer than the first ref, insert it to the front
-        if (evt.created_at > timeline.refs[0][1]) {
-          onNew(evt)
-          return timeline.refs.unshift([evt.id, evt.created_at])
-        }
-
-        let idx = 0
-        for (const ref of timeline.refs) {
-          if (evt.created_at > ref[1] || (evt.created_at === ref[1] && evt.id < ref[0])) {
-            break
+    } else {
+      const relayLists = await this.fetchRelayLists(authors)
+      const group: Record<string, Set<string>> = {}
+      relayLists.forEach((relayList, index) => {
+        relayList.write.slice(0, 4).forEach((url) => {
+          if (!group[url]) {
+            group[url] = new Set()
           }
-          // the event is already in the cache
-          if (evt.created_at === ref[1] && evt.id === ref[0]) {
-            return
-          }
-          idx++
-        }
-        // the event is too old, ignore it
-        if (idx >= timeline.refs.length) return
-
-        // insert the event to the right position
-        timeline.refs.splice(idx, 0, [evt.id, evt.created_at])
-      },
-      oneose: (_eosed) => {
-        eosed = _eosed
-        // (algo feeds) no need to sort and cache
-        if (!needSort) {
-          return onEvents([...events], eosed)
-        }
-        if (!eosed) {
-          events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
-          return onEvents([...events.concat(cachedEvents)], false)
-        }
-
-        events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
-        const timeline = that.timelines[key]
-        // no cache yet
-        if (!timeline || !timeline.refs.length) {
-          that.timelines[key] = {
-            refs: events.map((evt) => [evt.id, evt.created_at]),
-            filter,
-            urls
-          }
-          return onEvents([...events], true)
-        }
-
-        const newEvents = events.filter((evt) => {
-          const firstRef = timeline.refs[0]
-          return (
-            evt.created_at > firstRef[1] || (evt.created_at === firstRef[1] && evt.id < firstRef[0])
-          )
+          group[url].add(authors[index])
         })
-        const newRefs = newEvents.map((evt) => [evt.id, evt.created_at] as TTimelineRef)
+      })
 
-        if (newRefs.length >= filter.limit) {
-          // if new refs are more than limit, means old refs are too old, replace them
-          timeline.refs = newRefs
-          onEvents([...newEvents], true)
-        } else {
-          // merge new refs with old refs
-          timeline.refs = newRefs.concat(timeline.refs)
-          onEvents([...newEvents.concat(cachedEvents)], true)
-        }
-      }
-    })
+      const relayCount = Object.keys(group).length
+      const coveredAuthorSet = new Set<string>()
+      Object.entries(group)
+        .sort(([, a], [, b]) => b.size - a.size)
+        .forEach(([url, pubkeys]) => {
+          if (
+            relayCount > 10 &&
+            pubkeys.size < 10 &&
+            Array.from(pubkeys).every((pubkey) => coveredAuthorSet.has(pubkey))
+          ) {
+            delete group[url]
+          }
+          pubkeys.forEach((pubkey) => {
+            coveredAuthorSet.add(pubkey)
+          })
+        })
+
+      subRequests.push(
+        ...Object.entries(group).map(([url, authors]) => ({
+          urls: [url],
+          authors: Array.from(authors)
+        }))
+      )
+    }
+
+    const newEventIdSet = new Set<string>()
+    const requestCount = subRequests.length
+    let eventIdSet = new Set<string>()
+    let events: NEvent[] = []
+    let eosedCount = 0
+
+    const subs = await Promise.all(
+      subRequests.map(({ urls, authors }) => {
+        return this._subscribeTimeline(
+          urls,
+          { ...filter, authors },
+          {
+            onEvents: (_events, _eosed) => {
+              if (_eosed) {
+                eosedCount++
+              }
+              _events.forEach((evt) => {
+                if (eventIdSet.has(evt.id)) return
+                eventIdSet.add(evt.id)
+                events.push(evt)
+              })
+              events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
+              eventIdSet = new Set(events.map((evt) => evt.id))
+              onEvents(events, eosedCount >= requestCount)
+            },
+            onNew: (evt) => {
+              if (newEventIdSet.has(evt.id)) return
+              newEventIdSet.add(evt.id)
+              onNew(evt)
+            }
+          },
+          { startLogin }
+        )
+      })
+    )
+
+    const key = this.generateTimelineKey([], { ...filter, authors })
+    this.timelines[key] = subs.map((sub) => sub.timelineKey)
 
     return {
-      timelineKey: key,
       closer: () => {
         onEvents = () => {}
         onNew = () => {}
-        subCloser.close()
-      }
+        subs.forEach((sub) => {
+          sub.closer()
+        })
+      },
+      timelineKey: key
     }
+  }
+
+  async loadMoreTimeline(key: string, until: number, limit: number) {
+    const timeline = this.timelines[key]
+    if (!timeline) return []
+
+    if (!Array.isArray(timeline)) {
+      return this._loadMoreTimeline(key, until, limit)
+    }
+    const timelines = await Promise.all(
+      timeline.map((key) => this._loadMoreTimeline(key, until, limit))
+    )
+
+    const eventIdSet = new Set<string>()
+    const events: NEvent[] = []
+    timelines.forEach((timeline) => {
+      timeline.forEach((evt) => {
+        if (eventIdSet.has(evt.id)) return
+        eventIdSet.add(evt.id)
+        events.push(evt)
+      })
+    })
+    return events.sort((a, b) => b.created_at - a.created_at).slice(0, limit)
   }
 
   subscribe(
@@ -305,15 +331,27 @@ class ClientService extends EventTarget {
     let eosed = false
     let closedCount = 0
     const closeReasons: string[] = []
-    const subPromises: Promise<Subscription>[] = []
+    const subPromises: Promise<{ close: () => void }>[] = []
     relays.forEach((url) => {
       let hasAuthed = false
 
       subPromises.push(startSub())
 
       async function startSub() {
-        const relay = await that.pool.ensureRelay(url)
         startedCount++
+        const relay = await that.pool.ensureRelay(url, { connectionTimeout: 2000 }).catch(() => {
+          return undefined
+        })
+        if (!relay) {
+          if (!eosed) {
+            eosedCount++
+            eosed = eosedCount >= startedCount
+            oneose?.(eosed)
+          }
+          return {
+            close: () => {}
+          }
+        }
         return relay.subscribe(filters, {
           receivedEvent: (relay, id) => {
             that.trackEventSeenOn(id, relay)
@@ -350,7 +388,7 @@ class ClientService extends EventTarget {
             if (that.signer) {
               relay
                 .auth(async (authEvt: EventTemplate) => {
-                  const evt = await that.signer!(authEvt)
+                  const evt = await that.signer!.signEvent(authEvt)
                   if (!evt) {
                     throw new Error('sign event failed')
                   }
@@ -369,7 +407,7 @@ class ClientService extends EventTarget {
               startLogin()
             }
           },
-          eoseTimeout: 10000 // 10s
+          eoseTimeout: 10_000 // 10s
         })
       }
     })
@@ -415,7 +453,7 @@ class ClientService extends EventTarget {
 
                 if (that.signer) {
                   relay
-                    .auth((authEvt: EventTemplate) => that.signer!(authEvt))
+                    .auth((authEvt: EventTemplate) => that.signer!.signEvent(authEvt))
                     .then(() => {
                       hasAuthed = true
                       startQuery()
@@ -442,9 +480,145 @@ class ClientService extends EventTarget {
     return events
   }
 
-  async loadMoreTimeline(key: string, until: number, limit: number) {
+  private async _subscribeTimeline(
+    urls: string[],
+    filter: Omit<Filter, 'since' | 'until'> & { limit: number }, // filter with limit,
+    {
+      onEvents,
+      onNew
+    }: {
+      onEvents: (events: NEvent[], eosed: boolean) => void
+      onNew: (evt: NEvent) => void
+    },
+    {
+      startLogin,
+      needSort = true
+    }: {
+      startLogin?: () => void
+      needSort?: boolean
+    } = {}
+  ) {
+    const relays = Array.from(new Set(urls))
+    const key = this.generateTimelineKey(relays, filter)
     const timeline = this.timelines[key]
-    if (!timeline) return []
+    let cachedEvents: NEvent[] = []
+    let since: number | undefined
+    if (timeline && !Array.isArray(timeline) && timeline.refs.length && needSort) {
+      cachedEvents = (
+        await Promise.all(
+          timeline.refs.slice(0, filter.limit).map(([id]) => this.eventCache.get(id))
+        )
+      ).filter(Boolean) as NEvent[]
+      if (cachedEvents.length) {
+        onEvents([...cachedEvents], false)
+        since = cachedEvents[0].created_at + 1
+      }
+    }
+
+    if (!timeline && needSort) {
+      this.timelines[key] = { refs: [], filter, urls: relays }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this
+    let events: NEvent[] = []
+    let eosed = false
+    const subCloser = this.subscribe(relays, since ? { ...filter, since } : filter, {
+      startLogin,
+      onevent: (evt: NEvent) => {
+        that.eventDataLoader.prime(evt.id, Promise.resolve(evt))
+        // not eosed yet, push to events
+        if (!eosed) {
+          return events.push(evt)
+        }
+        // eosed, (algo relay feeds) no need to sort and cache
+        if (!needSort) {
+          return onNew(evt)
+        }
+
+        const timeline = that.timelines[key]
+        if (!timeline || Array.isArray(timeline) || !timeline.refs.length) {
+          return onNew(evt)
+        }
+        // the event is newer than the first ref, insert it to the front
+        if (evt.created_at > timeline.refs[0][1]) {
+          onNew(evt)
+          return timeline.refs.unshift([evt.id, evt.created_at])
+        }
+
+        let idx = 0
+        for (const ref of timeline.refs) {
+          if (evt.created_at > ref[1] || (evt.created_at === ref[1] && evt.id < ref[0])) {
+            break
+          }
+          // the event is already in the cache
+          if (evt.created_at === ref[1] && evt.id === ref[0]) {
+            return
+          }
+          idx++
+        }
+        // the event is too old, ignore it
+        if (idx >= timeline.refs.length) return
+
+        // insert the event to the right position
+        timeline.refs.splice(idx, 0, [evt.id, evt.created_at])
+      },
+      oneose: (_eosed) => {
+        eosed = _eosed
+        // (algo feeds) no need to sort and cache
+        if (!needSort) {
+          return onEvents([...events], eosed)
+        }
+        if (!eosed) {
+          events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
+          return onEvents([...events.concat(cachedEvents)], false)
+        }
+
+        events = events.sort((a, b) => b.created_at - a.created_at).slice(0, filter.limit)
+        const timeline = that.timelines[key]
+        // no cache yet
+        if (!timeline || Array.isArray(timeline) || !timeline.refs.length) {
+          that.timelines[key] = {
+            refs: events.map((evt) => [evt.id, evt.created_at]),
+            filter,
+            urls
+          }
+          return onEvents([...events], true)
+        }
+
+        const newEvents = events.filter((evt) => {
+          const firstRef = timeline.refs[0]
+          return (
+            evt.created_at > firstRef[1] || (evt.created_at === firstRef[1] && evt.id < firstRef[0])
+          )
+        })
+        const newRefs = newEvents.map((evt) => [evt.id, evt.created_at] as TTimelineRef)
+
+        if (newRefs.length >= filter.limit) {
+          // if new refs are more than limit, means old refs are too old, replace them
+          timeline.refs = newRefs
+          onEvents([...newEvents], true)
+        } else {
+          // merge new refs with old refs
+          timeline.refs = newRefs.concat(timeline.refs)
+          onEvents([...newEvents.concat(cachedEvents)], true)
+        }
+      }
+    })
+
+    return {
+      timelineKey: key,
+      closer: () => {
+        onEvents = () => {}
+        onNew = () => {}
+        subCloser.close()
+      }
+    }
+  }
+
+  private async _loadMoreTimeline(key: string, until: number, limit: number) {
+    const timeline = this.timelines[key]
+    if (!timeline || Array.isArray(timeline)) return []
 
     const { filter, urls, refs } = timeline
     const startIdx = refs.findIndex(([, createdAt]) => createdAt < until)
@@ -456,17 +630,19 @@ class ClientService extends EventTarget {
             )
           ).filter(Boolean) as NEvent[])
         : []
-    if (cachedEvents.length > 0) {
+    if (cachedEvents.length >= limit) {
       return cachedEvents
     }
 
+    until = cachedEvents.length ? cachedEvents[cachedEvents.length - 1].created_at - 1 : until
+    limit = limit - cachedEvents.length
     let events = await this.query(urls, { ...filter, until: until, limit: limit })
     events.forEach((evt) => {
       this.eventDataLoader.prime(evt.id, Promise.resolve(evt))
     })
     events = events.sort((a, b) => b.created_at - a.created_at).slice(0, limit)
     timeline.refs.push(...events.map((evt) => [evt.id, evt.created_at] as TTimelineRef))
-    return events
+    return [...cachedEvents, ...events]
   }
 
   async fetchEvents(
@@ -544,7 +720,6 @@ class ClientService extends EventTarget {
     if (!skipCache) {
       const localProfile = await indexedDb.getReplaceableEvent(pubkey, kinds.Metadata)
       if (localProfile) {
-        this.addUsernameToIndex(localProfile)
         return localProfile
       }
     }
@@ -623,6 +798,20 @@ class ClientService extends EventTarget {
     return getRelayListFromRelayListEvent(event)
   }
 
+  async fetchRelayLists(pubkeys: string[]) {
+    const events = await this.relayListEventDataLoader.loadMany(pubkeys)
+    return events.map((event) => {
+      if (event && !(event instanceof Error)) {
+        return getRelayListFromRelayListEvent(event)
+      }
+      return {
+        write: BIG_RELAY_URLS,
+        read: BIG_RELAY_URLS,
+        originalRelays: []
+      }
+    })
+  }
+
   async fetchFollowListEvent(pubkey: string, storeToIndexedDb = false) {
     const event = await this.followListCache.fetch(pubkey)
     if (storeToIndexedDb && event) {
@@ -643,56 +832,6 @@ class ClientService extends EventTarget {
   updateRelayListCache(event: NEvent) {
     this.relayListEventDataLoader.clear(event.pubkey)
     this.relayListEventDataLoader.prime(event.pubkey, Promise.resolve(event))
-  }
-
-  async calculateOptimalReadRelays(pubkey: string) {
-    const followings = await this.fetchFollowings(pubkey, true)
-    const [selfRelayListEvent, ...relayListEvents] = await this.relayListEventDataLoader.loadMany([
-      pubkey,
-      ...followings
-    ])
-    const selfReadRelays =
-      selfRelayListEvent && !(selfRelayListEvent instanceof Error)
-        ? getRelayListFromRelayListEvent(selfRelayListEvent).read
-        : []
-    const pubkeyRelayListMap = new Map<string, string[]>()
-    relayListEvents.forEach((evt) => {
-      if (evt && !(evt instanceof Error)) {
-        pubkeyRelayListMap.set(evt.pubkey, getRelayListFromRelayListEvent(evt).write)
-      }
-    })
-    let uncoveredPubkeys = [...followings]
-    const readRelays: { url: string; pubkeys: string[] }[] = []
-    while (uncoveredPubkeys.length) {
-      const relayMap = new Map<string, string[]>()
-      uncoveredPubkeys.forEach((pubkey) => {
-        const relays = pubkeyRelayListMap.get(pubkey)
-        if (relays) {
-          relays.forEach((url) => {
-            relayMap.set(url, (relayMap.get(url) || []).concat(pubkey))
-          })
-        }
-      })
-      let maxCoveredRelay: { url: string; pubkeys: string[] } | undefined
-      for (const [url, pubkeys] of relayMap.entries()) {
-        if (!maxCoveredRelay) {
-          maxCoveredRelay = { url, pubkeys }
-        } else if (pubkeys.length > maxCoveredRelay.pubkeys.length) {
-          maxCoveredRelay = { url, pubkeys }
-        } else if (
-          pubkeys.length === maxCoveredRelay.pubkeys.length &&
-          selfReadRelays.includes(url)
-        ) {
-          maxCoveredRelay = { url, pubkeys }
-        }
-      }
-      if (!maxCoveredRelay) break
-      readRelays.push(maxCoveredRelay)
-      uncoveredPubkeys = uncoveredPubkeys.filter(
-        (pubkey) => !maxCoveredRelay!.pubkeys.includes(pubkey)
-      )
-    }
-    return readRelays
   }
 
   async searchProfilesFromIndex(query: string, limit: number = 100) {
@@ -875,9 +1014,7 @@ class ClientService extends EventTarget {
   }
 
   private async relayListEventBatchLoadFn(pubkeys: readonly string[]) {
-    const relayEvents = await Promise.all(
-      pubkeys.map((pubkey) => indexedDb.getReplaceableEvent(pubkey, kinds.RelayList))
-    )
+    const relayEvents = await indexedDb.getManyReplaceableEvents(pubkeys, kinds.RelayList)
     const nonExistingPubkeys = pubkeys.filter((_, i) => !relayEvents[i])
     if (nonExistingPubkeys.length) {
       const events = await this.query(BIG_RELAY_URLS, {

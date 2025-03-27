@@ -62,7 +62,9 @@ export default function SeenOnButton({ event }: { event: Event }) {
                   key={relay}
                   onClick={() => {
                     setIsDrawerOpen(false)
-                    push(toRelay(relay))
+                    setTimeout(() => {
+                      push(toRelay(relay))
+                    }, 50) // Timeout to allow the drawer to close before navigating
                   }}
                 >
                   <RelayIcon url={relay} /> {simplifyUrl(relay)}

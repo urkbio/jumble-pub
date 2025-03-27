@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next'
 import { BunkerSigner } from './bunker.signer'
 import { Nip07Signer } from './nip-07.signer'
 import { NsecSigner } from './nsec.signer'
+import { NpubSigner } from './npub.signer'
 
 type TNostrContext = {
   pubkey: string | null
@@ -38,6 +39,7 @@ type TNostrContext = {
   ncryptsecLogin: (ncryptsec: string) => Promise<string>
   nip07Login: () => Promise<string>
   bunkerLogin: (bunker: string) => Promise<string>
+  npubLogin(npub: string): Promise<string>
   removeAccount: (account: TAccountPointer) => void
   /**
    * Default publish the event to current relays, user's write relays and additional relays
@@ -204,7 +206,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (signer) {
-      client.signer = signer.signEvent.bind(signer)
+      client.signer = signer
     } else {
       client.signer = undefined
     }
@@ -255,7 +257,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   }
 
   const nsecLogin = async (nsecOrHex: string, password?: string) => {
-    const browserNsecSigner = new NsecSigner()
+    const nsecSigner = new NsecSigner()
     let privkey: Uint8Array
     if (nsecOrHex.startsWith('nsec')) {
       const { type, data } = nip19.decode(nsecOrHex)
@@ -268,12 +270,12 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     } else {
       throw new Error('invalid nsec or hex')
     }
-    const pubkey = browserNsecSigner.login(privkey)
+    const pubkey = nsecSigner.login(privkey)
     if (password) {
       const ncryptsec = nip49.encrypt(privkey, password)
-      return login(browserNsecSigner, { pubkey, signerType: 'ncryptsec', ncryptsec })
+      return login(nsecSigner, { pubkey, signerType: 'ncryptsec', ncryptsec })
     }
-    return login(browserNsecSigner, { pubkey, signerType: 'nsec', nsec: nip19.nsecEncode(privkey) })
+    return login(nsecSigner, { pubkey, signerType: 'nsec', nsec: nip19.nsecEncode(privkey) })
   }
 
   const ncryptsecLogin = async (ncryptsec: string) => {
@@ -285,6 +287,12 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     const browserNsecSigner = new NsecSigner()
     const pubkey = browserNsecSigner.login(privkey)
     return login(browserNsecSigner, { pubkey, signerType: 'ncryptsec', ncryptsec })
+  }
+
+  const npubLogin = async (npub: string) => {
+    const npubSigner = new NpubSigner()
+    const pubkey = npubSigner.login(npub)
+    return login(npubSigner, { pubkey, signerType: 'npub', npub })
   }
 
   const nip07Login = async () => {
@@ -369,6 +377,19 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         }
         return login(bunkerSigner, account)
       }
+    } else if (account.signerType === 'npub' && account.npub) {
+      const npubSigner = new NpubSigner()
+      const pubkey = npubSigner.login(account.npub)
+      if (!pubkey) {
+        storage.removeAccount(account)
+        return null
+      }
+      if (pubkey !== account.pubkey) {
+        storage.removeAccount(account)
+        account = { ...account, pubkey }
+        storage.addAccount(account)
+      }
+      return login(npubSigner, account)
     }
     storage.removeAccount(account)
     return null
@@ -510,6 +531,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         ncryptsecLogin,
         nip07Login,
         bunkerLogin,
+        npubLogin,
         removeAccount,
         publish,
         signHttpAuth,

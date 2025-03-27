@@ -8,9 +8,11 @@ import { useTranslation } from 'react-i18next'
 import AccountList from '../AccountList'
 import BunkerLogin from './BunkerLogin'
 import GenerateNewAccount from './GenerateNewAccount'
+import NpubLogin from './NpubLogin'
 import PrivateKeyLogin from './PrivateKeyLogin'
+import { isDevEnv } from '@/lib/common'
 
-type TAccountManagerPage = 'nsec' | 'bunker' | 'generate' | null
+type TAccountManagerPage = 'nsec' | 'bunker' | 'generate' | 'npub' | null
 
 export default function AccountManager({ close }: { close?: () => void }) {
   const [page, setPage] = useState<TAccountManagerPage>(null)
@@ -23,6 +25,8 @@ export default function AccountManager({ close }: { close?: () => void }) {
         <BunkerLogin back={() => setPage(null)} onLoginSuccess={() => close?.()} />
       ) : page === 'generate' ? (
         <GenerateNewAccount back={() => setPage(null)} onLoginSuccess={() => close?.()} />
+      ) : page === 'npub' ? (
+        <NpubLogin back={() => setPage(null)} onLoginSuccess={() => close?.()} />
       ) : (
         <AccountManagerNav setPage={setPage} close={close} />
       )}
@@ -59,6 +63,11 @@ function AccountManagerNav({
           <Button variant="secondary" onClick={() => setPage('nsec')} className="w-full">
             {t('Login with Private Key')}
           </Button>
+          {isDevEnv() && (
+            <Button variant="secondary" onClick={() => setPage('npub')} className="w-full">
+              Login with Public key (for development)
+            </Button>
+          )}
         </div>
       </div>
       <Separator />

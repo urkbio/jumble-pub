@@ -1,16 +1,12 @@
 import NoteList from '@/components/NoteList'
-import { SEARCHABLE_RELAY_URLS } from '@/constants'
-import { useFetchRelayInfos } from '@/hooks'
+import { BIG_RELAY_URLS, SEARCHABLE_RELAY_URLS } from '@/constants'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { useFeed } from '@/providers/FeedProvider'
 import { Filter } from 'nostr-tools'
 import { forwardRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const NoteListPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
-  const { relayUrls } = useFeed()
-  const { searchableRelayUrls } = useFetchRelayInfos(relayUrls)
   const {
     title = '',
     filter,
@@ -26,7 +22,7 @@ const NoteListPage = forwardRef(({ index }: { index?: number }, ref) => {
       return {
         title: `# ${hashtag}`,
         filter: { '#t': [hashtag] },
-        urls: relayUrls,
+        urls: BIG_RELAY_URLS,
         type: 'hashtag'
       }
     }
@@ -35,12 +31,12 @@ const NoteListPage = forwardRef(({ index }: { index?: number }, ref) => {
       return {
         title: `${t('Search')}: ${search}`,
         filter: { search },
-        urls: searchableRelayUrls.concat(SEARCHABLE_RELAY_URLS).slice(0, 4),
+        urls: SEARCHABLE_RELAY_URLS,
         type: 'search'
       }
     }
-    return { urls: relayUrls }
-  }, [JSON.stringify(relayUrls)])
+    return { urls: BIG_RELAY_URLS }
+  }, [])
 
   return (
     <SecondaryPageLayout ref={ref} index={index} title={title} displayScrollToTopButton>

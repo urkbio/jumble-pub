@@ -79,7 +79,7 @@ class LightningService {
         .concat(BIG_RELAY_URLS),
       comment
     })
-    const zapRequest = await client.signer(zapRequestDraft)
+    const zapRequest = await client.signer.signEvent(zapRequestDraft)
     const zapRequestRes = await fetch(
       `${callback}?amount=${amount}&nostr=${encodeURI(JSON.stringify(zapRequest))}&lnurl=${lnurl}`
     )

@@ -32,8 +32,9 @@ class RelayInfoService {
         .toLocaleLowerCase()
         .split(/\s+/)
   })
-  private fetchDataloader = new DataLoader<string, TNip66RelayInfo | undefined>((urls) =>
-    Promise.all(urls.map((url) => this._getRelayInfo(url)))
+  private fetchDataloader = new DataLoader<string, TNip66RelayInfo | undefined>(
+    (urls) => Promise.all(urls.map((url) => this._getRelayInfo(url))),
+    { maxBatchSize: 1 }
   )
   private relayUrlsForRandom: string[] = []
 

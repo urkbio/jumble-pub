@@ -80,7 +80,7 @@ export interface ISigner {
   nip04Decrypt: (pubkey: string, cipherText: string) => Promise<string>
 }
 
-export type TSignerType = 'nsec' | 'nip-07' | 'bunker' | 'browser-nsec' | 'ncryptsec'
+export type TSignerType = 'nsec' | 'nip-07' | 'bunker' | 'browser-nsec' | 'ncryptsec' | 'npub'
 
 export type TAccount = {
   pubkey: string
@@ -89,6 +89,7 @@ export type TAccount = {
   nsec?: string
   bunker?: string
   bunkerClientSecretKey?: string
+  npub?: string
 }
 
 export type TAccountPointer = Pick<TAccount, 'pubkey' | 'signerType'>
