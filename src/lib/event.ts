@@ -142,6 +142,7 @@ export function getRelayListFromRelayListEvent(event?: Event) {
     if (!url || !isWebsocketUrl(url)) return
 
     const normalizedUrl = normalizeUrl(url)
+    if (!normalizedUrl) return
     switch (type) {
       case 'write':
         relayList.write.push(normalizedUrl)

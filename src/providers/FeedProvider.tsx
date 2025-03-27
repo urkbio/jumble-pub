@@ -56,7 +56,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         const temporaryRelayUrls = searchParams
           .getAll('r')
           .map((url) => normalizeUrl(url))
-          .filter((url) => isWebsocketUrl(url))
+          .filter((url) => url && isWebsocketUrl(url))
         if (temporaryRelayUrls.length) {
           return await switchFeed('temporary', { temporaryRelayUrls })
         }

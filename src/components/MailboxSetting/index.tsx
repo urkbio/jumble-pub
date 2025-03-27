@@ -47,6 +47,9 @@ export default function MailboxSetting() {
   const saveNewMailboxRelay = (url: string) => {
     if (url === '') return null
     const normalizedUrl = normalizeUrl(url)
+    if (!normalizedUrl) {
+      return t('Invalid relay URL')
+    }
     if (relays.some((r) => r.url === normalizedUrl)) {
       return t('Relay already exists')
     }

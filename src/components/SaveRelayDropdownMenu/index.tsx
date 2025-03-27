@@ -23,7 +23,7 @@ export default function SaveRelayDropdownMenu({
 }) {
   const { t } = useTranslation()
   const { relaySets } = useRelaySets()
-  const normalizedUrls = useMemo(() => urls.map((url) => normalizeUrl(url)), [urls])
+  const normalizedUrls = useMemo(() => urls.map((url) => normalizeUrl(url)).filter(Boolean), [urls])
   const alreadySaved = useMemo(
     () => relaySets.some((set) => normalizedUrls.every((url) => set.relayUrls.includes(url))),
     [relaySets, normalizedUrls]

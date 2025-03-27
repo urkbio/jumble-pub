@@ -29,6 +29,9 @@ export default function RelayUrls({ relaySetId }: { relaySetId: string }) {
   const saveNewRelayUrl = () => {
     if (newRelayUrl === '') return
     const normalizedUrl = normalizeUrl(newRelayUrl)
+    if (!normalizedUrl) {
+      return setNewRelayUrlError(t('Invalid relay URL'))
+    }
     if (relaySet.relayUrls.includes(normalizedUrl)) {
       return setNewRelayUrlError(t('Relay already exists'))
     }
