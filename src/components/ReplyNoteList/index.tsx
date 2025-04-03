@@ -96,7 +96,6 @@ export default function ReplyNoteList({
         const relayUrls = relayList.read.concat(BIG_RELAY_URLS)
         const seenOn = client.getSeenEventRelayUrls(rootInfo.id)
         relayUrls.unshift(...seenOn)
-        let eventCount = 0
         const { closer, timelineKey } = await client.subscribeTimeline(
           relayUrls.slice(0, 5),
           {
@@ -106,12 +105,7 @@ export default function ReplyNoteList({
           },
           {
             onEvents: (evts, eosed) => {
-              if (eventCount > events.length) return
-              eventCount = events.length
-
-              if (events.length > 0) {
-                setEvents(evts.filter((evt) => isReplyNoteEvent(evt)).reverse())
-              }
+              setEvents(evts.filter((evt) => isReplyNoteEvent(evt)).reverse())
               if (eosed) {
                 setUntil(evts.length >= LIMIT ? evts[evts.length - 1].created_at - 1 : undefined)
                 setLoading(false)
