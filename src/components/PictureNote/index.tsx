@@ -34,7 +34,7 @@ export default function PictureNote({
                 skeletonClassName="h-4"
               />
               {usingClient && (
-                <div className="text-xs text-muted-foreground truncate">using {usingClient}</div>
+                <div className="text-xs text-muted-foreground truncate">{usingClient}</div>
               )}
             </div>
             <div className="text-xs text-muted-foreground line-clamp-1">

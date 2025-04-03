@@ -50,7 +50,7 @@ export default function Note({
                 skeletonClassName={size === 'small' ? 'h-3' : 'h-4'}
               />
               {usingClient && size === 'normal' && (
-                <div className="text-xs text-muted-foreground shrink-0">using {usingClient}</div>
+                <div className="text-xs text-muted-foreground shrink-0">{usingClient}</div>
               )}
             </div>
             <div className="text-xs text-muted-foreground shrink-0">
