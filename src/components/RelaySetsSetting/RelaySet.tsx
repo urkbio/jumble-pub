@@ -158,7 +158,7 @@ function RelaySetOptions({ relaySet }: { relaySet: TRelaySet }) {
         <DropdownMenuItem
           onClick={() => {
             navigator.clipboard.writeText(
-              `https://jumble.social/?${relaySet.relayUrls.map((url) => 'r=' + url).join('&')}`
+              `https://nostr.moe/?${relaySet.relayUrls.map((url) => 'r=' + url).join('&')}`
             )
           }}
         >
