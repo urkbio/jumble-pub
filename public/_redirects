@@ -1,2 +1,2 @@
-https://jumble-pub.pages.dev/ https://nostr.moe/
-https://jumble-pub.pages.dev/* https://nostr.moe/:splat
+jumble-pub.pages.dev/ nostr.moe/ 301
+jumble-pub.pages.dev/* nostr.moe/:splat 301
