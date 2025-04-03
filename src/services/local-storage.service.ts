@@ -13,23 +13,8 @@ import {
 const DEFAULT_RELAY_SETS: TRelaySet[] = [
   {
     id: randomString(),
-    name: 'Safer Global',
-    relayUrls: ['wss://nostr.wine/', 'wss://pyramid.fiatjaf.com/']
-  },
-  {
-    id: randomString(),
-    name: 'Short Notes',
-    relayUrls: ['wss://140.f7z.io/']
-  },
-  {
-    id: randomString(),
-    name: 'News',
-    relayUrls: ['wss://news.utxo.one/']
-  },
-  {
-    id: randomString(),
-    name: 'Algo',
-    relayUrls: ['wss://algo.utxo.one']
+    name: 'Nostr.moe',
+    relayUrls: ['wss://relay.nostr.moe/', 'wss://relay.cxplay.org/']
   }
 ]
 
