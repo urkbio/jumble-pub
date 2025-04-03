@@ -23,10 +23,11 @@ export const BIG_RELAY_URLS = [
   'wss://relay.damus.io/',
   'wss://nos.lol/',
   'wss://relay.nostr.band/',
-  'wss://nostr.mom/'
+  'wss://nostr.mom/',
+  'wss://relay.nostr.moe/'
 ]
 
-export const SEARCHABLE_RELAY_URLS = ['wss://relay.nostr.band/', 'wss://search.nos.today/']
+export const SEARCHABLE_RELAY_URLS = ['wss://relay.nostr.moe/']
 
 export const PICTURE_EVENT_KIND = 20
 export const COMMENT_EVENT_KIND = 1111
