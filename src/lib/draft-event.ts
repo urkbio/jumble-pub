@@ -91,7 +91,7 @@ export async function createShortTextNoteDraftEvent(
   tags.push(...mentions.map((pubkey) => ['p', pubkey]))
 
   if (options.addClientTag) {
-    tags.push(['client', 'jumble'])
+    tags.push(['client', 'Nostr.moe','31990:266815e0c9210dfa324c6cba3573b14bee49da4209a9456f9484e5106cd408a5:1743748820'])
   }
 
   if (options.protectedEvent) {
@@ -142,7 +142,7 @@ export async function createPictureNoteDraftEvent(
     .concat(mentions.map((pubkey) => ['p', pubkey]))
 
   if (options.addClientTag) {
-    tags.push(['client', 'jumble'])
+    tags.push(['client', 'Nostr.moe','31990:266815e0c9210dfa324c6cba3573b14bee49da4209a9456f9484e5106cd408a5:1743748820'])
   }
 
   if (options.protectedEvent) {
@@ -202,7 +202,7 @@ export async function createCommentDraftEvent(
   )
 
   if (options.addClientTag) {
-    tags.push(['client', 'jumble'])
+    tags.push(['client', 'Nostr.moe','31990:266815e0c9210dfa324c6cba3573b14bee49da4209a9456f9484e5106cd408a5:1743748820'])
   }
 
   if (options.protectedEvent) {
