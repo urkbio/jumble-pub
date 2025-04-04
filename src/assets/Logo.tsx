@@ -1,6 +1,6 @@
 export default function Logo({ className }: { className?: string }) {
   return (
-    <svg id="b" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1051.88 241.45">
+    <svg id="b" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1051.88 241.45" className={className}>
       <defs>
         <style>{`.d{fill:#ff7bac;}.d,.e{stroke - width:0px;}.e{fill:#ff5f71;}`}</style>
       </defs>
