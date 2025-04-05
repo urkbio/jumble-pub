@@ -78,9 +78,7 @@ const NotificationList = forwardRef((_, ref) => {
       const relayList = await client.fetchRelayList(pubkey)
       let eventCount = 0
       const { closer, timelineKey } = await client.subscribeTimeline(
-        relayList.read.length >= 4
-          ? relayList.read
-          : relayList.read.concat(BIG_RELAY_URLS).slice(0, 4),
+        relayList.read.length > 0 ? relayList.read.slice(0, 5) : BIG_RELAY_URLS,
         {
           '#p': [pubkey],
           kinds: filterKinds,
