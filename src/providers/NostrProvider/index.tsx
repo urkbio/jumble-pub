@@ -24,6 +24,7 @@ import { NsecSigner } from './nsec.signer'
 import { NpubSigner } from './npub.signer'
 
 type TNostrContext = {
+  isInitialized: boolean
   pubkey: string | null
   profile: TProfile | null
   profileEvent: Event | null
@@ -83,6 +84,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [followListEvent, setFollowListEvent] = useState<Event | undefined>(undefined)
   const [muteListEvent, setMuteListEvent] = useState<Event | undefined>(undefined)
   const [favoriteRelaysEvent, setFavoriteRelaysEvent] = useState<Event | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -96,7 +98,9 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
       await loginWithAccountPointer(act)
     }
-    init()
+    init().then(() => {
+      setIsInitialized(true)
+    })
 
     const handleHashChange = () => {
       if (hasNostrLoginHash()) {
@@ -537,6 +541,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   return (
     <NostrContext.Provider
       value={{
+        isInitialized,
         pubkey: account?.pubkey ?? null,
         profile,
         profileEvent,

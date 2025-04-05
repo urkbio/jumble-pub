@@ -34,7 +34,7 @@ export const useFeed = () => {
 
 export function FeedProvider({ children }: { children: React.ReactNode }) {
   const isFirstRenderRef = useRef(true)
-  const { pubkey } = useNostr()
+  const { pubkey, isInitialized } = useNostr()
   const { relaySets, favoriteRelays } = useFavoriteRelays()
   const [relayUrls, setRelayUrls] = useState<string[]>([])
   const [temporaryRelayUrls, setTemporaryRelayUrls] = useState<string[]>([])
@@ -66,6 +66,10 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
+      if (!isInitialized) {
+        return
+      }
+
       let feedInfo: TFeedInfo = {
         feedType: 'relay',
         id: favoriteRelays[0] ?? DEFAULT_FAVORITE_RELAYS[0]
@@ -92,7 +96,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     }
 
     init()
-  }, [pubkey])
+  }, [pubkey, isInitialized])
 
   const switchFeed = async (
     feedType: TFeedType,
