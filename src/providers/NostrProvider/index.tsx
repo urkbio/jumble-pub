@@ -30,7 +30,7 @@ type TNostrContext = {
   relayList: TRelayList | null
   followListEvent?: Event
   muteListEvent?: Event
-  favoriteRelaysEvent?: Event
+  favoriteRelaysEvent: Event | null
   account: TAccountPointer | null
   accounts: TAccountPointer[]
   nsec: string | null
@@ -82,7 +82,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [relayList, setRelayList] = useState<TRelayList | null>(null)
   const [followListEvent, setFollowListEvent] = useState<Event | undefined>(undefined)
   const [muteListEvent, setMuteListEvent] = useState<Event | undefined>(undefined)
-  const [favoriteRelaysEvent, setFavoriteRelaysEvent] = useState<Event | undefined>(undefined)
+  const [favoriteRelaysEvent, setFavoriteRelaysEvent] = useState<Event | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -117,6 +117,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       setProfile(null)
       setProfileEvent(null)
       setNsec(null)
+      setFavoriteRelaysEvent(null)
       if (!account) {
         return
       }

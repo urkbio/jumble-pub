@@ -69,9 +69,9 @@ function RelayUrls({ urls }: { urls: string[] }) {
   if (!urls) return null
 
   return (
-    <div className="pl-8 space-y-1">
+    <div className="pl-1 space-y-1">
       {urls.map((url) => (
-        <div key={url} className="flex items-center gap-2">
+        <div key={url} className="flex items-center gap-3">
           <RelayIcon url={url} className="w-4 h-4" iconSize={10} />
           <div className="text-muted-foreground text-sm truncate">{url}</div>
         </div>
