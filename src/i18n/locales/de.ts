@@ -207,6 +207,9 @@ export default {
     'Not found the note': 'Die Notiz wurde nicht gefunden',
     'no more replies': 'keine weiteren Antworten',
     'Relay sets': 'Relay-Sets',
-    'Favorite Relays': 'Lieblings-Relays'
+    'Favorite Relays': 'Lieblings-Relays',
+    "Following's Favorites": 'Favoriten der Folgenden',
+    'no more relays': 'keine weiteren Relays',
+    'Favorited by': 'Favorisiert von'
   }
 }

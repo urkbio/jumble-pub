@@ -207,6 +207,9 @@ export default {
     'Not found the note': 'Заметка не найдена',
     'no more replies': 'больше нет ответов',
     'Relay sets': 'Наборы ретрансляторов',
-    'Favorite Relays': 'Избранные ретрансляторы'
+    'Favorite Relays': 'Избранные ретрансляторы',
+    "Following's Favorites": 'Избранные ретрансляторы подписчиков',
+    'no more relays': 'больше нет ретрансляторов',
+    'Favorited by': 'Избранные у'
   }
 }

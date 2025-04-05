@@ -204,6 +204,9 @@ export default {
     'Not found the note': 'ノートが見つかりません',
     'no more replies': 'これ以上の返信はありません',
     'Relay sets': 'リレイセット',
-    'Favorite Relays': 'お気に入りのリレイ'
+    'Favorite Relays': 'お気に入りのリレイ',
+    "Following's Favorites": 'フォロー中のお気に入り',
+    'no more relays': 'これ以上のリレイはありません',
+    'Favorited by': 'お気に入り'
   }
 }

@@ -205,6 +205,9 @@ export default {
     'Not found the note': 'Nie znaleziono wpisu',
     'no more replies': 'brak kolejnych odpowiedzi',
     'Relay sets': 'Zestawy transmiterów',
-    'Favorite Relays': 'Ulubione transmitery'
+    'Favorite Relays': 'Ulubione transmitery',
+    "Following's Favorites": 'Ulubione transmitery obserwowanych',
+    'no more relays': 'brak kolejnych transmiterów',
+    'Favorited by': 'Ulubione przez'
   }
 }

@@ -203,6 +203,9 @@ export default {
     'Not found the note': 'Not found the note',
     'no more replies': 'no more replies',
     'Relay sets': 'Relay sets',
-    'Favorite Relays': 'Favorite Relays'
+    'Favorite Relays': 'Favorite Relays',
+    "Following's Favorites": "Following's Favorites",
+    'no more relays': 'no more relays',
+    'Favorited by': 'Favorited by'
   }
 }

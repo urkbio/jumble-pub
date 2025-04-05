@@ -1,8 +1,8 @@
-import { BIG_RELAY_URLS } from '@/constants'
+import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import { getProfileFromProfileEvent, getRelayListFromRelayListEvent } from '@/lib/event'
 import { formatPubkey, userIdToPubkey } from '@/lib/pubkey'
 import { extractPubkeysFromEventTags } from '@/lib/tag'
-import { isLocalNetworkUrl } from '@/lib/url'
+import { isLocalNetworkUrl, isWebsocketUrl, normalizeUrl } from '@/lib/url'
 import { isSafari } from '@/lib/utils'
 import { ISigner, TProfile, TRelayList } from '@/types'
 import { sha256 } from '@noble/hashes/sha2'
@@ -66,6 +66,13 @@ class ClientService extends EventTarget {
   private followListCache = new LRUCache<string, Promise<NEvent | undefined>>({
     max: 2000,
     fetchMethod: this._fetchFollowListEvent.bind(this)
+  })
+  private fetchFollowingFavoriteRelaysCache = new LRUCache<
+    string,
+    Promise<Map<string, Set<string>>>
+  >({
+    max: 10,
+    fetchMethod: this._fetchFollowingFavoriteRelays.bind(this)
   })
 
   private userIndex = new FlexSearch.Index({
@@ -820,6 +827,39 @@ class ClientService extends EventTarget {
   async fetchFollowings(pubkey: string, storeToIndexedDb = false) {
     const followListEvent = await this.fetchFollowListEvent(pubkey, storeToIndexedDb)
     return followListEvent ? extractPubkeysFromEventTags(followListEvent.tags) : []
+  }
+
+  async fetchFollowingFavoriteRelays(pubkey: string) {
+    return this.fetchFollowingFavoriteRelaysCache.fetch(pubkey)
+  }
+
+  private async _fetchFollowingFavoriteRelays(pubkey: string) {
+    const followings = await this.fetchFollowings(pubkey)
+    const favoriteRelaysEvents = await this.fetchEvents(BIG_RELAY_URLS, {
+      authors: followings,
+      kinds: [ExtendedKind.FAVORITE_RELAYS],
+      limit: followings.length
+    })
+    const alreadyExistsPubkeys = new Set<string>()
+    const uniqueEvents: NEvent[] = []
+    favoriteRelaysEvents
+      .sort((a, b) => b.created_at - a.created_at)
+      .forEach((event) => {
+        if (alreadyExistsPubkeys.has(event.pubkey)) return
+        alreadyExistsPubkeys.add(event.pubkey)
+        uniqueEvents.push(event)
+      })
+
+    const relayMap = new Map<string, Set<string>>()
+    uniqueEvents.forEach((event) => {
+      event.tags.forEach(([tagName, tagValue]) => {
+        if (tagName === 'relay' && tagValue && isWebsocketUrl(tagValue)) {
+          const url = normalizeUrl(tagValue)
+          relayMap.set(url, (relayMap.get(url) || new Set()).add(event.pubkey))
+        }
+      })
+    })
+    return relayMap
   }
 
   updateFollowListCache(event: NEvent) {

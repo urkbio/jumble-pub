@@ -204,6 +204,9 @@ export default {
     'Not found the note': '未找到该笔记',
     'no more replies': '没有更多回复了',
     'Relay sets': '服务器组',
-    'Favorite Relays': '收藏的服务器'
+    'Favorite Relays': '收藏的服务器',
+    "Following's Favorites": '关注人的收藏',
+    'no more relays': '没有更多服务器了',
+    'Favorited by': '收藏自'
   }
 }

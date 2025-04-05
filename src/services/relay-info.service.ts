@@ -66,6 +66,9 @@ class RelayInfoService {
   }
 
   async getRelayInfos(urls: string[]) {
+    if (urls.length === 0) {
+      return []
+    }
     const relayInfos = await this.fetchDataloader.loadMany(urls)
     return relayInfos.map((relayInfo) => (relayInfo instanceof Error ? undefined : relayInfo))
   }

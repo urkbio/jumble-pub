@@ -203,6 +203,9 @@ export default {
     'Not found the note': 'لم يتم العثور على الملاحظة',
     'no more replies': 'لا توجد مزيد من الردود',
     'Relay sets': 'مجموعات الريلاي',
-    'Favorite Relays': 'الريلايات المفضلة'
+    'Favorite Relays': 'الريلايات المفضلة',
+    "Following's Favorites": 'المفضلات من المتابعين',
+    'no more relays': 'لا توجد مزيد من الريلايات',
+    'Favorited by': 'المفضلة من قبل'
   }
 }

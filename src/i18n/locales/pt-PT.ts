@@ -206,6 +206,9 @@ export default {
     'Not found the note': 'Nota não encontrada',
     'no more replies': 'não há mais respostas',
     'Relay sets': 'Conjuntos de Relé',
-    'Favorite Relays': 'Relés Favoritos'
+    'Favorite Relays': 'Relés Favoritos',
+    "Following's Favorites": 'Favoritos de quem você segue',
+    'no more relays': 'não há mais relés',
+    'Favorited by': 'Favoritado por'
   }
 }
