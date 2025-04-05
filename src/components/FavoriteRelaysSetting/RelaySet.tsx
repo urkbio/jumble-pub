@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,29 +7,35 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { useRelaySets } from '@/providers/RelaySetsProvider'
+import { useFavoriteRelays } from '@/providers/FavoriteRelaysProvider'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { TRelaySet } from '@/types'
-import { Check, ChevronDown, Circle, CircleCheck, EllipsisVertical } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import {
+  Check,
+  ChevronDown,
+  Edit,
+  EllipsisVertical,
+  FolderClosed,
+  Link,
+  Trash2
+} from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import DrawerMenuItem from '../DrawerMenuItem'
 import RelayUrls from './RelayUrl'
 import { useRelaySetsSettingComponent } from './provider'
 
 export default function RelaySet({ relaySet }: { relaySet: TRelaySet }) {
   const { t } = useTranslation()
-  const { expandedRelaySetId, selectedRelaySetIds } = useRelaySetsSettingComponent()
-  const isSelected = useMemo(
-    () => selectedRelaySetIds.includes(relaySet.id),
-    [selectedRelaySetIds, relaySet.id]
-  )
+  const { expandedRelaySetId } = useRelaySetsSettingComponent()
 
   return (
-    <div
-      className={`w-full border rounded-lg p-4 ${isSelected ? 'border-highlight bg-highlight/5' : ''}`}
-    >
+    <div className="w-full border rounded-lg pl-4 pr-2 py-2.5">
       <div className="flex justify-between items-center">
-        <div className="flex space-x-2 items-center">
-          <RelaySetActiveToggle relaySetId={relaySet.id} />
+        <div className="flex gap-2 items-center">
+          <div className="flex justify-center items-center w-6 h-6 shrink-0">
+            <FolderClosed className="size-4" />
+          </div>
           <RelaySetName relaySet={relaySet} />
         </div>
         <div className="flex gap-1">
@@ -43,37 +50,10 @@ export default function RelaySet({ relaySet }: { relaySet: TRelaySet }) {
   )
 }
 
-function RelaySetActiveToggle({ relaySetId }: { relaySetId: string }) {
-  const { selectedRelaySetIds, toggleSelectedRelaySetId } = useRelaySetsSettingComponent()
-  const isSelected = useMemo(
-    () => selectedRelaySetIds.includes(relaySetId),
-    [selectedRelaySetIds, relaySetId]
-  )
-
-  const handleClick = () => {
-    toggleSelectedRelaySetId(relaySetId)
-  }
-
-  return isSelected ? (
-    <CircleCheck
-      size={18}
-      className="text-highlight shrink-0 cursor-pointer"
-      onClick={handleClick}
-    />
-  ) : (
-    <Circle
-      size={18}
-      className="text-muted-foreground shrink-0 cursor-pointer hover:text-foreground"
-      onClick={handleClick}
-    />
-  )
-}
-
 function RelaySetName({ relaySet }: { relaySet: TRelaySet }) {
   const [newSetName, setNewSetName] = useState(relaySet.name)
-  const { updateRelaySet } = useRelaySets()
-  const { renamingRelaySetId, setRenamingRelaySetId, toggleSelectedRelaySetId } =
-    useRelaySetsSettingComponent()
+  const { updateRelaySet } = useFavoriteRelays()
+  const { renamingRelaySetId, setRenamingRelaySetId } = useRelaySetsSettingComponent()
 
   const saveNewRelaySetName = () => {
     if (relaySet.name === newSetName) {
@@ -108,12 +88,7 @@ function RelaySetName({ relaySet }: { relaySet: TRelaySet }) {
       </Button>
     </div>
   ) : (
-    <div
-      className="h-8 font-semibold flex items-center cursor-pointer select-none"
-      onClick={() => toggleSelectedRelaySetId(relaySet.id)}
-    >
-      {relaySet.name}
-    </div>
+    <div className="h-8 font-semibold flex items-center select-none">{relaySet.name}</div>
   )
 }
 
@@ -141,33 +116,70 @@ function RelayUrlsExpandToggle({
 
 function RelaySetOptions({ relaySet }: { relaySet: TRelaySet }) {
   const { t } = useTranslation()
-  const { deleteRelaySet } = useRelaySets()
+  const { isSmallScreen } = useScreenSize()
+  const { deleteRelaySet } = useFavoriteRelays()
   const { setRenamingRelaySetId } = useRelaySetsSettingComponent()
+
+  const trigger = (
+    <Button variant="ghost" size="icon">
+      <EllipsisVertical />
+    </Button>
+  )
+
+  const rename = () => {
+    setRenamingRelaySetId(relaySet.id)
+  }
+
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(
+      `https://jumble.social/?${relaySet.relayUrls.map((url) => 'r=' + url).join('&')}`
+    )
+  }
+
+  if (isSmallScreen) {
+    return (
+      <Drawer>
+        <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+        <DrawerContent>
+          <div className="py-2">
+            <DrawerMenuItem onClick={rename}>
+              <Edit />
+              {t('Rename')}
+            </DrawerMenuItem>
+            <DrawerMenuItem onClick={copyShareLink}>
+              <Link />
+              {t('Copy share link')}
+            </DrawerMenuItem>
+            <DrawerMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => deleteRelaySet(relaySet.id)}
+            >
+              <Trash2 />
+              {t('Delete')}
+            </DrawerMenuItem>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <EllipsisVertical />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => setRenamingRelaySetId(relaySet.id)}>
+        <DropdownMenuItem onClick={rename}>
+          <Edit />
           {t('Rename')}
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            navigator.clipboard.writeText(
-              `https://jumble.social/?${relaySet.relayUrls.map((url) => 'r=' + url).join('&')}`
-            )
-          }}
-        >
+        <DropdownMenuItem onClick={copyShareLink}>
+          <Link />
           {t('Copy share link')}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
           onClick={() => deleteRelaySet(relaySet.id)}
         >
+          <Trash2 />
           {t('Delete')}
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -4,12 +4,12 @@ import './index.css'
 import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import { PageManager } from './PageManager'
+import { FavoriteRelaysProvider } from './providers/FavoriteRelaysProvider'
 import { FeedProvider } from './providers/FeedProvider'
 import { FollowListProvider } from './providers/FollowListProvider'
 import { MuteListProvider } from './providers/MuteListProvider'
 import { NostrProvider } from './providers/NostrProvider'
 import { NoteStatsProvider } from './providers/NoteStatsProvider'
-import { RelaySetsProvider } from './providers/RelaySetsProvider'
 import { ScreenSizeProvider } from './providers/ScreenSizeProvider'
 import { ZapProvider } from './providers/ZapProvider'
 
@@ -19,7 +19,7 @@ export default function App(): JSX.Element {
       <ScreenSizeProvider>
         <NostrProvider>
           <ZapProvider>
-            <RelaySetsProvider>
+            <FavoriteRelaysProvider>
               <FollowListProvider>
                 <MuteListProvider>
                   <FeedProvider>
@@ -30,7 +30,7 @@ export default function App(): JSX.Element {
                   </FeedProvider>
                 </MuteListProvider>
               </FollowListProvider>
-            </RelaySetsProvider>
+            </FavoriteRelaysProvider>
           </ZapProvider>
         </NostrProvider>
       </ScreenSizeProvider>

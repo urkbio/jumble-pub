@@ -1,3 +1,4 @@
+import { ExtendedKind } from '@/constants'
 import { tagNameEquals } from '@/lib/tag'
 import { Event, kinds } from 'nostr-tools'
 
@@ -13,7 +14,9 @@ const StoreNames = {
   FOLLOW_LIST_EVENTS: 'followListEvents',
   MUTE_LIST_EVENTS: 'muteListEvents',
   MUTE_DECRYPTED_TAGS: 'muteDecryptedTags',
-  RELAY_INFO_EVENTS: 'relayInfoEvents'
+  RELAY_INFO_EVENTS: 'relayInfoEvents',
+  FAVORITE_RELAYS: 'favoriteRelays',
+  RELAY_SETS: 'relaySets'
 }
 
 class IndexedDbService {
@@ -32,7 +35,7 @@ class IndexedDbService {
   init(): Promise<void> {
     if (!this.initPromise) {
       this.initPromise = new Promise((resolve, reject) => {
-        const request = window.indexedDB.open('jumble', 2)
+        const request = window.indexedDB.open('jumble', 3)
 
         request.onerror = (event) => {
           reject(event)
@@ -63,6 +66,12 @@ class IndexedDbService {
           if (!db.objectStoreNames.contains(StoreNames.RELAY_INFO_EVENTS)) {
             db.createObjectStore(StoreNames.RELAY_INFO_EVENTS, { keyPath: 'key' })
           }
+          if (!db.objectStoreNames.contains(StoreNames.FAVORITE_RELAYS)) {
+            db.createObjectStore(StoreNames.FAVORITE_RELAYS, { keyPath: 'key' })
+          }
+          if (!db.objectStoreNames.contains(StoreNames.RELAY_SETS)) {
+            db.createObjectStore(StoreNames.RELAY_SETS, { keyPath: 'key' })
+          }
           this.db = db
         }
       })
@@ -84,14 +93,15 @@ class IndexedDbService {
       const transaction = this.db.transaction(storeName, 'readwrite')
       const store = transaction.objectStore(storeName)
 
-      const getRequest = store.get(event.pubkey)
+      const key = this.getReplaceableEventKey(event)
+      const getRequest = store.get(key)
       getRequest.onsuccess = () => {
         const oldValue = getRequest.result as TValue<Event> | undefined
         if (oldValue && oldValue.value.created_at >= event.created_at) {
           transaction.commit()
           return resolve(oldValue.value)
         }
-        const putRequest = store.put(this.formatValue(event.pubkey, event))
+        const putRequest = store.put(this.formatValue(key, event))
         putRequest.onsuccess = () => {
           transaction.commit()
           resolve(event)
@@ -110,7 +120,7 @@ class IndexedDbService {
     })
   }
 
-  async getReplaceableEvent(pubkey: string, kind: number): Promise<Event | undefined> {
+  async getReplaceableEvent(pubkey: string, kind: number, d?: string): Promise<Event | undefined> {
     const storeName = this.getStoreNameByKind(kind)
     if (!storeName) {
       return Promise.reject('store name not found')
@@ -122,7 +132,8 @@ class IndexedDbService {
       }
       const transaction = this.db.transaction(storeName, 'readonly')
       const store = transaction.objectStore(storeName)
-      const request = store.get(pubkey)
+      const key = d === undefined ? pubkey : `${pubkey}:${d}`
+      const request = store.get(key)
 
       request.onsuccess = () => {
         transaction.commit()
@@ -298,6 +309,18 @@ class IndexedDbService {
     })
   }
 
+  private getReplaceableEventKey(event: Event): string {
+    if (
+      [kinds.Metadata, kinds.Contacts].includes(event.kind) ||
+      (event.kind >= 10000 && event.kind < 20000)
+    ) {
+      return event.pubkey
+    }
+
+    const [, d] = event.tags.find(tagNameEquals('d')) ?? []
+    return `${event.pubkey}:${d ?? ''}`
+  }
+
   private getStoreNameByKind(kind: number): string | undefined {
     switch (kind) {
       case kinds.Metadata:
@@ -308,6 +331,10 @@ class IndexedDbService {
         return StoreNames.FOLLOW_LIST_EVENTS
       case kinds.Mutelist:
         return StoreNames.MUTE_LIST_EVENTS
+      case kinds.Relaysets:
+        return StoreNames.RELAY_SETS
+      case ExtendedKind.FAVORITE_RELAYS:
+        return StoreNames.FAVORITE_RELAYS
       default:
         return undefined
     }
