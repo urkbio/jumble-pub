@@ -3,10 +3,10 @@ import RelayInfo from '@/components/RelayInfo'
 import SaveRelayDropdownMenu from '@/components/SaveRelayDropdownMenu'
 import SearchInput from '@/components/SearchInput'
 import { Button } from '@/components/ui/button'
-import { useFetchRelayInfo } from '@/hooks'
+import { useFetchRelayInfo, useToast } from '@/hooks'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { normalizeUrl, simplifyUrl } from '@/lib/url'
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy, Link } from 'lucide-react'
 import { forwardRef, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
@@ -63,17 +63,33 @@ RelayPage.displayName = 'RelayPage'
 export default RelayPage
 
 function RelayPageControls({ url }: { url: string }) {
-  const [copied, setCopied] = useState(false)
-  const handleCopy = () => {
+  const { toast } = useToast()
+  const [copiedUrl, setCopiedUrl] = useState(false)
+  const [copiedShareableUrl, setCopiedShareableUrl] = useState(false)
+
+  const handleCopyUrl = () => {
     navigator.clipboard.writeText(url)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setCopiedUrl(true)
+    setTimeout(() => setCopiedUrl(false), 2000)
+  }
+
+  const handleCopyShareableUrl = () => {
+    navigator.clipboard.writeText(`https://jumble.social/?r=${url}`)
+    setCopiedShareableUrl(true)
+    toast({
+      title: 'Shareable URL copied to clipboard',
+      description: 'You can share this URL with others.'
+    })
+    setTimeout(() => setCopiedShareableUrl(false), 2000)
   }
 
   return (
     <>
-      <Button variant="ghost" size="titlebar-icon" onClick={handleCopy}>
-        {copied ? <Check /> : <Copy />}
+      <Button variant="ghost" size="titlebar-icon" onClick={handleCopyShareableUrl}>
+        {copiedShareableUrl ? <Check /> : <Link />}
+      </Button>
+      <Button variant="ghost" size="titlebar-icon" onClick={handleCopyUrl}>
+        {copiedUrl ? <Check /> : <Copy />}
       </Button>
       <SaveRelayDropdownMenu urls={[url]} atTitlebar />
     </>
