@@ -454,7 +454,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         })
       }
     }
-    if (draftEvent.kind === kinds.RelayList) {
+    if ([kinds.RelayList, ExtendedKind.FAVORITE_RELAYS].includes(draftEvent.kind)) {
       additionalRelayUrls.push(...BIG_RELAY_URLS)
     }
 
