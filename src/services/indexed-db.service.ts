@@ -360,10 +360,7 @@ class IndexedDbService {
       {
         name: StoreNames.FOLLOW_LIST_EVENTS,
         expirationTimestamp: Date.now() - 1000 * 60 * 60 * 24
-      }, // 1 day
-      { name: StoreNames.RELAY_INFO_EVENTS, expirationTimestamp: -1 },
-      { name: StoreNames.MUTE_LIST_EVENTS, expirationTimestamp: -1 },
-      { name: StoreNames.MUTE_DECRYPTED_TAGS, expirationTimestamp: -1 }
+      } // 1 day
     ]
     const transaction = this.db!.transaction(
       stores.map((store) => store.name),

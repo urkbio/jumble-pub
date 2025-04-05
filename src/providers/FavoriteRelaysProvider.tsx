@@ -81,48 +81,36 @@ export function FavoriteRelaysProvider({ children }: { children: React.ReactNode
       setFavoriteRelays(relays)
 
       if (!pubkey) return
-      const relaySetEvents = await Promise.all(
+      const storedRelaySetEvents = await Promise.all(
         relaySetIds.map((id) => indexedDb.getReplaceableEvent(pubkey, kinds.Relaysets, id))
       )
-      const nonExistingRelaySetIds = relaySetIds.filter((_, index) => {
-        return !relaySetEvents[index]
+      setRelaySetEvents(storedRelaySetEvents.filter(Boolean) as Event[])
+
+      const newRelaySetEvents = await client.fetchEvents(
+        (relayList?.write ?? []).concat(BIG_RELAY_URLS).slice(0, 5),
+        {
+          kinds: [kinds.Relaysets],
+          authors: [pubkey],
+          '#d': relaySetIds
+        }
+      )
+      const relaySetEventMap = new Map<string, Event>()
+      newRelaySetEvents.forEach((event) => {
+        const d = getReplaceableEventIdentifier(event)
+        if (!d) return
+
+        const old = relaySetEventMap.get(d)
+        if (!old || old.created_at < event.created_at) {
+          relaySetEventMap.set(d, event)
+        }
       })
-      if (nonExistingRelaySetIds.length) {
-        const newRelaySetEvents = await client.fetchEvents(
-          (relayList?.write ?? []).concat(BIG_RELAY_URLS).slice(0, 5),
-          {
-            kinds: [kinds.Relaysets],
-            authors: [pubkey],
-            '#d': nonExistingRelaySetIds
-          }
-        )
-        const relaySetEventMap = new Map<string, Event>()
-        newRelaySetEvents.forEach((event) => {
-          const d = getReplaceableEventIdentifier(event)
-          if (!d) return
-
-          const old = relaySetEventMap.get(d)
-          if (!old || old.created_at < event.created_at) {
-            relaySetEventMap.set(d, event)
-          }
+      const uniqueNewRelaySetEvents = Array.from(relaySetEventMap.values())
+      setRelaySetEvents(uniqueNewRelaySetEvents)
+      await Promise.all(
+        uniqueNewRelaySetEvents.map((event) => {
+          return indexedDb.putReplaceableEvent(event)
         })
-        await Promise.all(
-          Array.from(relaySetEventMap.values()).map((event) => {
-            return indexedDb.putReplaceableEvent(event)
-          })
-        )
-        nonExistingRelaySetIds.forEach((id) => {
-          const event = relaySetEventMap.get(id)
-          if (event) {
-            const index = relaySetIds.indexOf(id)
-            if (index !== -1) {
-              relaySetEvents[index] = event
-            }
-          }
-        })
-      }
-
-      setRelaySetEvents(relaySetEvents.filter(Boolean) as Event[])
+      )
     }
     init()
   }, [favoriteRelaysEvent])
