@@ -835,18 +835,26 @@ class ClientService extends EventTarget {
 
   private async _fetchFollowingFavoriteRelays(pubkey: string) {
     const followings = await this.fetchFollowings(pubkey)
-    const favoriteRelaysEvents = await this.fetchEvents(BIG_RELAY_URLS, {
+    const events = await this.fetchEvents(BIG_RELAY_URLS, {
       authors: followings,
-      kinds: [ExtendedKind.FAVORITE_RELAYS],
-      limit: followings.length
+      kinds: [ExtendedKind.FAVORITE_RELAYS, kinds.Relaysets],
+      limit: 1000
     })
-    const alreadyExistsPubkeys = new Set<string>()
+    const alreadyExistsFavoriteRelaysPubkeySet = new Set<string>()
+    const alreadyExistsRelaySetsPubkeySet = new Set<string>()
     const uniqueEvents: NEvent[] = []
-    favoriteRelaysEvents
+    events
       .sort((a, b) => b.created_at - a.created_at)
       .forEach((event) => {
-        if (alreadyExistsPubkeys.has(event.pubkey)) return
-        alreadyExistsPubkeys.add(event.pubkey)
+        if (event.kind === ExtendedKind.FAVORITE_RELAYS) {
+          if (alreadyExistsFavoriteRelaysPubkeySet.has(event.pubkey)) return
+          alreadyExistsFavoriteRelaysPubkeySet.add(event.pubkey)
+        } else if (event.kind === kinds.Relaysets) {
+          if (alreadyExistsRelaySetsPubkeySet.has(event.pubkey)) return
+          alreadyExistsRelaySetsPubkeySet.add(event.pubkey)
+        } else {
+          return
+        }
         uniqueEvents.push(event)
       })
 
