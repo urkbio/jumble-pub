@@ -61,7 +61,8 @@ export default defineConfig({
         display: 'standalone',
         background_color: '#FFFFFF',
         theme_color: '#FFFFFF',
-        description: 'A beautiful nostr client focused on browsing relay feeds'
+        description:
+          'A user-friendly Nostr client focused on relay feed browsing and relay discovery'
       }
     })
   ]
