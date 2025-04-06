@@ -14,6 +14,9 @@ import Preview from './Preview'
 import SendOnlyToSwitch from './SendOnlyToSwitch'
 import Uploader from './Uploader'
 import { preprocessContent } from './utils'
+import Note from '@/components/Note'
+import { ScrollArea } from "@/components/ui/scroll-area"
+
 
 export default function NormalPostContent({
   defaultContent = '',
@@ -114,6 +117,13 @@ export default function NormalPostContent({
 
   return (
     <div className="space-y-4">
+    {parentEvent && (
+    <ScrollArea className="max-h-48 rounded-lg border bg-muted/40 overflow-y-auto">
+    <div className="p-2 sm:p-3 pointer-events-none">
+      <Note size="small" event={parentEvent} hideStats hideParentNotePreview />
+    </div>
+  </ScrollArea>
+  )}
       <TextareaWithMentions
         className="h-32"
         setTextValue={setContent}
