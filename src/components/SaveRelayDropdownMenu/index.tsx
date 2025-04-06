@@ -175,12 +175,12 @@ function RelaySetItem({ set, urls }: { set: TRelaySet; urls: string[] }) {
 function SaveToNewSet({ urls }: { urls: string[] }) {
   const { t } = useTranslation()
   const { isSmallScreen } = useScreenSize()
-  const { addRelaySet } = useFavoriteRelays()
+  const { createRelaySet } = useFavoriteRelays()
 
   const handleSave = () => {
     const newSetName = prompt(t('Enter a name for the new relay set'))
     if (newSetName) {
-      addRelaySet(newSetName, urls)
+      createRelaySet(newSetName, urls)
     }
   }
 

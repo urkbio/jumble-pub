@@ -6,12 +6,12 @@ import { useTranslation } from 'react-i18next'
 
 export default function AddNewRelaySet() {
   const { t } = useTranslation()
-  const { addRelaySet } = useFavoriteRelays()
+  const { createRelaySet } = useFavoriteRelays()
   const [newRelaySetName, setNewRelaySetName] = useState('')
 
   const saveRelaySet = () => {
     if (!newRelaySetName) return
-    addRelaySet(newRelaySetName)
+    createRelaySet(newRelaySetName)
     setNewRelaySetName('')
   }
 

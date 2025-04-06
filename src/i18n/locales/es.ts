@@ -116,6 +116,12 @@ export default {
     'R & W': 'L y E',
     Read: 'Leer',
     Write: 'Escribir',
+    'Pull relay sets': 'Recibir conjuntos de relés',
+    'Select the relay sets you want to pull':
+      'Selecciona los conjuntos de relés que deseas recibir',
+    'No relay sets found': 'No se encontraron conjuntos de relés',
+    'Pull n relay sets': 'Recibir {{n}} conjuntos de relés',
+    Pull: 'Recibir',
     'Select all': 'Seleccionar todo',
     'Relay Sets': 'Conjuntos de relés',
     'Read & Write Relays': 'Relés de lectura y escritura',
