@@ -317,7 +317,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
         }}
       >
         <NotificationProvider>
-          <div className="flex h-screen overflow-hidden max-w-[1920px] mx-auto">
+          <div className="flex h-screen overflow-hidden">
             <Sidebar />
             <Separator orientation="vertical" />
             <div className="grid grid-cols-2 w-full">
