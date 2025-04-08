@@ -1,8 +1,8 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./readme-resources/logo-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="./readme-resources/logo-light.svg">
-    <img src="./readme-resources/logo-light.svg" alt="Jumble Logo" width="400" />
+    <source media="(prefers-color-scheme: dark)" srcset="./resources/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./resources/logo-light.svg">
+    <img src="./resources/logo-light.svg" alt="Jumble Logo" width="400" />
   </picture>
   <p>logo designed by <a href="http://wolfertdan.com/">Daniel David</a></p>
 </div>
@@ -20,11 +20,11 @@ A user-friendly Nostr client focused on relay feed browsing and relay discovery
 
 ## Screenshots
 
-<img src="./readme-resources/01.png" alt="Jumble Screenshot 01" width="650" />
+<img src="./screenshots/01.png" alt="Jumble Screenshot 01" width="650" />
 <div> 
-  <img src="./readme-resources/02.png" alt="Jumble Screenshot 02" width="200" />
-  <img src="./readme-resources/03.png" alt="Jumble Screenshot 03" width="200" />
-  <img src="./readme-resources/04.png" alt="Jumble Screenshot 04" width="200" />
+  <img src="./screenshots/02.png" alt="Jumble Screenshot 02" width="200" />
+  <img src="./screenshots/03.png" alt="Jumble Screenshot 03" width="200" />
+  <img src="./screenshots/04.png" alt="Jumble Screenshot 04" width="200" />
 </div>
 
 ## Run Locally
