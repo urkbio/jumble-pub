@@ -7,7 +7,7 @@ const PostSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
 
   return (
-    <SecondaryPageLayout ref={ref} index={index} title={t('Wallet')}>
+    <SecondaryPageLayout ref={ref} index={index} title={t('Post settings')}>
       <div className="px-4 pt-2 space-y-4">
         <MediaUploadServiceSetting />
       </div>

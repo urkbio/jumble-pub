@@ -91,7 +91,7 @@ const SettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
       <SettingItem className="clickable" onClick={() => push(toPostSettings())}>
         <div className="flex items-center gap-4">
           <PencilLine />
-          <div>{t('Posts')}</div>
+          <div>{t('Post settings')}</div>
         </div>
         <ChevronRight />
       </SettingItem>
