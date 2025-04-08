@@ -86,10 +86,16 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
     }
   ])
   const [secondaryStack, setSecondaryStack] = useState<TStackItem[]>([])
+  const [isShared, setIsShared] = useState(false)
   const { isSmallScreen } = useScreenSize()
 
   useEffect(() => {
     if (window.location.pathname !== '/') {
+      if (
+        ['/users', '/notes', '/relays'].some((path) => window.location.pathname.startsWith(path))
+      ) {
+        setIsShared(true)
+      }
       const url = window.location.pathname + window.location.search + window.location.hash
       setSecondaryStack((prevStack) => {
         if (isCurrentPage(prevStack, url)) return prevStack
@@ -206,6 +212,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
     if (secondaryStack.length === 1) {
       // back to home page
       window.history.replaceState(null, '', '/')
+      setIsShared(false)
       setSecondaryStack([])
     } else {
       window.history.go(-1)
@@ -263,6 +270,38 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
     )
   }
 
+  if (isShared && secondaryStack.length > 0) {
+    return (
+      <PrimaryPageContext.Provider
+        value={{
+          navigate: navigatePrimaryPage,
+          current: currentPrimaryPage
+        }}
+      >
+        <SecondaryPageContext.Provider
+          value={{
+            push: pushSecondaryPage,
+            pop: popSecondaryPage,
+            currentIndex: secondaryStack[secondaryStack.length - 1].index
+          }}
+        >
+          <NotificationProvider>
+            <div className="h-screen overflow-hidden max-w-4xl mx-auto border-x">
+              {secondaryStack.map((item, index) => (
+                <div
+                  key={item.index}
+                  style={{ display: index === secondaryStack.length - 1 ? 'block' : 'none' }}
+                >
+                  {item.component}
+                </div>
+              ))}
+            </div>
+          </NotificationProvider>
+        </SecondaryPageContext.Provider>
+      </PrimaryPageContext.Provider>
+    )
+  }
+
   return (
     <PrimaryPageContext.Provider
       value={{
@@ -278,7 +317,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
         }}
       >
         <NotificationProvider>
-          <div className="flex h-screen overflow-hidden">
+          <div className="flex h-screen overflow-hidden max-w-[1920px] mx-auto">
             <Sidebar />
             <Separator orientation="vertical" />
             <div className="grid grid-cols-2 w-full">
