@@ -35,7 +35,7 @@ export const useFeed = () => {
 export function FeedProvider({ children }: { children: React.ReactNode }) {
   const isFirstRenderRef = useRef(true)
   const { pubkey, isInitialized } = useNostr()
-  const { relaySets, favoriteRelays } = useFavoriteRelays()
+  const { relaySets } = useFavoriteRelays()
   const [relayUrls, setRelayUrls] = useState<string[]>([])
   const [temporaryRelayUrls, setTemporaryRelayUrls] = useState<string[]>([])
   const [filter, setFilter] = useState<Filter>({})
