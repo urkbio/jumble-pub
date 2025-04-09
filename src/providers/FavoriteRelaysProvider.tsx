@@ -212,7 +212,14 @@ export function FavoriteRelaysProvider({ children }: { children: React.ReactNode
         favoriteRelays,
         addFavoriteRelays,
         deleteFavoriteRelays,
-        relaySets,
+        relaySets: [
+          {
+            id: 'nostr.moe',
+            name: 'Nostr.moe',
+            relayUrls: ['wss://relay.nostr.moe/', 'wss://relay.cxplay.org/']
+          },
+          ...relaySets
+        ],
         createRelaySet,
         addRelaySets,
         deleteRelaySet,
