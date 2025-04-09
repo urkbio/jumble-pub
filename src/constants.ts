@@ -30,7 +30,10 @@ export const BIG_RELAY_URLS = [
   'wss://relay.nostr.moe/'
 ]
 
-export const SEARCHABLE_RELAY_URLS = ['wss://relay.nostr.moe/']
+export const SEARCHABLE_RELAY_URLS = [
+  'wss://relay.nostr.moe/',
+  'wss://relay.cxplay.org/'
+]
 
 export const GROUP_METADATA_EVENT_KIND = 39000
 
