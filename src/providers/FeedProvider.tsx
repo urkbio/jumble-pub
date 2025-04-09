@@ -41,8 +41,8 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
   const [filter, setFilter] = useState<Filter>({})
   const [isReady, setIsReady] = useState(false)
   const [feedInfo, setFeedInfo] = useState<TFeedInfo>({
-    feedType: 'relay',
-    id: DEFAULT_FAVORITE_RELAYS[0]
+    feedType: 'relays',
+    id: 'nostr.moe'
   })
   const feedInfoRef = useRef<TFeedInfo>(feedInfo)
 
@@ -71,8 +71,8 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       }
 
       let feedInfo: TFeedInfo = {
-        feedType: 'relay',
-        id: favoriteRelays[0] ?? DEFAULT_FAVORITE_RELAYS[0]
+        feedType: 'relays',
+        id: 'nostr.moe'
       }
       if (pubkey) {
         const storedFeedInfo = storage.getFeedInfo(pubkey)
