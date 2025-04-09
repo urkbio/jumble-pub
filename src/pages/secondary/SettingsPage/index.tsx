@@ -3,7 +3,7 @@ import Donation from '@/components/Donation'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { LocalizedLanguageNames, TLanguage } from '@/i18n'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { toRelaySettings, toWallet } from '@/lib/link'
+import { toPostSettings, toRelaySettings, toWallet } from '@/lib/link'
 import { cn } from '@/lib/utils'
 import { useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
@@ -16,6 +16,7 @@ import {
   Info,
   KeyRound,
   Languages,
+  PencilLine,
   Server,
   SunMoon,
   Wallet
@@ -73,22 +74,30 @@ const SettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
           </SelectContent>
         </Select>
       </SettingItem>
-      <SettingItem onClick={() => push(toRelaySettings())}>
+      <SettingItem className="clickable" onClick={() => push(toRelaySettings())}>
         <div className="flex items-center gap-4">
           <Server />
           <div>{t('Relays')}</div>
         </div>
         <ChevronRight />
       </SettingItem>
-      <SettingItem onClick={() => push(toWallet())}>
+      <SettingItem className="clickable" onClick={() => push(toWallet())}>
         <div className="flex items-center gap-4">
           <Wallet />
           <div>{t('Wallet')}</div>
         </div>
         <ChevronRight />
       </SettingItem>
+      <SettingItem className="clickable" onClick={() => push(toPostSettings())}>
+        <div className="flex items-center gap-4">
+          <PencilLine />
+          <div>{t('Post settings')}</div>
+        </div>
+        <ChevronRight />
+      </SettingItem>
       {!!nsec && (
         <SettingItem
+          className="clickable"
           onClick={() => {
             navigator.clipboard.writeText(nsec)
             setCopiedNsec(true)
@@ -104,6 +113,7 @@ const SettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
       )}
       {!!ncryptsec && (
         <SettingItem
+          className="clickable"
           onClick={() => {
             navigator.clipboard.writeText(ncryptsec)
             setCopiedNcryptsec(true)
@@ -118,7 +128,7 @@ const SettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
         </SettingItem>
       )}
       <AboutInfoDialog>
-        <SettingItem>
+        <SettingItem className="clickable">
           <div className="flex items-center gap-4">
             <Info />
             <div>{t('About')}</div>
@@ -145,7 +155,7 @@ const SettingItem = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(
     return (
       <div
         className={cn(
-          'flex clickable justify-between items-center px-4 py-2 h-[52px] rounded-lg [&_svg]:size-4 [&_svg]:shrink-0',
+          'flex justify-between select-none items-center px-4 py-2 h-[52px] rounded-lg [&_svg]:size-4 [&_svg]:shrink-0',
           className
         )}
         {...props}

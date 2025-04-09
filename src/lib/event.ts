@@ -1,6 +1,6 @@
-import { BIG_RELAY_URLS, COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
+import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import client from '@/services/client.service'
-import { TImageInfo, TRelayList } from '@/types'
+import { TImageInfo, TRelayList, TRelaySet } from '@/types'
 import { LRUCache } from 'lru-cache'
 import { Event, kinds, nip19 } from 'nostr-tools'
 import { getAmountFromInvoice, getLightningAddressFromProfile } from './lightning'
@@ -47,11 +47,11 @@ export function isReplyNoteEvent(event: Event) {
 }
 
 export function isCommentEvent(event: Event) {
-  return event.kind === COMMENT_EVENT_KIND
+  return event.kind === ExtendedKind.COMMENT
 }
 
 export function isPictureEvent(event: Event) {
-  return event.kind === PICTURE_EVENT_KIND
+  return event.kind === ExtendedKind.PICTURE
 }
 
 export function isProtectedEvent(event: Event) {
@@ -59,7 +59,7 @@ export function isProtectedEvent(event: Event) {
 }
 
 export function isSupportedKind(kind: number) {
-  return [kinds.ShortTextNote, PICTURE_EVENT_KIND].includes(kind)
+  return [kinds.ShortTextNote, ExtendedKind.PICTURE].includes(kind)
 }
 
 export function getParentEventTag(event?: Event) {
@@ -193,6 +193,22 @@ export function getProfileFromProfileEvent(event: Event) {
       username: formatPubkey(event.pubkey)
     }
   }
+}
+
+export function getRelaySetFromRelaySetEvent(event: Event): TRelaySet {
+  const id = getReplaceableEventIdentifier(event)
+  const relayUrls = event.tags
+    .filter(tagNameEquals('relay'))
+    .map((tag) => tag[1])
+    .filter((url) => url && isWebsocketUrl(url))
+    .map((url) => normalizeUrl(url))
+
+  let name = event.tags.find(tagNameEquals('title'))?.[1]
+  if (!name) {
+    name = id
+  }
+
+  return { id, name, relayUrls }
 }
 
 export async function extractMentions(content: string, parentEvent?: Event) {
@@ -484,4 +500,8 @@ export function extractEmbeddedEventIds(event: Event) {
 
 export function getLatestEvent(events: Event[]) {
   return events.sort((a, b) => b.created_at - a.created_at)[0]
+}
+
+export function getReplaceableEventIdentifier(event: Event) {
+  return event.tags.find(tagNameEquals('d'))?.[1] ?? ''
 }

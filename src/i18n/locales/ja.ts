@@ -75,7 +75,6 @@ export default {
     Search: '検索',
     'The relays you are connected to do not support search':
       '接続しているリレイは検索をサポートしていません',
-    'supports search': '検索対応',
     'Show more...': 'さらに表示...',
     'All users': '全ユーザー',
     'Display replies': '返信を表示',
@@ -117,10 +116,7 @@ export default {
     'R & W': '読＆書',
     Read: '読む',
     Write: '書く',
-    'Push to relays': 'リレイへプッシュ',
-    'Push Successful': 'プッシュ成功',
-    'Successfully pushed relay sets to relays': 'リレイセットをリレイへ正常にプッシュしました',
-    'Pull from relays': 'リレイからプル',
+    'Pull relay sets': 'リレイセットをプル',
     'Select the relay sets you want to pull': 'プルするリレイセットを選択',
     'No relay sets found': 'リレイセットが見つかりません',
     'Pull n relay sets': '{{n}} 個のリレイセットをプル',
@@ -211,6 +207,15 @@ export default {
     'Seen on': '見た',
     'Temporarily display this reply': 'この返信を一時的に表示',
     'Not found the note': 'ノートが見つかりません',
-    'no more replies': 'これ以上の返信はありません'
+    'no more replies': 'これ以上の返信はありません',
+    'Relay sets': 'リレイセット',
+    'Favorite Relays': 'お気に入りのリレイ',
+    "Following's Favorites": 'フォロー中のお気に入り',
+    'no more relays': 'これ以上のリレイはありません',
+    'Favorited by': 'お気に入り',
+    'Post settings': '投稿設定',
+    'Media upload service': 'メディアアップロードサービス',
+    'Choose a relay': 'リレイを選択',
+    'no relays found': 'リレイが見つかりません'
   }
 }

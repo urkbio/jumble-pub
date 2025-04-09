@@ -75,7 +75,6 @@ export default {
     Search: 'Recherche',
     'The relays you are connected to do not support search':
       'Les relais auxquels vous êtes connecté ne prennent pas en charge la recherche',
-    'supports search': 'prend en charge la recherche',
     'Show more...': 'Afficher plus...',
     'All users': 'Tous les utilisateurs',
     'Display replies': 'Afficher les réponses',
@@ -117,10 +116,7 @@ export default {
     'R & W': 'R & W',
     Read: 'Lire',
     Write: 'Écrire',
-    'Push to relays': 'Envoyer aux relais',
-    'Push Successful': 'Envoi réussi',
-    'Successfully pushed relay sets to relays': 'Groupes de relais envoyés avec succès aux relais',
-    'Pull from relays': 'Récupérer depuis les relais',
+    'Pull relay sets': 'Récupérer les groupes de relais',
     'Select the relay sets you want to pull': 'Sélectionnez les groupes de relais à récupérer',
     'No relay sets found': 'Aucun groupe de relais trouvé',
     'Pull n relay sets': 'Récupérer {{n}} groupes de relais',
@@ -213,6 +209,15 @@ export default {
     'Seen on': 'Vu sur',
     'Temporarily display this reply': 'Afficher temporairement cette réponse',
     'Not found the note': 'Note introuvable',
-    'no more replies': 'aucune autre réponse'
+    'no more replies': 'aucune autre réponse',
+    'Relay sets': 'Groupes de relais',
+    'Favorite Relays': 'Relais favoris',
+    "Following's Favorites": "Following's Favorites",
+    'no more relays': 'aucun autre relais',
+    'Favorited by': 'Favorisé par',
+    'Post settings': 'Paramètres de publication',
+    'Media upload service': 'Service de téléchargement de médias',
+    'Choose a relay': 'Choisir un relais',
+    'no relays found': 'aucun relais trouvé'
   }
 }

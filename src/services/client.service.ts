@@ -1,8 +1,8 @@
-import { BIG_RELAY_URLS } from '@/constants'
+import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import { getProfileFromProfileEvent, getRelayListFromRelayListEvent } from '@/lib/event'
 import { formatPubkey, userIdToPubkey } from '@/lib/pubkey'
 import { extractPubkeysFromEventTags } from '@/lib/tag'
-import { isLocalNetworkUrl } from '@/lib/url'
+import { isLocalNetworkUrl, isWebsocketUrl, normalizeUrl } from '@/lib/url'
 import { isSafari } from '@/lib/utils'
 import { ISigner, TProfile, TRelayList } from '@/types'
 import { sha256 } from '@noble/hashes/sha2'
@@ -67,6 +67,13 @@ class ClientService extends EventTarget {
     max: 2000,
     fetchMethod: this._fetchFollowListEvent.bind(this)
   })
+  private fetchFollowingFavoriteRelaysCache = new LRUCache<
+    string,
+    Promise<Map<string, Set<string>>>
+  >({
+    max: 10,
+    fetchMethod: this._fetchFollowingFavoriteRelays.bind(this)
+  })
 
   private userIndex = new FlexSearch.Index({
     tokenize: 'forward'
@@ -88,10 +95,6 @@ class ClientService extends EventTarget {
 
   async init() {
     await indexedDb.iterateProfileEvents((profileEvent) => this.addUsernameToIndex(profileEvent))
-  }
-
-  listConnectionStatus() {
-    return this.pool.listConnectionStatus()
   }
 
   setCurrentRelayUrls(urls: string[]) {
@@ -824,6 +827,47 @@ class ClientService extends EventTarget {
   async fetchFollowings(pubkey: string, storeToIndexedDb = false) {
     const followListEvent = await this.fetchFollowListEvent(pubkey, storeToIndexedDb)
     return followListEvent ? extractPubkeysFromEventTags(followListEvent.tags) : []
+  }
+
+  async fetchFollowingFavoriteRelays(pubkey: string) {
+    return this.fetchFollowingFavoriteRelaysCache.fetch(pubkey)
+  }
+
+  private async _fetchFollowingFavoriteRelays(pubkey: string) {
+    const followings = await this.fetchFollowings(pubkey)
+    const events = await this.fetchEvents(BIG_RELAY_URLS, {
+      authors: followings,
+      kinds: [ExtendedKind.FAVORITE_RELAYS, kinds.Relaysets],
+      limit: 1000
+    })
+    const alreadyExistsFavoriteRelaysPubkeySet = new Set<string>()
+    const alreadyExistsRelaySetsPubkeySet = new Set<string>()
+    const uniqueEvents: NEvent[] = []
+    events
+      .sort((a, b) => b.created_at - a.created_at)
+      .forEach((event) => {
+        if (event.kind === ExtendedKind.FAVORITE_RELAYS) {
+          if (alreadyExistsFavoriteRelaysPubkeySet.has(event.pubkey)) return
+          alreadyExistsFavoriteRelaysPubkeySet.add(event.pubkey)
+        } else if (event.kind === kinds.Relaysets) {
+          if (alreadyExistsRelaySetsPubkeySet.has(event.pubkey)) return
+          alreadyExistsRelaySetsPubkeySet.add(event.pubkey)
+        } else {
+          return
+        }
+        uniqueEvents.push(event)
+      })
+
+    const relayMap = new Map<string, Set<string>>()
+    uniqueEvents.forEach((event) => {
+      event.tags.forEach(([tagName, tagValue]) => {
+        if (tagName === 'relay' && tagValue && isWebsocketUrl(tagValue)) {
+          const url = normalizeUrl(tagValue)
+          relayMap.set(url, (relayMap.get(url) || new Set()).add(event.pubkey))
+        }
+      })
+    })
+    return relayMap
   }
 
   updateFollowListCache(event: NEvent) {

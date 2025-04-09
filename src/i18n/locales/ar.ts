@@ -74,7 +74,6 @@ export default {
     'Reply to': 'الرد على',
     Search: 'بحث',
     'The relays you are connected to do not support search': 'الريلايات المتصلة لا تدعم البحث',
-    'supports search': 'يدعم البحث',
     'Show more...': 'عرض المزيد...',
     'All users': 'جميع المستخدمين',
     'Display replies': 'عرض الردود',
@@ -116,10 +115,7 @@ export default {
     'R & W': 'قراءة وكتابة',
     Read: 'قراءة',
     Write: 'كتابة',
-    'Push to relays': 'إرسال إلى الريلايات',
-    'Push Successful': 'تم الإرسال بنجاح',
-    'Successfully pushed relay sets to relays': 'تم إرسال مجموعات الريلاي إلى الريلايات بنجاح',
-    'Pull from relays': 'استلام من الريلايات',
+    'Pull relay sets': 'سحب مجموعات الريلاي',
     'Select the relay sets you want to pull': 'اختر مجموعات الريلاي التي تريد استلامها',
     'No relay sets found': 'لم يتم العثور على مجموعات ريلاي',
     'Pull n relay sets': 'سحب {{n}} مجموعات ريلاي',
@@ -210,6 +206,15 @@ export default {
     'Seen on': 'شوهد على',
     'Temporarily display this reply': 'عرض هذا الرد مؤقتاً',
     'Not found the note': 'لم يتم العثور على الملاحظة',
-    'no more replies': 'لا توجد مزيد من الردود'
+    'no more replies': 'لا توجد مزيد من الردود',
+    'Relay sets': 'مجموعات الريلاي',
+    'Favorite Relays': 'الريلايات المفضلة',
+    "Following's Favorites": 'المفضلات من المتابعين',
+    'no more relays': 'لا توجد مزيد من الريلايات',
+    'Favorited by': 'المفضلة من قبل',
+    'Post settings': 'إعدادات النشر',
+    'Media upload service': 'خدمة تحميل الوسائط',
+    'Choose a relay': 'اختر ريلاي',
+    'no relays found': 'لم يتم العثور على ريلايات'
   }
 }

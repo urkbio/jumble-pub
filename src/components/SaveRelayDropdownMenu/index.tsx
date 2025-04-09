@@ -1,5 +1,12 @@
 import { Button } from '@/components/ui/button'
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerTitle
+} from '@/components/ui/drawer'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -7,12 +14,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
 import { normalizeUrl } from '@/lib/url'
-import { useRelaySets } from '@/providers/RelaySetsProvider'
+import { useFavoriteRelays } from '@/providers/FavoriteRelaysProvider'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { TRelaySet } from '@/types'
 import { Check, FolderPlus, Plus, Star } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import DrawerMenuItem from '../DrawerMenuItem'
 
 export default function SaveRelayDropdownMenu({
   urls,
@@ -22,29 +32,66 @@ export default function SaveRelayDropdownMenu({
   atTitlebar?: boolean
 }) {
   const { t } = useTranslation()
-  const { relaySets } = useRelaySets()
+  const { isSmallScreen } = useScreenSize()
+  const { favoriteRelays, relaySets } = useFavoriteRelays()
   const normalizedUrls = useMemo(() => urls.map((url) => normalizeUrl(url)).filter(Boolean), [urls])
-  const alreadySaved = useMemo(
-    () => relaySets.some((set) => normalizedUrls.every((url) => set.relayUrls.includes(url))),
-    [relaySets, normalizedUrls]
+  const alreadySaved = useMemo(() => {
+    return (
+      normalizedUrls.every((url) => favoriteRelays.includes(url)) ||
+      relaySets.some((set) => normalizedUrls.every((url) => set.relayUrls.includes(url)))
+    )
+  }, [relaySets, normalizedUrls])
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  const trigger = atTitlebar ? (
+    <Button variant="ghost" size="titlebar-icon" onClick={() => setIsDrawerOpen(true)}>
+      <Star className={alreadySaved ? 'fill-primary stroke-primary' : ''} />
+    </Button>
+  ) : (
+    <button
+      className="enabled:hover:text-primary [&_svg]:size-5"
+      onClick={(e) => {
+        e.stopPropagation()
+        setIsDrawerOpen(true)
+      }}
+    >
+      <Star className={alreadySaved ? 'fill-primary stroke-primary' : ''} />
+    </button>
   )
+
+  if (isSmallScreen) {
+    return (
+      <>
+        {trigger}
+        <div onClick={(e) => e.stopPropagation()}>
+          <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <DrawerOverlay onClick={() => setIsDrawerOpen(false)} />
+            <DrawerContent hideOverlay>
+              <DrawerHeader>
+                <DrawerTitle>{t('Save to')} ...</DrawerTitle>
+              </DrawerHeader>
+              <div className="py-2">
+                <RelayItem urls={normalizedUrls} />
+                {relaySets.map((set) => (
+                  <RelaySetItem key={set.id} set={set} urls={normalizedUrls} />
+                ))}
+                <Separator />
+                <SaveToNewSet urls={normalizedUrls} />
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </div>
+      </>
+    )
+  }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {atTitlebar ? (
-          <Button variant="ghost" size="titlebar-icon">
-            <Star className={alreadySaved ? 'fill-primary stroke-primary' : ''} />
-          </Button>
-        ) : (
-          <button className="enabled:hover:text-primary [&_svg]:size-5">
-            <Star className={alreadySaved ? 'fill-primary stroke-primary' : ''} />
-          </button>
-        )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+      <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
         <DropdownMenuLabel>{t('Save to')} ...</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <RelayItem urls={normalizedUrls} />
         {relaySets.map((set) => (
           <RelaySetItem key={set.id} set={set} urls={normalizedUrls} />
         ))}
@@ -55,8 +102,43 @@ export default function SaveRelayDropdownMenu({
   )
 }
 
+function RelayItem({ urls }: { urls: string[] }) {
+  const { t } = useTranslation()
+  const { isSmallScreen } = useScreenSize()
+  const { favoriteRelays, addFavoriteRelays, deleteFavoriteRelays } = useFavoriteRelays()
+  const saved = useMemo(
+    () => urls.every((url) => favoriteRelays.includes(url)),
+    [favoriteRelays, urls]
+  )
+
+  const handleClick = async () => {
+    if (saved) {
+      await deleteFavoriteRelays(urls)
+    } else {
+      await addFavoriteRelays(urls)
+    }
+  }
+
+  if (isSmallScreen) {
+    return (
+      <DrawerMenuItem onClick={handleClick}>
+        {saved ? <Check /> : <Plus />}
+        {t('Favorite')}
+      </DrawerMenuItem>
+    )
+  }
+
+  return (
+    <DropdownMenuItem className="flex gap-2" onClick={handleClick}>
+      {saved ? <Check /> : <Plus />}
+      {t('Favorite')}
+    </DropdownMenuItem>
+  )
+}
+
 function RelaySetItem({ set, urls }: { set: TRelaySet; urls: string[] }) {
-  const { updateRelaySet } = useRelaySets()
+  const { isSmallScreen } = useScreenSize()
+  const { updateRelaySet } = useFavoriteRelays()
   const saved = urls.every((url) => set.relayUrls.includes(url))
 
   const handleClick = () => {
@@ -73,6 +155,15 @@ function RelaySetItem({ set, urls }: { set: TRelaySet; urls: string[] }) {
     }
   }
 
+  if (isSmallScreen) {
+    return (
+      <DrawerMenuItem onClick={handleClick}>
+        {saved ? <Check /> : <Plus />}
+        {set.name}
+      </DrawerMenuItem>
+    )
+  }
+
   return (
     <DropdownMenuItem key={set.id} className="flex gap-2" onClick={handleClick}>
       {saved ? <Check /> : <Plus />}
@@ -83,13 +174,23 @@ function RelaySetItem({ set, urls }: { set: TRelaySet; urls: string[] }) {
 
 function SaveToNewSet({ urls }: { urls: string[] }) {
   const { t } = useTranslation()
-  const { addRelaySet } = useRelaySets()
+  const { isSmallScreen } = useScreenSize()
+  const { createRelaySet } = useFavoriteRelays()
 
   const handleSave = () => {
     const newSetName = prompt(t('Enter a name for the new relay set'))
     if (newSetName) {
-      addRelaySet(newSetName, urls)
+      createRelaySet(newSetName, urls)
     }
+  }
+
+  if (isSmallScreen) {
+    return (
+      <DrawerMenuItem onClick={handleSave}>
+        <FolderPlus />
+        {t('Save to a new relay set')}
+      </DrawerMenuItem>
+    )
   }
 
   return (

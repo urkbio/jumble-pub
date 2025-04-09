@@ -1,4 +1,4 @@
-import { COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
+import { ExtendedKind } from '@/constants'
 import client from '@/services/client.service'
 import { TDraftEvent, TMailboxRelay, TRelaySet } from '@/types'
 import dayjs from 'dayjs'
@@ -150,7 +150,7 @@ export async function createPictureNoteDraftEvent(
   }
 
   return {
-    kind: PICTURE_EVENT_KIND,
+    kind: ExtendedKind.PICTURE,
     content,
     tags,
     created_at: dayjs().unix()
@@ -210,7 +210,7 @@ export async function createCommentDraftEvent(
   }
 
   return {
-    kind: COMMENT_EVENT_KIND,
+    kind: ExtendedKind.COMMENT,
     content,
     tags,
     created_at: dayjs().unix()
@@ -250,6 +250,25 @@ export function createProfileDraftEvent(content: string, tags: string[][] = []):
   return {
     kind: kinds.Metadata,
     content,
+    tags,
+    created_at: dayjs().unix()
+  }
+}
+
+export function createFavoriteRelaysDraftEvent(
+  favoriteRelays: string[],
+  relaySetEvents: Event[]
+): TDraftEvent {
+  const tags: string[][] = []
+  favoriteRelays.forEach((url) => {
+    tags.push(['relay', url])
+  })
+  relaySetEvents.forEach((event) => {
+    tags.push(['a', getEventCoordinate(event)])
+  })
+  return {
+    kind: ExtendedKind.FAVORITE_RELAYS,
+    content: '',
     tags,
     created_at: dayjs().unix()
   }

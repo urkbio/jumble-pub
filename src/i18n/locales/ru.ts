@@ -75,7 +75,6 @@ export default {
     Search: 'Поиск',
     'The relays you are connected to do not support search':
       'Подключённые ретрансляторы не поддерживают поиск',
-    'supports search': 'поддерживает поиск',
     'Show more...': 'Показать больше...',
     'All users': 'Все пользователи',
     'Display replies': 'Показать ответы',
@@ -118,10 +117,7 @@ export default {
     'R & W': 'Чтение & Запись',
     Read: 'Читать',
     Write: 'Писать',
-    'Push to relays': 'Отправить на ретрансляторы',
-    'Push Successful': 'Отправка успешна',
-    'Successfully pushed relay sets to relays': 'Наборы ретрансляторов успешно отправлены',
-    'Pull from relays': 'Получить с ретрансляторов',
+    'Pull relay sets': 'Получить наборы ретрансляторов',
     'Select the relay sets you want to pull': 'Выберите наборы ретрансляторов для получения',
     'No relay sets found': 'Наборы ретрансляторов не найдены',
     'Pull n relay sets': 'Получить {{n}} наборов ретрансляторов',
@@ -214,6 +210,15 @@ export default {
     'Seen on': 'Просмотрено на',
     'Temporarily display this reply': 'Временно отобразить этот ответ',
     'Not found the note': 'Заметка не найдена',
-    'no more replies': 'больше нет ответов'
+    'no more replies': 'больше нет ответов',
+    'Relay sets': 'Наборы ретрансляторов',
+    'Favorite Relays': 'Избранные ретрансляторы',
+    "Following's Favorites": 'Избранные ретрансляторы подписчиков',
+    'no more relays': 'больше нет ретрансляторов',
+    'Favorited by': 'Избранные у',
+    'Post settings': 'Настройки публикации',
+    'Media upload service': 'Служба загрузки медиафайлов',
+    'Choose a relay': 'Выберите ретранслятор',
+    'no relays found': 'ретрансляторы не найдены'
   }
 }

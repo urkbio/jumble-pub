@@ -74,7 +74,6 @@ export default {
     Search: 'Wyszukiwarka',
     'The relays you are connected to do not support search':
       'Podłączone transmitery nie obsługują wyszukiwania',
-    'supports search': 'Obsługa wyszukiwania',
     'Show more...': 'Więcej...',
     'All users': 'Wszyscy użytkownicy',
     'Display replies': 'Wyświetl komentarze',
@@ -116,10 +115,7 @@ export default {
     'R & W': 'O & Z',
     Read: 'Odczyt',
     Write: 'Zapis',
-    'Push to relays': 'Wyślij do transmiterów',
-    'Push Successful': 'Wysłano Pomyślnie',
-    'Successfully pushed relay sets to relays': 'Pomyślnie wysłano zestaw do transmiterów',
-    'Pull from relays': 'Pobierz z transmiterów',
+    'Pull relay sets': 'Pobierz zestaw transmiterów',
     'Select the relay sets you want to pull': 'Wybierz zestaw transmiterów do pobrania',
     'No relay sets found': 'Nie znaleziono zestawu transmiterów',
     'Pull n relay sets': 'Pobierz {{n}} zestawów transmiterów',
@@ -212,6 +208,15 @@ export default {
     'Seen on': 'Widziany na',
     'Temporarily display this reply': 'Tymczasowo wyświetl tę odpowiedź',
     'Not found the note': 'Nie znaleziono wpisu',
-    'no more replies': 'brak kolejnych odpowiedzi'
+    'no more replies': 'brak kolejnych odpowiedzi',
+    'Relay sets': 'Zestawy transmiterów',
+    'Favorite Relays': 'Ulubione transmitery',
+    "Following's Favorites": 'Ulubione transmitery obserwowanych',
+    'no more relays': 'brak kolejnych transmiterów',
+    'Favorited by': 'Ulubione przez',
+    'Post settings': 'Ustawienia publikacji',
+    'Media upload service': 'Usługa przesyłania mediów',
+    'Choose a relay': 'Wybierz transmiter',
+    'no relays found': 'Nie znaleziono transmiterów'
   }
 }

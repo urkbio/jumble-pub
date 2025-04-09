@@ -75,7 +75,6 @@ export default {
     Search: 'Pesquisar',
     'The relays you are connected to do not support search':
       'Os relés aos quais você está conectado não suportam pesquisa',
-    'supports search': 'suporta pesquisa',
     'Show more...': 'Mostrar mais...',
     'All users': 'Todos os usuários',
     'Display replies': 'Exibir respostas',
@@ -117,10 +116,7 @@ export default {
     'R & W': 'Leitura & Escrita',
     Read: 'Ler',
     Write: 'Escrever',
-    'Push to relays': 'Enviar para relés',
-    'Push Successful': 'Envio Bem-sucedido',
-    'Successfully pushed relay sets to relays': 'Conjuntos de relé enviados com sucesso',
-    'Pull from relays': 'Receber de relés',
+    'Pull relay sets': 'Receber conjuntos de relé',
     'Select the relay sets you want to pull': 'Selecione os conjuntos de relé que deseja receber',
     'No relay sets found': 'Nenhum conjunto de relé encontrado',
     'Pull n relay sets': 'Receber {{n}} conjuntos de relé',
@@ -213,6 +209,15 @@ export default {
     'Seen on': 'Visto em',
     'Temporarily display this reply': 'Exibir temporariamente esta resposta',
     'Not found the note': 'Nota não encontrada',
-    'no more replies': 'não há mais respostas'
+    'no more replies': 'não há mais respostas',
+    'Relay sets': 'Conjuntos de Relé',
+    'Favorite Relays': 'Relés Favoritos',
+    "Following's Favorites": 'Favoritos de quem você segue',
+    'no more relays': 'não há mais relés',
+    'Favorited by': 'Favoritado por',
+    'Post settings': 'Configurações de Postagem',
+    'Media upload service': 'Serviço de Upload de Mídia',
+    'Choose a relay': 'Escolher um Relé',
+    'no relays found': 'nenhum relé encontrado'
   }
 }

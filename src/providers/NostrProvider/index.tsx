@@ -1,5 +1,5 @@
 import LoginDialog from '@/components/LoginDialog'
-import { BIG_RELAY_URLS, COMMENT_EVENT_KIND, PICTURE_EVENT_KIND } from '@/constants'
+import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import { useToast } from '@/hooks'
 import {
   getLatestEvent,
@@ -24,12 +24,14 @@ import { NsecSigner } from './nsec.signer'
 import { NpubSigner } from './npub.signer'
 
 type TNostrContext = {
+  isInitialized: boolean
   pubkey: string | null
   profile: TProfile | null
   profileEvent: Event | null
   relayList: TRelayList | null
   followListEvent?: Event
   muteListEvent?: Event
+  favoriteRelaysEvent: Event | null
   account: TAccountPointer | null
   accounts: TAccountPointer[]
   nsec: string | null
@@ -55,6 +57,7 @@ type TNostrContext = {
   updateProfileEvent: (profileEvent: Event) => Promise<void>
   updateFollowListEvent: (followListEvent: Event) => Promise<void>
   updateMuteListEvent: (muteListEvent: Event, tags: string[][]) => Promise<void>
+  updateFavoriteRelaysEvent: (favoriteRelaysEvent: Event) => Promise<void>
 }
 
 const NostrContext = createContext<TNostrContext | undefined>(undefined)
@@ -80,6 +83,8 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [relayList, setRelayList] = useState<TRelayList | null>(null)
   const [followListEvent, setFollowListEvent] = useState<Event | undefined>(undefined)
   const [muteListEvent, setMuteListEvent] = useState<Event | undefined>(undefined)
+  const [favoriteRelaysEvent, setFavoriteRelaysEvent] = useState<Event | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -93,7 +98,9 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
       await loginWithAccountPointer(act)
     }
-    init()
+    init().then(() => {
+      setIsInitialized(true)
+    })
 
     const handleHashChange = () => {
       if (hasNostrLoginHash()) {
@@ -114,6 +121,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       setProfile(null)
       setProfileEvent(null)
       setNsec(null)
+      setFavoriteRelaysEvent(null)
       if (!account) {
         return
       }
@@ -131,13 +139,19 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       } else {
         setNcryptsec(null)
       }
-      const [storedRelayListEvent, storedProfileEvent, storedFollowListEvent, storedMuteListEvent] =
-        await Promise.all([
-          indexedDb.getReplaceableEvent(account.pubkey, kinds.RelayList),
-          indexedDb.getReplaceableEvent(account.pubkey, kinds.Metadata),
-          indexedDb.getReplaceableEvent(account.pubkey, kinds.Contacts),
-          indexedDb.getReplaceableEvent(account.pubkey, kinds.Mutelist)
-        ])
+      const [
+        storedRelayListEvent,
+        storedProfileEvent,
+        storedFollowListEvent,
+        storedMuteListEvent,
+        storedFavoriteRelaysEvent
+      ] = await Promise.all([
+        indexedDb.getReplaceableEvent(account.pubkey, kinds.RelayList),
+        indexedDb.getReplaceableEvent(account.pubkey, kinds.Metadata),
+        indexedDb.getReplaceableEvent(account.pubkey, kinds.Contacts),
+        indexedDb.getReplaceableEvent(account.pubkey, kinds.Mutelist),
+        indexedDb.getReplaceableEvent(account.pubkey, ExtendedKind.FAVORITE_RELAYS)
+      ])
       if (storedRelayListEvent) {
         setRelayList(
           storedRelayListEvent ? getRelayListFromRelayListEvent(storedRelayListEvent) : null
@@ -153,6 +167,9 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       if (storedMuteListEvent) {
         setMuteListEvent(storedMuteListEvent)
       }
+      if (storedFavoriteRelaysEvent) {
+        setFavoriteRelaysEvent(storedFavoriteRelaysEvent)
+      }
 
       const relayListEvents = await client.fetchEvents(BIG_RELAY_URLS, {
         kinds: [kinds.RelayList],
@@ -167,13 +184,14 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       setRelayList(relayList)
 
       const events = await client.fetchEvents(relayList.write.concat(BIG_RELAY_URLS).slice(0, 4), {
-        kinds: [kinds.Metadata, kinds.Contacts, kinds.Mutelist],
+        kinds: [kinds.Metadata, kinds.Contacts, kinds.Mutelist, ExtendedKind.FAVORITE_RELAYS],
         authors: [account.pubkey]
       })
       const sortedEvents = events.sort((a, b) => b.created_at - a.created_at)
       const profileEvent = sortedEvents.find((e) => e.kind === kinds.Metadata)
       const followListEvent = sortedEvents.find((e) => e.kind === kinds.Contacts)
       const muteListEvent = sortedEvents.find((e) => e.kind === kinds.Mutelist)
+      const favoriteRelaysEvent = sortedEvents.find((e) => e.kind === ExtendedKind.FAVORITE_RELAYS)
       if (profileEvent) {
         setProfileEvent(profileEvent)
         setProfile(getProfileFromProfileEvent(profileEvent))
@@ -191,6 +209,10 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       if (muteListEvent) {
         setMuteListEvent(muteListEvent)
         await indexedDb.putReplaceableEvent(muteListEvent)
+      }
+      if (favoriteRelaysEvent) {
+        setFavoriteRelaysEvent(favoriteRelaysEvent)
+        await indexedDb.putReplaceableEvent(favoriteRelaysEvent)
       }
 
       client.initUserIndexFromFollowings(account.pubkey, controller.signal)
@@ -414,8 +436,8 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         kinds.ShortTextNote,
         kinds.Reaction,
         kinds.Repost,
-        COMMENT_EVENT_KIND,
-        PICTURE_EVENT_KIND
+        ExtendedKind.COMMENT,
+        ExtendedKind.PICTURE
       ].includes(draftEvent.kind)
     ) {
       const mentions: string[] = []
@@ -436,7 +458,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         })
       }
     }
-    if (draftEvent.kind === kinds.RelayList) {
+    if ([kinds.RelayList, ExtendedKind.FAVORITE_RELAYS].includes(draftEvent.kind)) {
       additionalRelayUrls.push(...BIG_RELAY_URLS)
     }
 
@@ -509,15 +531,24 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     setMuteListEvent(muteListEvent)
   }
 
+  const updateFavoriteRelaysEvent = async (favoriteRelaysEvent: Event) => {
+    const newFavoriteRelaysEvent = await indexedDb.putReplaceableEvent(favoriteRelaysEvent)
+    if (newFavoriteRelaysEvent.id !== favoriteRelaysEvent.id) return
+
+    setFavoriteRelaysEvent(newFavoriteRelaysEvent)
+  }
+
   return (
     <NostrContext.Provider
       value={{
+        isInitialized,
         pubkey: account?.pubkey ?? null,
         profile,
         profileEvent,
         relayList,
         followListEvent,
         muteListEvent,
+        favoriteRelaysEvent,
         account,
         accounts: storage
           .getAccounts()
@@ -541,7 +572,8 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         updateRelayListEvent,
         updateProfileEvent,
         updateFollowListEvent,
-        updateMuteListEvent
+        updateMuteListEvent,
+        updateFavoriteRelaysEvent
       }}
     >
       {children}

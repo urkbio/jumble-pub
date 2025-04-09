@@ -75,7 +75,6 @@ export default {
     Search: 'Buscar',
     'The relays you are connected to do not support search':
       'Los relés a los que estás conectado no soportan la búsqueda',
-    'supports search': 'soporta la búsqueda',
     'Show more...': 'Mostrar más...',
     'All users': 'Todos los usuarios',
     'Display replies': 'Mostrar respuestas',
@@ -117,10 +116,7 @@ export default {
     'R & W': 'L y E',
     Read: 'Leer',
     Write: 'Escribir',
-    'Push to relays': 'Enviar a relés',
-    'Push Successful': 'Envío exitoso',
-    'Successfully pushed relay sets to relays': 'Conjuntos de relés enviados con éxito a relés',
-    'Pull from relays': 'Recibir de relés',
+    'Pull relay sets': 'Recibir conjuntos de relés',
     'Select the relay sets you want to pull':
       'Selecciona los conjuntos de relés que deseas recibir',
     'No relay sets found': 'No se encontraron conjuntos de relés',
@@ -214,6 +210,15 @@ export default {
     'Seen on': 'Visto en',
     'Temporarily display this reply': 'Mostrar temporalmente esta respuesta',
     'Not found the note': 'No se encontró la nota',
-    'no more replies': 'no hay más respuestas'
+    'no more replies': 'no hay más respuestas',
+    'Relay sets': 'Conjuntos de relés',
+    'Favorite Relays': 'Relés favoritos',
+    "Following's Favorites": 'Favoritos de los seguidos',
+    'no more relays': 'no hay más relés',
+    'Favorited by': 'Favoritado por',
+    'Post settings': 'Ajustes de publicación',
+    'Media upload service': 'Servicio de carga de medios',
+    'Choose a relay': 'Selecciona un relé',
+    'no relays found': 'no se encontraron relés'
   }
 }

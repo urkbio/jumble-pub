@@ -1,29 +1,19 @@
-import { StorageKey } from '@/constants'
+import { DEFAULT_NIP_96_SERVICE, StorageKey } from '@/constants'
 import { isSameAccount } from '@/lib/account'
 import { randomString } from '@/lib/random'
 import {
   TAccount,
   TAccountPointer,
-  TFeedType,
+  TFeedInfo,
   TNoteListMode,
   TRelaySet,
   TThemeSetting
 } from '@/types'
 
-const DEFAULT_RELAY_SETS: TRelaySet[] = [
-  {
-    id: randomString(),
-    name: 'Nostr.moe',
-    relayUrls: ['wss://relay.nostr.moe/', 'wss://relay.cxplay.org/']
-  }
-]
-
 class LocalStorageService {
   static instance: LocalStorageService
 
   private relaySets: TRelaySet[] = []
-  private activeRelaySetId: string | null = null
-  private feedType: TFeedType = 'relays'
   private themeSetting: TThemeSetting = 'system'
   private accounts: TAccount[] = []
   private currentAccount: TAccount | null = null
@@ -32,6 +22,8 @@ class LocalStorageService {
   private defaultZapSats: number = 21
   private defaultZapComment: string = 'Zap!'
   private quickZap: boolean = false
+  private accountFeedInfoMap: Record<string, TFeedInfo | undefined> = {}
+  private mediaUploadService: string = DEFAULT_NIP_96_SERVICE
 
   constructor() {
     if (!LocalStorageService.instance) {
@@ -48,12 +40,6 @@ class LocalStorageService {
     this.accounts = accountsStr ? JSON.parse(accountsStr) : []
     const currentAccountStr = window.localStorage.getItem(StorageKey.CURRENT_ACCOUNT)
     this.currentAccount = currentAccountStr ? JSON.parse(currentAccountStr) : null
-    const feedType = window.localStorage.getItem(StorageKey.FEED_TYPE)
-    if (feedType && ['following', 'relays'].includes(feedType)) {
-      this.feedType = feedType as 'following' | 'relays'
-    } else {
-      this.feedType = 'relays'
-    }
     const noteListModeStr = window.localStorage.getItem(StorageKey.NOTE_LIST_MODE)
     this.noteListMode =
       noteListModeStr && ['posts', 'postsAndReplies', 'pictures'].includes(noteListModeStr)
@@ -78,16 +64,12 @@ class LocalStorageService {
         })
       }
       if (!relaySets.length) {
-        relaySets = DEFAULT_RELAY_SETS
+        relaySets = []
       }
-      const activeRelaySetId = relaySets[0].id
       window.localStorage.setItem(StorageKey.RELAY_SETS, JSON.stringify(relaySets))
-      window.localStorage.setItem(StorageKey.ACTIVE_RELAY_SET_ID, activeRelaySetId)
       this.relaySets = relaySets
-      this.activeRelaySetId = activeRelaySetId
     } else {
       this.relaySets = JSON.parse(relaySetsStr)
-      this.activeRelaySetId = window.localStorage.getItem(StorageKey.ACTIVE_RELAY_SET_ID) ?? null
     }
 
     const defaultZapSatsStr = window.localStorage.getItem(StorageKey.DEFAULT_ZAP_SATS)
@@ -100,12 +82,21 @@ class LocalStorageService {
     this.defaultZapComment = window.localStorage.getItem(StorageKey.DEFAULT_ZAP_COMMENT) ?? 'Zap!'
     this.quickZap = window.localStorage.getItem(StorageKey.QUICK_ZAP) === 'true'
 
+    const accountFeedInfoMapStr =
+      window.localStorage.getItem(StorageKey.ACCOUNT_FEED_INFO_MAP) ?? '{}'
+    this.accountFeedInfoMap = JSON.parse(accountFeedInfoMapStr)
+
+    this.mediaUploadService =
+      window.localStorage.getItem(StorageKey.MEDIA_UPLOAD_SERVICE) ?? DEFAULT_NIP_96_SERVICE
+
     // Clean up deprecated data
     window.localStorage.removeItem(StorageKey.ACCOUNT_PROFILE_EVENT_MAP)
     window.localStorage.removeItem(StorageKey.ACCOUNT_FOLLOW_LIST_EVENT_MAP)
     window.localStorage.removeItem(StorageKey.ACCOUNT_RELAY_LIST_EVENT_MAP)
     window.localStorage.removeItem(StorageKey.ACCOUNT_MUTE_LIST_EVENT_MAP)
     window.localStorage.removeItem(StorageKey.ACCOUNT_MUTE_DECRYPTED_TAGS_MAP)
+    window.localStorage.removeItem(StorageKey.ACTIVE_RELAY_SET_ID)
+    window.localStorage.removeItem(StorageKey.FEED_TYPE)
   }
 
   getRelaySets() {
@@ -115,28 +106,6 @@ class LocalStorageService {
   setRelaySets(relaySets: TRelaySet[]) {
     this.relaySets = relaySets
     window.localStorage.setItem(StorageKey.RELAY_SETS, JSON.stringify(this.relaySets))
-  }
-
-  getActiveRelaySetId() {
-    return this.activeRelaySetId
-  }
-
-  setActiveRelaySetId(id: string | null) {
-    this.activeRelaySetId = id
-    if (id) {
-      window.localStorage.setItem(StorageKey.ACTIVE_RELAY_SET_ID, id)
-    } else {
-      window.localStorage.removeItem(StorageKey.ACTIVE_RELAY_SET_ID)
-    }
-  }
-
-  getFeedType() {
-    return this.feedType
-  }
-
-  setFeedType(feedType: TFeedType) {
-    this.feedType = feedType
-    window.localStorage.setItem(StorageKey.FEED_TYPE, this.feedType)
   }
 
   getThemeSetting() {
@@ -244,6 +213,27 @@ class LocalStorageService {
       StorageKey.LAST_READ_NOTIFICATION_TIME_MAP,
       JSON.stringify(this.lastReadNotificationTimeMap)
     )
+  }
+
+  getFeedInfo(pubkey: string) {
+    return this.accountFeedInfoMap[pubkey]
+  }
+
+  setFeedInfo(info: TFeedInfo, pubkey?: string | null) {
+    this.accountFeedInfoMap[pubkey ?? 'default'] = info
+    window.localStorage.setItem(
+      StorageKey.ACCOUNT_FEED_INFO_MAP,
+      JSON.stringify(this.accountFeedInfoMap)
+    )
+  }
+
+  getMediaUploadService() {
+    return this.mediaUploadService
+  }
+
+  setMediaUploadService(service: string) {
+    this.mediaUploadService = service
+    window.localStorage.setItem(StorageKey.MEDIA_UPLOAD_SERVICE, service)
   }
 }
 

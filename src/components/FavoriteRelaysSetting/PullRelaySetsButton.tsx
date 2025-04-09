@@ -16,29 +16,34 @@ import {
   DrawerTrigger
 } from '@/components/ui/drawer'
 import { BIG_RELAY_URLS } from '@/constants'
+import { getReplaceableEventIdentifier } from '@/lib/event'
 import { tagNameEquals } from '@/lib/tag'
 import { isWebsocketUrl, simplifyUrl } from '@/lib/url'
+import { useFavoriteRelays } from '@/providers/FavoriteRelaysProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { useRelaySets } from '@/providers/RelaySetsProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import client from '@/services/client.service'
 import { TRelaySet } from '@/types'
 import { CloudDownload } from 'lucide-react'
-import { kinds } from 'nostr-tools'
+import { Event, kinds } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import RelaySetCard from '../RelaySetCard'
 
-export default function PullFromRelaysButton() {
+export default function PullRelaySetsButton() {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
   const { isSmallScreen } = useScreenSize()
   const [open, setOpen] = useState(false)
 
   const trigger = (
-    <Button variant="secondary" className="w-full" disabled={!pubkey}>
+    <Button
+      variant="link"
+      className="text-muted-foreground hover:no-underline hover:text-foreground p-0 h-fit"
+      disabled={!pubkey}
+    >
       <CloudDownload />
-      {t('Pull from relays')}
+      {t('Pull relay sets')}
     </Button>
   )
 
@@ -76,8 +81,9 @@ export default function PullFromRelaysButton() {
 function RemoteRelaySets({ close }: { close?: () => void }) {
   const { t } = useTranslation()
   const { pubkey, relayList } = useNostr()
-  const { mergeRelaySets } = useRelaySets()
+  const { addRelaySets, relaySets: existingRelaySets } = useFavoriteRelays()
   const [initialed, setInitialed] = useState(false)
+  const [relaySetEventMap, setRelaySetEventMap] = useState<Map<string, Event>>(new Map())
   const [relaySets, setRelaySets] = useState<TRelaySet[]>([])
   const [selectedRelaySetIds, setSelectedRelaySetIds] = useState<string[]>([])
 
@@ -96,10 +102,11 @@ function RemoteRelaySets({ close }: { close?: () => void }) {
       )
       events.sort((a, b) => b.created_at - a.created_at)
 
-      const relaySetIds = new Set<string>()
+      const relaySetIds = new Set<string>(existingRelaySets.map((r) => r.id))
       const relaySets: TRelaySet[] = []
+      const relaySetEventMap = new Map<string, Event>()
       events.forEach((evt) => {
-        const id = evt.tags.find(tagNameEquals('d'))?.[1]
+        const id = getReplaceableEventIdentifier(evt)
         if (!id || relaySetIds.has(id)) return
 
         relaySetIds.add(id)
@@ -114,9 +121,11 @@ function RemoteRelaySets({ close }: { close?: () => void }) {
           title = relayUrls.length === 1 ? simplifyUrl(relayUrls[0]) : id
         }
         relaySets.push({ id, name: title, relayUrls })
+        relaySetEventMap.set(id, evt)
       })
 
       setRelaySets(relaySets)
+      setRelaySetEventMap(relaySetEventMap)
       setInitialed(true)
     }
     init()
@@ -158,8 +167,11 @@ function RemoteRelaySets({ close }: { close?: () => void }) {
           className="w-full"
           disabled={!selectedRelaySetIds.length}
           onClick={() => {
-            if (selectedRelaySetIds.length > 0) {
-              mergeRelaySets(relaySets.filter((set) => selectedRelaySetIds.includes(set.id)))
+            const selectedRelaySets = selectedRelaySetIds
+              .map((id) => relaySetEventMap.get(id))
+              .filter(Boolean) as Event[]
+            if (selectedRelaySets.length > 0) {
+              addRelaySets(selectedRelaySets)
               close?.()
             }
           }}

@@ -73,7 +73,6 @@ export default {
     'Reply to': '回复',
     Search: '搜索',
     'The relays you are connected to do not support search': '您连接的服务器不支持搜索',
-    'supports search': '支持搜索',
     'Show more...': '查看更多...',
     'All users': '所有用户',
     'Display replies': '显示回复',
@@ -116,10 +115,7 @@ export default {
     'R & W': '读写',
     Read: '只读',
     Write: '只写',
-    'Push to relays': '保存到服务器',
-    'Push Successful': '保存成功',
-    'Successfully pushed relay sets to relays': '成功保存到服务器',
-    'Pull from relays': '从服务器拉取',
+    'Pull relay sets': '拉取服务器组',
     'Select the relay sets you want to pull': '选择要拉取的服务器组',
     'No relay sets found': '未找到服务器组',
     'Pull n relay sets': '拉取 {{n}} 个服务器组',
@@ -211,6 +207,15 @@ export default {
     'Seen on': '来自',
     'Temporarily display this reply': '临时显示此回复',
     'Not found the note': '未找到该笔记',
-    'no more replies': '没有更多回复了'
+    'no more replies': '没有更多回复了',
+    'Relay sets': '服务器组',
+    'Favorite Relays': '收藏的服务器',
+    "Following's Favorites": '关注人的收藏',
+    'no more relays': '没有更多服务器了',
+    'Favorited by': '收藏自',
+    'Post settings': '发布设置',
+    'Media upload service': '媒体上传服务',
+    'Choose a relay': '选择一个服务器',
+    'no relays found': '未找到服务器'
   }
 }

@@ -5,7 +5,7 @@ import { TEmbeddedRenderer } from './types'
 export function EmbeddedHashtag({ hashtag }: { hashtag: string }) {
   return (
     <SecondaryPageLink
-      className="text-highlight hover:underline"
+      className="text-primary hover:underline"
       to={toNoteList({ hashtag })}
       onClick={(e) => e.stopPropagation()}
     >
@@ -15,7 +15,7 @@ export function EmbeddedHashtag({ hashtag }: { hashtag: string }) {
 }
 
 export const embeddedHashtagRenderer: TEmbeddedRenderer = {
-  regex: /#([\p{L}\p{N}\p{M}]+)/gu,
+  regex: /#([\p{L}\p{N}\p{M}_]+)/gu,
   render: (hashtag: string, index: number) => {
     return <EmbeddedHashtag key={`hashtag-${index}-${hashtag}`} hashtag={hashtag} />
   }
