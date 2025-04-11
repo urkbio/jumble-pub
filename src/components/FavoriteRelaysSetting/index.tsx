@@ -18,7 +18,7 @@ export default function FavoriteRelaysSetting() {
         <TemporaryRelaySet />
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-muted-foreground font-semibold select-nones shrink-0">
+            <div className="text-muted-foreground font-semibold select-none shrink-0">
               {t('Relay sets')}
             </div>
             <PullRelaySetsButton />
