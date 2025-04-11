@@ -98,7 +98,7 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
         </div>
         <div className="pt-2">
           <div className="flex gap-2 items-center">
-            <div className="text-xl font-semibold truncate">{username}</div>
+            <div className="text-xl font-semibold truncate select-text">{username}</div>
             {isFollowingYou && (
               <div className="text-muted-foreground rounded-full bg-muted text-xs h-fit px-2 shrink-0">
                 {t('Follows you')}
@@ -107,7 +107,7 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
           </div>
           <Nip05 pubkey={pubkey} />
           {lightningAddress && (
-            <div className="text-sm text-yellow-400 flex gap-1 items-center">
+            <div className="text-sm text-yellow-400 flex gap-1 items-center select-text">
               <Zap className="size-4 shrink-0" />
               <div className="flex-1 max-w-fit w-0 truncate">{lightningAddress}</div>
             </div>
@@ -116,9 +116,12 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
             <PubkeyCopy pubkey={pubkey} />
             <QrCodePopover pubkey={pubkey} />
           </div>
-          <ProfileAbout about={about} className="text-wrap break-words whitespace-pre-wrap mt-2" />
+          <ProfileAbout
+            about={about}
+            className="text-wrap break-words whitespace-pre-wrap mt-2 select-text"
+          />
           {website && (
-            <div className="flex gap-1 items-center text-primary mt-2 truncate">
+            <div className="flex gap-1 items-center text-primary mt-2 truncate select-text">
               <Link size={14} className="shrink-0" />
               <a
                 href={website}

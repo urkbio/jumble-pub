@@ -20,7 +20,7 @@ export default function RelayInfo({ url }: { url: string }) {
       <div className="space-y-2">
         <div className="flex gap-2 items-center">
           <RelayIcon url={url} className="w-8 h-8" />
-          <div className="text-2xl font-semibold truncate">
+          <div className="text-2xl font-semibold truncate select-text">
             {relayInfo.name || relayInfo.shortUrl}
           </div>
         </div>
@@ -33,7 +33,7 @@ export default function RelayInfo({ url }: { url: string }) {
           </div>
         )}
         {relayInfo.description && (
-          <div className="text-wrap break-words whitespace-pre-wrap mt-2">
+          <div className="text-wrap break-words whitespace-pre-wrap mt-2 select-text">
             {relayInfo.description}
           </div>
         )}
@@ -67,7 +67,7 @@ export default function RelayInfo({ url }: { url: string }) {
           <a
             href={normalizeHttpUrl(relayInfo.payments_url)}
             target="_blank"
-            className="hover:underline text-primary"
+            className="hover:underline text-primary select-text"
           >
             {relayInfo.payments_url}
           </a>
@@ -86,7 +86,7 @@ export default function RelayInfo({ url }: { url: string }) {
         {relayInfo.contact && (
           <div className="space-y-2 flex-1">
             <div className="text-sm font-semibold text-muted-foreground">{t('Contact')}</div>
-            <div className="flex gap-2 items-center font-semibold">
+            <div className="flex gap-2 items-center font-semibold select-text">
               <Mail />
               {relayInfo.contact}
             </div>
@@ -95,7 +95,7 @@ export default function RelayInfo({ url }: { url: string }) {
         {relayInfo.software && (
           <div className="space-y-2 flex-1">
             <div className="text-sm font-semibold text-muted-foreground">{t('Software')}</div>
-            <div className="flex gap-2 items-center font-semibold">
+            <div className="flex gap-2 items-center font-semibold select-text">
               <SquareCode />
               {formatSoftware(relayInfo.software)}
             </div>
@@ -104,7 +104,7 @@ export default function RelayInfo({ url }: { url: string }) {
         {relayInfo.version && (
           <div className="space-y-2 flex-1">
             <div className="text-sm font-semibold text-muted-foreground">{t('Version')}</div>
-            <div className="flex gap-2 items-center font-semibold">
+            <div className="flex gap-2 items-center font-semibold select-text">
               <GitBranch />
               {relayInfo.version}
             </div>
