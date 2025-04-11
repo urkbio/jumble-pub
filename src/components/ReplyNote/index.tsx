@@ -10,6 +10,8 @@ import NoteStats from '../NoteStats'
 import ParentNotePreview from '../ParentNotePreview'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
+import { useSecondaryPage } from '@/PageManager'
+import { toNote } from '@/lib/link'
 
 export default function ReplyNote({
   event,
@@ -23,6 +25,7 @@ export default function ReplyNote({
   highlight?: boolean
 }) {
   const { t } = useTranslation()
+  const { push } = useSecondaryPage()
   const { mutePubkeys } = useMuteList()
   const [showMuted, setShowMuted] = useState(false)
   const show = useMemo(
@@ -32,7 +35,8 @@ export default function ReplyNote({
 
   return (
     <div
-      className={`flex space-x-2 items-start px-4 py-3 border-b transition-colors duration-500 ${highlight ? 'bg-primary/50' : ''}`}
+      className={`flex space-x-2 items-start px-4 py-3 border-b transition-colors duration-500 clickable ${highlight ? 'bg-primary/50' : ''}`}
+      onClick={() => push(toNote(event))}
     >
       <UserAvatar userId={event.pubkey} size="small" className="shrink-0" />
       <div className="w-full overflow-hidden">
