@@ -22,7 +22,7 @@ const SHOW_COUNT = 30
 const NotificationList = forwardRef((_, ref) => {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
-  const { clearNewNotifications: updateReadNotificationTime } = useNotification()
+  const { clearNewNotifications } = useNotification()
   const { updateNoteStatsByEvents } = useNoteStats()
   const [notificationType, setNotificationType] = useState<TNotificationType>('all')
   const [lastReadTime, setLastReadTime] = useState(0)
@@ -69,7 +69,7 @@ const NotificationList = forwardRef((_, ref) => {
       setNotifications([])
       setShowCount(SHOW_COUNT)
       setLastReadTime(storage.getLastReadNotificationTime(pubkey))
-      updateReadNotificationTime()
+      clearNewNotifications()
       const relayList = await client.fetchRelayList(pubkey)
 
       const { closer, timelineKey } = await client.subscribeTimeline(
