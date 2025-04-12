@@ -1,16 +1,18 @@
 import { usePrimaryPage } from '@/PageManager'
+import { useNostr } from '@/providers/NostrProvider'
 import { useNotification } from '@/providers/NotificationProvider'
 import { Bell } from 'lucide-react'
 import SidebarItem from './SidebarItem'
 
 export default function NotificationsButton() {
+  const { checkLogin } = useNostr()
   const { navigate, current } = usePrimaryPage()
   const { hasNewNotification } = useNotification()
 
   return (
     <SidebarItem
       title="Notifications"
-      onClick={() => navigate('notifications')}
+      onClick={() => checkLogin(() => navigate('notifications'))}
       active={current === 'notifications'}
     >
       <div className="relative">
