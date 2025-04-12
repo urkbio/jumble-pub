@@ -114,7 +114,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (hasNewNotification) {
-      document.title = '📩 Jumble'
+      document.title = '📥 Jumble'
     } else {
       document.title = 'Jumble'
     }
