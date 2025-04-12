@@ -1,4 +1,4 @@
-import { ExtendedKind } from '@/constants'
+import { ApplicationDataKey, ExtendedKind } from '@/constants'
 import client from '@/services/client.service'
 import { TDraftEvent, TMailboxRelay, TRelaySet } from '@/types'
 import dayjs from 'dayjs'
@@ -270,6 +270,15 @@ export function createFavoriteRelaysDraftEvent(
     kind: ExtendedKind.FAVORITE_RELAYS,
     content: '',
     tags,
+    created_at: dayjs().unix()
+  }
+}
+
+export function createSeenNotificationsAtDraftEvent(): TDraftEvent {
+  return {
+    kind: kinds.Application,
+    content: 'Records read time to sync notification status across devices.',
+    tags: [['d', ApplicationDataKey.NOTIFICATIONS_SEEN_AT]],
     created_at: dayjs().unix()
   }
 }

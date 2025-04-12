@@ -1,16 +1,14 @@
 import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
-import { TPrimaryPageName, usePrimaryPage } from '@/PageManager'
 import client from '@/services/client.service'
-import storage from '@/services/local-storage.service'
-import dayjs from 'dayjs'
 import { kinds } from 'nostr-tools'
 import { SubCloser } from 'nostr-tools/abstract-pool'
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { useMuteList } from './MuteListProvider'
 import { useNostr } from './NostrProvider'
 
 type TNotificationContext = {
   hasNewNotification: boolean
+  clearNewNotifications: () => Promise<void>
 }
 
 const NotificationContext = createContext<TNotificationContext | undefined>(undefined)
@@ -24,38 +22,14 @@ export const useNotification = () => {
 }
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-  const { pubkey } = useNostr()
+  const { pubkey, notificationsSeenAt, updateNotificationsSeenAt } = useNostr()
   const { mutePubkeys } = useMuteList()
-  const { current } = usePrimaryPage()
   const [hasNewNotification, setHasNewNotification] = useState(false)
-  const [lastReadTime, setLastReadTime] = useState(-1)
-  const previousPageRef = useRef<TPrimaryPageName | null>(null)
 
   useEffect(() => {
-    if (current !== 'notifications' && previousPageRef.current === 'notifications') {
-      // navigate from notifications to other pages
-      setLastReadTime(dayjs().unix())
-      setHasNewNotification(false)
-    } else if (current === 'notifications' && previousPageRef.current !== null) {
-      // navigate to notifications
-      setHasNewNotification(false)
-    }
-    previousPageRef.current = current
-  }, [current])
+    if (!pubkey || notificationsSeenAt < 0) return
 
-  useEffect(() => {
-    if (!pubkey || lastReadTime < 0) return
-    storage.setLastReadNotificationTime(pubkey, lastReadTime)
-  }, [lastReadTime])
-
-  useEffect(() => {
-    if (!pubkey) return
-    setLastReadTime(storage.getLastReadNotificationTime(pubkey))
     setHasNewNotification(false)
-  }, [pubkey])
-
-  useEffect(() => {
-    if (!pubkey || lastReadTime < 0) return
 
     // Track if component is mounted
     const isMountedRef = { current: true }
@@ -79,7 +53,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                 kinds.Zap
               ],
               '#p': [pubkey],
-              since: lastReadTime ?? dayjs().unix(),
+              since: notificationsSeenAt,
               limit: 10
             }
           ],
@@ -102,7 +76,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                   if (isMountedRef.current) {
                     subscribe()
                   }
-                }, 5000)
+                }, 5_000)
               }
             }
           }
@@ -119,7 +93,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             if (isMountedRef.current) {
               subscribe()
             }
-          }, 5000)
+          }, 5_000)
         }
         return null
       }
@@ -136,10 +110,25 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         currentSubCloser = null
       }
     }
-  }, [lastReadTime, pubkey])
+  }, [notificationsSeenAt, pubkey])
+
+  useEffect(() => {
+    if (hasNewNotification) {
+      document.title = '📩 Jumble'
+    } else {
+      document.title = 'Jumble'
+    }
+  }, [hasNewNotification])
+
+  const clearNewNotifications = async () => {
+    if (!pubkey) return
+
+    setHasNewNotification(false)
+    await updateNotificationsSeenAt()
+  }
 
   return (
-    <NotificationContext.Provider value={{ hasNewNotification }}>
+    <NotificationContext.Provider value={{ hasNewNotification, clearNewNotifications }}>
       {children}
     </NotificationContext.Provider>
   )
