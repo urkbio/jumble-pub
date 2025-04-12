@@ -7,6 +7,7 @@ import { isSafari } from '@/lib/utils'
 import { ISigner, TProfile, TRelayList } from '@/types'
 import { sha256 } from '@noble/hashes/sha2'
 import DataLoader from 'dataloader'
+import dayjs from 'dayjs'
 import FlexSearch from 'flexsearch'
 import { LRUCache } from 'lru-cache'
 import {
@@ -561,7 +562,11 @@ class ClientService extends EventTarget {
           return onEvents([...events], true)
         }
 
-        const newRefs = events.map((evt) => [evt.id, evt.created_at] as TTimelineRef)
+        // Prevent concurrent requests from duplicating the same event
+        const firstRefCreatedAt = timeline.refs[0][1]
+        const newRefs = events
+          .filter((evt) => evt.created_at > firstRefCreatedAt)
+          .map((evt) => [evt.id, evt.created_at] as TTimelineRef)
 
         if (events.length >= filter.limit) {
           // if new refs are more than limit, means old refs are too old, replace them
@@ -610,7 +615,14 @@ class ClientService extends EventTarget {
       this.eventDataLoader.prime(evt.id, Promise.resolve(evt))
     })
     events = events.sort((a, b) => b.created_at - a.created_at).slice(0, limit)
-    timeline.refs.push(...events.map((evt) => [evt.id, evt.created_at] as TTimelineRef))
+
+    // Prevent concurrent requests from duplicating the same event
+    const lastRefCreatedAt = refs.length > 0 ? refs[refs.length - 1][1] : dayjs().unix()
+    timeline.refs.push(
+      ...events
+        .filter((evt) => evt.created_at < lastRefCreatedAt)
+        .map((evt) => [evt.id, evt.created_at] as TTimelineRef)
+    )
     return [...cachedEvents, ...events]
   }
 
