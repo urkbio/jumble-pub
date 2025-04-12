@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { useDeepBrowsing } from '@/providers/DeepBrowsingProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
+import { useNotification } from '@/providers/NotificationProvider'
 import client from '@/services/client.service'
 import storage from '@/services/local-storage.service'
 import { TNotificationType } from '@/types'
@@ -21,6 +22,7 @@ const SHOW_COUNT = 30
 const NotificationList = forwardRef((_, ref) => {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
+  const { clearNewNotifications: updateReadNotificationTime } = useNotification()
   const { updateNoteStatsByEvents } = useNoteStats()
   const [notificationType, setNotificationType] = useState<TNotificationType>('all')
   const [lastReadTime, setLastReadTime] = useState(0)
@@ -67,6 +69,7 @@ const NotificationList = forwardRef((_, ref) => {
       setNotifications([])
       setShowCount(SHOW_COUNT)
       setLastReadTime(storage.getLastReadNotificationTime(pubkey))
+      updateReadNotificationTime()
       const relayList = await client.fetchRelayList(pubkey)
 
       const { closer, timelineKey } = await client.subscribeTimeline(

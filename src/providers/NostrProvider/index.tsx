@@ -1,10 +1,12 @@
 import LoginDialog from '@/components/LoginDialog'
-import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
+import { ApplicationDataKey, BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import { useToast } from '@/hooks'
+import { createSeenNotificationsAtDraftEvent } from '@/lib/draft-event'
 import {
   getLatestEvent,
   getProfileFromProfileEvent,
-  getRelayListFromRelayListEvent
+  getRelayListFromRelayListEvent,
+  getReplaceableEventIdentifier
 } from '@/lib/event'
 import { formatPubkey, isValidPubkey } from '@/lib/pubkey'
 import client from '@/services/client.service'
@@ -20,8 +22,8 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BunkerSigner } from './bunker.signer'
 import { Nip07Signer } from './nip-07.signer'
-import { NsecSigner } from './nsec.signer'
 import { NpubSigner } from './npub.signer'
+import { NsecSigner } from './nsec.signer'
 
 type TNostrContext = {
   isInitialized: boolean
@@ -32,6 +34,7 @@ type TNostrContext = {
   followListEvent?: Event
   muteListEvent?: Event
   favoriteRelaysEvent: Event | null
+  notificationsSeenAt: number
   account: TAccountPointer | null
   accounts: TAccountPointer[]
   nsec: string | null
@@ -58,6 +61,7 @@ type TNostrContext = {
   updateFollowListEvent: (followListEvent: Event) => Promise<void>
   updateMuteListEvent: (muteListEvent: Event, tags: string[][]) => Promise<void>
   updateFavoriteRelaysEvent: (favoriteRelaysEvent: Event) => Promise<void>
+  updateNotificationsSeenAt: () => Promise<void>
 }
 
 const NostrContext = createContext<TNostrContext | undefined>(undefined)
@@ -84,6 +88,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [followListEvent, setFollowListEvent] = useState<Event | undefined>(undefined)
   const [muteListEvent, setMuteListEvent] = useState<Event | undefined>(undefined)
   const [favoriteRelaysEvent, setFavoriteRelaysEvent] = useState<Event | null>(null)
+  const [notificationsSeenAt, setNotificationsSeenAt] = useState(-1)
   const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
@@ -183,15 +188,27 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       }
       setRelayList(relayList)
 
-      const events = await client.fetchEvents(relayList.write.concat(BIG_RELAY_URLS).slice(0, 4), {
-        kinds: [kinds.Metadata, kinds.Contacts, kinds.Mutelist, ExtendedKind.FAVORITE_RELAYS],
-        authors: [account.pubkey]
-      })
+      const events = await client.fetchEvents(relayList.write.concat(BIG_RELAY_URLS).slice(0, 4), [
+        {
+          kinds: [kinds.Metadata, kinds.Contacts, kinds.Mutelist, ExtendedKind.FAVORITE_RELAYS],
+          authors: [account.pubkey]
+        },
+        {
+          kinds: [kinds.Application],
+          authors: [account.pubkey],
+          '#d': [ApplicationDataKey.NOTIFICATIONS_SEEN_AT]
+        }
+      ])
       const sortedEvents = events.sort((a, b) => b.created_at - a.created_at)
       const profileEvent = sortedEvents.find((e) => e.kind === kinds.Metadata)
       const followListEvent = sortedEvents.find((e) => e.kind === kinds.Contacts)
       const muteListEvent = sortedEvents.find((e) => e.kind === kinds.Mutelist)
       const favoriteRelaysEvent = sortedEvents.find((e) => e.kind === ExtendedKind.FAVORITE_RELAYS)
+      const notificationsSeenAtEvent = sortedEvents.find(
+        (e) =>
+          e.kind === kinds.Application &&
+          getReplaceableEventIdentifier(e) === ApplicationDataKey.NOTIFICATIONS_SEEN_AT
+      )
       if (profileEvent) {
         setProfileEvent(profileEvent)
         setProfile(getProfileFromProfileEvent(profileEvent))
@@ -213,6 +230,17 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       if (favoriteRelaysEvent) {
         setFavoriteRelaysEvent(favoriteRelaysEvent)
         await indexedDb.putReplaceableEvent(favoriteRelaysEvent)
+      }
+
+      const storedNotificationsSeenAt = storage.getLastReadNotificationTime(account.pubkey)
+      if (
+        notificationsSeenAtEvent &&
+        notificationsSeenAtEvent.created_at > storedNotificationsSeenAt
+      ) {
+        setNotificationsSeenAt(notificationsSeenAtEvent.created_at)
+        storage.setLastReadNotificationTime(account.pubkey, notificationsSeenAtEvent.created_at)
+      } else {
+        setNotificationsSeenAt(storedNotificationsSeenAt)
       }
 
       client.initUserIndexFromFollowings(account.pubkey, controller.signal)
@@ -429,6 +457,10 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     draftEvent: TDraftEvent,
     { specifiedRelayUrls }: { specifiedRelayUrls?: string[] } = {}
   ) => {
+    if (!account || !signer || account.signerType === 'npub') {
+      throw new Error('You need to login first')
+    }
+
     const additionalRelayUrls: string[] = []
     if (
       !specifiedRelayUrls?.length &&
@@ -538,6 +570,17 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     setFavoriteRelaysEvent(newFavoriteRelaysEvent)
   }
 
+  const updateNotificationsSeenAt = async () => {
+    if (!account) return
+
+    const now = dayjs().unix()
+    storage.setLastReadNotificationTime(account.pubkey, now)
+    setTimeout(() => {
+      setNotificationsSeenAt(now)
+    }, 5_000)
+    await publish(createSeenNotificationsAtDraftEvent())
+  }
+
   return (
     <NostrContext.Provider
       value={{
@@ -549,6 +592,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         followListEvent,
         muteListEvent,
         favoriteRelaysEvent,
+        notificationsSeenAt,
         account,
         accounts: storage
           .getAccounts()
@@ -573,7 +617,8 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         updateProfileEvent,
         updateFollowListEvent,
         updateMuteListEvent,
-        updateFavoriteRelaysEvent
+        updateFavoriteRelaysEvent,
+        updateNotificationsSeenAt
       }}
     >
       {children}

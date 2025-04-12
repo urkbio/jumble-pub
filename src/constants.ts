@@ -22,6 +22,10 @@ export const StorageKey = {
   FEED_TYPE: 'feedType' // deprecated
 }
 
+export const ApplicationDataKey = {
+  NOTIFICATIONS_SEEN_AT: 'seen_notifications_at'
+}
+
 export const BIG_RELAY_URLS = [
   'wss://relay.damus.io/',
   'wss://nos.lol/',
