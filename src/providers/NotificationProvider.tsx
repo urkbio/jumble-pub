@@ -2,12 +2,13 @@ import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import client from '@/services/client.service'
 import { kinds } from 'nostr-tools'
 import { SubCloser } from 'nostr-tools/abstract-pool'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useMuteList } from './MuteListProvider'
 import { useNostr } from './NostrProvider'
 
 type TNotificationContext = {
   hasNewNotification: boolean
+  getNotificationsSeenAt: () => number
   clearNewNotifications: () => Promise<void>
 }
 
@@ -24,16 +25,16 @@ export const useNotification = () => {
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const { pubkey, notificationsSeenAt, updateNotificationsSeenAt } = useNostr()
   const { mutePubkeys } = useMuteList()
-  const [hasNewNotification, setHasNewNotification] = useState(false)
+  const [newNotificationIds, setNewNotificationIds] = useState(new Set<string>())
+  const subCloserRef = useRef<SubCloser | null>(null)
 
   useEffect(() => {
     if (!pubkey || notificationsSeenAt < 0) return
 
-    setHasNewNotification(false)
+    setNewNotificationIds(new Set())
 
     // Track if component is mounted
     const isMountedRef = { current: true }
-    let currentSubCloser: SubCloser | null = null
 
     const subscribe = async () => {
       if (!isMountedRef.current) return null
@@ -54,15 +55,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
               ],
               '#p': [pubkey],
               since: notificationsSeenAt,
-              limit: 10
+              limit: 20
             }
           ],
           {
             onevent: (evt) => {
               // Only show notification if not from self and not muted
               if (evt.pubkey !== pubkey && !mutePubkeys.includes(evt.pubkey)) {
-                setHasNewNotification(true)
-                subCloser.close()
+                setNewNotificationIds((prev) => new Set([...prev, evt.id]))
               }
             },
             onclose: (reasons) => {
@@ -71,7 +71,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
               }
 
               // Only reconnect if still mounted and not a manual close
-              if (isMountedRef.current && currentSubCloser) {
+              if (isMountedRef.current && subCloserRef.current) {
                 setTimeout(() => {
                   if (isMountedRef.current) {
                     subscribe()
@@ -82,7 +82,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           }
         )
 
-        currentSubCloser = subCloser
+        subCloserRef.current = subCloser
         return subCloser
       } catch (error) {
         console.error('Subscription error:', error)
@@ -105,30 +105,48 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     // Cleanup function
     return () => {
       isMountedRef.current = false
-      if (currentSubCloser) {
-        currentSubCloser.close()
-        currentSubCloser = null
+      if (subCloserRef.current) {
+        subCloserRef.current.close()
+        subCloserRef.current = null
       }
     }
   }, [notificationsSeenAt, pubkey])
 
   useEffect(() => {
-    if (hasNewNotification) {
-      document.title = '📥 Jumble'
+    if (newNotificationIds.size >= 10 && subCloserRef.current) {
+      subCloserRef.current.close()
+      subCloserRef.current = null
+    }
+  }, [newNotificationIds])
+
+  useEffect(() => {
+    const newNotificationCount = newNotificationIds.size
+    if (newNotificationCount > 0) {
+      document.title = `(${newNotificationCount >= 10 ? '9+' : newNotificationCount}) Jumble`
     } else {
       document.title = 'Jumble'
     }
-  }, [hasNewNotification])
+  }, [newNotificationIds])
+
+  const getNotificationsSeenAt = () => {
+    return notificationsSeenAt
+  }
 
   const clearNewNotifications = async () => {
     if (!pubkey) return
 
-    setHasNewNotification(false)
+    setNewNotificationIds(new Set())
     await updateNotificationsSeenAt()
   }
 
   return (
-    <NotificationContext.Provider value={{ hasNewNotification, clearNewNotifications }}>
+    <NotificationContext.Provider
+      value={{
+        hasNewNotification: newNotificationIds.size > 0,
+        clearNewNotifications,
+        getNotificationsSeenAt
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   )

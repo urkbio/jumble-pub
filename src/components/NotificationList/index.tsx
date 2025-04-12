@@ -2,12 +2,12 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import { cn } from '@/lib/utils'
+import { usePrimaryPage } from '@/PageManager'
 import { useDeepBrowsing } from '@/providers/DeepBrowsingProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
 import { useNotification } from '@/providers/NotificationProvider'
 import client from '@/services/client.service'
-import storage from '@/services/local-storage.service'
 import { TNotificationType } from '@/types'
 import dayjs from 'dayjs'
 import { Event, kinds } from 'nostr-tools'
@@ -21,8 +21,9 @@ const SHOW_COUNT = 30
 
 const NotificationList = forwardRef((_, ref) => {
   const { t } = useTranslation()
+  const { current } = usePrimaryPage()
   const { pubkey } = useNostr()
-  const { clearNewNotifications } = useNotification()
+  const { clearNewNotifications, getNotificationsSeenAt } = useNotification()
   const { updateNoteStatsByEvents } = useNoteStats()
   const [notificationType, setNotificationType] = useState<TNotificationType>('all')
   const [lastReadTime, setLastReadTime] = useState(0)
@@ -59,6 +60,8 @@ const NotificationList = forwardRef((_, ref) => {
   )
 
   useEffect(() => {
+    if (current !== 'notifications') return
+
     if (!pubkey) {
       setUntil(undefined)
       return
@@ -68,7 +71,7 @@ const NotificationList = forwardRef((_, ref) => {
       setLoading(true)
       setNotifications([])
       setShowCount(SHOW_COUNT)
-      setLastReadTime(storage.getLastReadNotificationTime(pubkey))
+      setLastReadTime(getNotificationsSeenAt())
       clearNewNotifications()
       const relayList = await client.fetchRelayList(pubkey)
 
@@ -113,7 +116,7 @@ const NotificationList = forwardRef((_, ref) => {
     return () => {
       promise.then((closer) => closer?.())
     }
-  }, [pubkey, refreshCount, filterKinds])
+  }, [pubkey, refreshCount, filterKinds, current])
 
   useEffect(() => {
     const visibleNotifications = notifications.slice(0, showCount)
