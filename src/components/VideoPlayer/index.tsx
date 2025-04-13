@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
-import NsfwOverlay from '../NsfwOverlay'
+import videoManager from '@/services/video-manager.service'
 import { useEffect, useRef } from 'react'
-import VideoManager from '@/services/videomanager'
+import NsfwOverlay from '../NsfwOverlay'
 
 export default function VideoPlayer({
   src,
@@ -28,7 +28,7 @@ export default function VideoPlayer({
         const isVisible = entry.isIntersecting
 
         if (!isVisible && !video.paused) {
-          await VideoManager.enterPiP(video)
+          await videoManager.enterPiP(video)
         }
 
         if (isVisible) {
@@ -36,7 +36,7 @@ export default function VideoPlayer({
             document.pictureInPictureElement === video ||
             (video as any).webkitPresentationMode === 'picture-in-picture'
           ) {
-            await VideoManager.exitPiP(video)
+            await videoManager.exitPiP(video)
           }
         }
       },
@@ -56,21 +56,20 @@ export default function VideoPlayer({
     const video = videoRef.current
     if (!video) return
 
-    await VideoManager.playVideo(video)
+    await videoManager.playVideo(video)
   }
+
   return (
-    <>
-      <div ref={containerRef} className="relative">
-        <video
-          ref={videoRef}
-          controls
-          className={cn('rounded-lg', size === 'small' ? 'h-[15vh]' : 'h-[30vh]', className)}
-          src={src}
-          onClick={(e) => e.stopPropagation()}
-          onPlay={handlePlay}
-        />
-        {isNsfw && <NsfwOverlay className="rounded-lg" />}
-      </div>
-    </>
+    <div ref={containerRef} className="relative">
+      <video
+        ref={videoRef}
+        controls
+        className={cn('rounded-lg', size === 'small' ? 'h-[15vh]' : 'h-[30vh]', className)}
+        src={src}
+        onClick={(e) => e.stopPropagation()}
+        onPlay={handlePlay}
+      />
+      {isNsfw && <NsfwOverlay className="rounded-lg" />}
+    </div>
   )
 }
