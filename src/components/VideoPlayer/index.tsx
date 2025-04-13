@@ -24,9 +24,9 @@ export default function VideoPlayer({
     if (!video || !container) return
 
     const observer = new IntersectionObserver(
-      async ([entry]) => {
+      ([entry]) => {
         if (!entry.isIntersecting && !video.paused) {
-          await videoManager.enterPiP(video)
+          videoManager.enterPiP(video)
         }
       },
       { threshold: 0.5 }
@@ -51,7 +51,8 @@ export default function VideoPlayer({
       <video
         ref={videoRef}
         controls
-        className={cn('rounded-lg', size === 'small' ? 'h-[15vh]' : 'h-[30vh]', className)}
+        playsInline
+        className={cn('rounded-lg', size === 'small' ? 'max-h-[30vh]' : 'max-h-[50vh]', className)}
         src={src}
         onClick={(e) => e.stopPropagation()}
         onPlay={handlePlay}
