@@ -10,24 +10,37 @@ class VideoManagerService {
     return VideoManagerService.instance
   }
 
-  async enterPiP(video: HTMLVideoElement) {
+  enterPiP(video: HTMLVideoElement) {
     if (this.currentVideo && this.currentVideo !== video) {
-      await this.exitPiP(this.currentVideo)
+      this.exitPiP(this.currentVideo)
     }
 
-    if ('requestPictureInPicture' in video) {
-      await video.requestPictureInPicture()
-    } else if ('webkitSetPresentationMode' in video) {
+    if (
+      (video as any).webkitSupportsPresentationMode &&
+      typeof (video as any).webkitSetPresentationMode === 'function'
+    ) {
       ;(video as any).webkitSetPresentationMode('picture-in-picture')
+      setTimeout(() => {
+        if ((video as any).webkitPresentationMode !== 'picture-in-picture') {
+          video.pause()
+        }
+      }, 10)
+    } else {
+      video.requestPictureInPicture().catch(() => {
+        video.pause()
+      })
     }
   }
 
-  async exitPiP(video: HTMLVideoElement) {
+  private exitPiP(video: HTMLVideoElement) {
     video.pause()
-    if (document.pictureInPictureElement === video) {
-      await document.exitPictureInPicture()
-    } else if ('webkitSetPresentationMode' in video) {
+    if (
+      (video as any).webkitSupportsPresentationMode &&
+      typeof (video as any).webkitSetPresentationMode === 'function'
+    ) {
       ;(video as any).webkitSetPresentationMode('inline')
+    } else {
+      document.exitPictureInPicture()
     }
 
     if (this.currentVideo === video) {
@@ -37,7 +50,7 @@ class VideoManagerService {
 
   async playVideo(video: HTMLVideoElement) {
     if (this.currentVideo && this.currentVideo !== video) {
-      await this.exitPiP(this.currentVideo)
+      this.exitPiP(this.currentVideo)
     }
     this.currentVideo = video
     video.play()
