@@ -6,6 +6,9 @@ class VideoManagerService {
   constructor() {
     if (!VideoManagerService.instance) {
       VideoManagerService.instance = this
+      document.addEventListener('leavepictureinpicture', (e) => {
+        ;(e.target as HTMLVideoElement).pause()
+      })
     }
     return VideoManagerService.instance
   }
