@@ -25,24 +25,11 @@ export default function VideoPlayer({
 
     const observer = new IntersectionObserver(
       async ([entry]) => {
-        const isVisible = entry.isIntersecting
-
-        if (!isVisible && !video.paused) {
+        if (!entry.isIntersecting && !video.paused) {
           await videoManager.enterPiP(video)
         }
-
-        if (isVisible) {
-          if (
-            document.pictureInPictureElement === video ||
-            (video as any).webkitPresentationMode === 'picture-in-picture'
-          ) {
-            await videoManager.exitPiP(video)
-          }
-        }
       },
-      {
-        threshold: 0.5
-      }
+      { threshold: 0.5 }
     )
 
     observer.observe(container)
