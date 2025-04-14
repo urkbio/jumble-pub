@@ -217,6 +217,7 @@ export default {
     'Media upload service': '媒体上传服务',
     'Choose a relay': '选择一个服务器',
     'no relays found': '未找到服务器',
-    video: '视频'
+    video: '视频',
+    'Show n new notes': '显示 {{n}} 条新笔记'
   }
 }

@@ -220,6 +220,7 @@ export default {
     'Media upload service': 'Служба загрузки медиафайлов',
     'Choose a relay': 'Выберите ретранслятор',
     'no relays found': 'ретрансляторы не найдены',
-    video: 'видео'
+    video: 'видео',
+    'Show n new notes': 'Показать {{n}} новых заметок'
   }
 }

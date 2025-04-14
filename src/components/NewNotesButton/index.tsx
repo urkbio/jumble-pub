@@ -1,84 +1,68 @@
-import React, { useState, useEffect } from 'react'
-import UserAvatar from '@/components/UserAvatar'
+import { Button } from '@/components/ui/button'
+import { SimpleUserAvatar } from '@/components/UserAvatar'
+import { cn } from '@/lib/utils'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
-import { useDeepBrowsing } from '@/providers/DeepBrowsingProvider'
+import { Event } from 'nostr-tools'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
-export type User = {
-  pubkey: string
-}
-
-interface NewNotesButtonProps {
-  users?: User[]
-  eventCount?: number
-  onShowEvents?: () => void
-}
-
-const NewNotesButton: React.FC<NewNotesButtonProps> = ({
-  users = [],
-  eventCount: initialEventCount = 0,
-  onShowEvents
-}) => {
-  const [newNotesCount, setNewNotesCount] = useState(initialEventCount)
+export default function NewNotesButton({
+  newEvents = [],
+  onClick
+}: {
+  newEvents?: Event[]
+  onClick?: () => void
+}) {
+  const { t } = useTranslation()
   const { isSmallScreen } = useScreenSize()
-  const { deepBrowsing } = useDeepBrowsing()
-
-  useEffect(() => {
-    setNewNotesCount(initialEventCount)
-  }, [initialEventCount])
-
-  const handleClick = () => {
-    if (onShowEvents) {
-      onShowEvents()
-    } else {
-      console.log('Showing new notes...')
+  const pubkeys = useMemo(() => {
+    const arr: string[] = []
+    for (const event of newEvents) {
+      if (!arr.includes(event.pubkey)) {
+        arr.push(event.pubkey)
+      }
+      if (arr.length >= 3) break
     }
-    setNewNotesCount(0)
-  }
-
-  const getDesktopPosition = () => {
-    return deepBrowsing
-      ? 'absolute left-0 right-0 top-[3.5rem] w-full flex justify-center z-50'
-      : 'absolute left-0 right-0 top-[6.5rem] w-full flex justify-center z-50'
-  }
+    return arr
+  }, [newEvents])
 
   return (
     <>
-      {newNotesCount > 0 && (
+      {newEvents.length > 0 && (
         <div
-          className={
-            isSmallScreen
-              ? 'fixed left-0 right-0 w-full flex justify-center z-[9999]'
-              : getDesktopPosition()
-          }
+          className={cn(
+            'w-full flex justify-center z-40',
+            isSmallScreen ? 'fixed' : 'absolute bottom-4'
+          )}
           style={isSmallScreen ? { bottom: 'calc(4rem + env(safe-area-inset-bottom))' } : undefined}
         >
-          <button
-            onClick={handleClick}
-            className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-full text-sm font-medium shadow-lg"
+          <Button
+            onClick={onClick}
+            className="group rounded-full h-fit pl-2 pr-3 hover:bg-primary-hover"
           >
-            {users && users.length > 0 && (
-              <div className="flex items-center mr-1">
-                {users.slice(0, 3).map((user, index) => (
+            {pubkeys.length > 0 && (
+              <div className="flex items-center">
+                {pubkeys.map((pubkey, index) => (
                   <div
-                    key={user.pubkey}
+                    key={pubkey}
                     className="relative -mr-2.5 last:mr-0"
                     style={{ zIndex: 3 - index }}
                   >
-                    <div className="w-7 h-7 rounded-full border-2 border-purple-600 overflow-hidden flex items-center justify-center bg-background">
-                      <UserAvatar userId={user.pubkey} size="small" />
-                    </div>
+                    <SimpleUserAvatar
+                      userId={pubkey}
+                      size="small"
+                      className="border-primary border-2  group-hover:border-primary-hover"
+                    />
                   </div>
                 ))}
               </div>
             )}
-            <span className="whitespace-nowrap ml-1">
-              Show {newNotesCount > 99 ? '99+' : newNotesCount} new events
-            </span>
-          </button>
+            <div className="text-md font-medium">
+              {t('Show n new notes', { n: newEvents.length > 99 ? '99+' : newEvents.length })}
+            </div>
+          </Button>
         </div>
       )}
     </>
   )
 }
-
-export default NewNotesButton

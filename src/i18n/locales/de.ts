@@ -220,6 +220,7 @@ export default {
     'Media upload service': 'Medien-Upload-Service',
     'Choose a relay': 'Wähle ein Relay',
     'no relays found': 'Keine Relays gefunden',
-    video: 'Video'
+    video: 'Video',
+    'Show n new notes': 'Zeige {{n}} neue Notizen'
   }
 }
