@@ -59,6 +59,14 @@ export default function NoteList({
     }
   }, [JSON.stringify(filter), isPictures])
   const topRef = useRef<HTMLDivElement | null>(null)
+  const filteredNewEvents = useMemo(() => {
+    return newEvents.filter((event: Event) => {
+      return (
+        (!filterMutedNotes || !mutePubkeys.includes(event.pubkey)) &&
+        (listMode !== 'posts' || !isReplyNoteEvent(event))
+      )
+    })
+  }, [newEvents, listMode, filterMutedNotes, mutePubkeys])
 
   useEffect(() => {
     if (relayUrls.length === 0 && !noteFilter.authors?.length) return
@@ -168,29 +176,6 @@ export default function NoteList({
     setNewEvents([])
   }
 
-  const newUsers = useMemo(() => {
-    return newEvents
-      .filter((event: Event) => {
-        return (
-          (!filterMutedNotes || !mutePubkeys.includes(event.pubkey)) &&
-          (listMode !== 'posts' || !isReplyNoteEvent(event))
-        )
-      })
-      .slice(0, 3)
-      .map((event) => {
-        return {
-          pubkey: event.pubkey
-        }
-      })
-  }, [newEvents, filterMutedNotes, mutePubkeys, listMode])
-
-  const filteredNewEventsCount = newEvents.filter((event: Event) => {
-    return (
-      (!filterMutedNotes || !mutePubkeys.includes(event.pubkey)) &&
-      (listMode !== 'posts' || !isReplyNoteEvent(event))
-    )
-  }).length
-
   return (
     <div className={className}>
       <ListModeSwitch
@@ -203,12 +188,8 @@ export default function NoteList({
         }}
       />
       <div ref={topRef} />
-      {filteredNewEventsCount > 0 && (
-        <NewNotesButton
-          users={newUsers}
-          eventCount={filteredNewEventsCount}
-          onShowEvents={showNewEvents}
-        />
+      {filteredNewEvents.length > 0 && (
+        <NewNotesButton newEvents={filteredNewEvents} onClick={showNewEvents} />
       )}
       <PullToRefresh
         onRefresh={async () => {

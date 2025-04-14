@@ -217,6 +217,7 @@ export default {
     'Media upload service': 'メディアアップロードサービス',
     'Choose a relay': 'リレイを選択',
     'no relays found': 'リレイが見つかりません',
-    video: 'ビデオ'
+    video: 'ビデオ',
+    'Show n new notes': '新しいノートを{{n}}件表示'
   }
 }
