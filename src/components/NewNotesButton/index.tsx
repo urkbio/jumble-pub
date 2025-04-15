@@ -31,14 +31,14 @@ export default function NewNotesButton({
       {newEvents.length > 0 && (
         <div
           className={cn(
-            'w-full flex justify-center z-40',
+            'w-full flex justify-center z-40 pointer-events-none',
             isSmallScreen ? 'fixed' : 'absolute bottom-4'
           )}
           style={isSmallScreen ? { bottom: 'calc(4rem + env(safe-area-inset-bottom))' } : undefined}
         >
           <Button
             onClick={onClick}
-            className="group rounded-full h-fit pl-2 pr-3 hover:bg-primary-hover"
+            className="group rounded-full h-fit pl-2 pr-3 hover:bg-primary-hover pointer-events-auto"
           >
             {pubkeys.length > 0 && (
               <div className="flex items-center">
