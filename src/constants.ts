@@ -31,12 +31,16 @@ export const BIG_RELAY_URLS = [
   'wss://nos.lol/',
   'wss://relay.nostr.band/',
   'wss://nostr.mom/',
-  'wss://relay.nostr.moe/'
+  'wss://relay.nostr.moe/',
+  'wss://relay.stream/',
+  'wss://news-zh-node2.relay.stream/'
 ]
 
 export const SEARCHABLE_RELAY_URLS = [
   'wss://relay.nostr.moe/',
-  'wss://relay.cxplay.org/'
+  'wss://relay.cxplay.org/',
+  'wss://relay.stream/',
+  'wss://news-zh-node2.relay.stream/'
 ]
 
 export const GROUP_METADATA_EVENT_KIND = 39000

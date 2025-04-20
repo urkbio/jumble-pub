@@ -218,6 +218,11 @@ export function FavoriteRelaysProvider({ children }: { children: React.ReactNode
             name: 'Nostr.moe',
             relayUrls: ['wss://relay.nostr.moe/', 'wss://relay.cxplay.org/']
           },
+          {
+            id: 'news-zh.relay.stream',
+            name: '新闻资讯',
+            relayUrls: [  'wss://relay.stream/', 'wss://news-zh-node2.relay.stream/']
+          },
           ...relaySets
         ],
         createRelaySet,
