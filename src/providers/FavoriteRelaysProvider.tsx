@@ -215,7 +215,7 @@ export function FavoriteRelaysProvider({ children }: { children: React.ReactNode
         relaySets: [
           {
             id: 'nostr.moe',
-            name: 'Nostr.moe',
+            name: 'Nostr!moe',
             relayUrls: ['wss://relay.nostr.moe/', 'wss://relay.cxplay.org/']
           },
           {

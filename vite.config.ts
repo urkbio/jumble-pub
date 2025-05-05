@@ -29,8 +29,8 @@ export default defineConfig({
         enabled: true
       },
       manifest: {
-        name: 'Nostr.moe',
-        short_name: 'Nostr.moe',
+        name: 'Nostr!moe',
+        short_name: 'Nostr!moe',
         icons: [
           {
             src: '/pwa-192x192.png',
@@ -61,7 +61,7 @@ export default defineConfig({
         display: 'standalone',
         background_color: '#FFFFFF',
         theme_color: '#FFFFFF',
-        description: '由 Jumble 驱动的 Nostr.moe 社区'
+        description: '由 Jumble 驱动的 Nostr!moe 社区'
       }
     })
   ]

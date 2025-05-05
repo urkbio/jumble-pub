@@ -11,9 +11,9 @@ export default function AboutInfoDialog({ children }: { children: React.ReactNod
 
   const content = (
     <>
-      <div className="text-xl font-semibold">Nostr.moe</div>
+      <div className="text-xl font-semibold">Nostr!moe</div>
       <div className="text-muted-foreground">
-        由 Jumble 驱动的 Nostr.moe 社区
+        由 Jumble 驱动的 Nostr!moe 社区
       </div>
       <p>
         制作: <Username userId={CODY_PUBKEY} className="inline-block text-primary" showAt />
