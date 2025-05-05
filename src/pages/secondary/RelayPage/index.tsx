@@ -74,7 +74,7 @@ function RelayPageControls({ url }: { url: string }) {
   }
 
   const handleCopyShareableUrl = () => {
-    navigator.clipboard.writeText(`https://jumble.social/?r=${url}`)
+    navigator.clipboard.writeText(`https://nostr.moe/?r=${url}`)
     setCopiedShareableUrl(true)
     toast({
       title: 'Shareable URL copied to clipboard',
